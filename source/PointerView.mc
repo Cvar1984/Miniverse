@@ -7,6 +7,7 @@ using Toybox.Timer as Timer;
 using Toybox.Time as Time;
 using Toybox.Time.Gregorian as Gregorian;
 using Toybox.Math as Math;
+using Toybox.Attention as Attention;
 
 // Live pointer screen: aim the watch's 12 o'clock edge at the selected object.
 // The object is placed in the watch's own frame (see DeviceAim), so the error
@@ -31,6 +32,27 @@ class PointerView extends WatchUi.View {
 
     const LOCK_DEGREES = 8.0;
 
+    // Whole-catalogue mode works out where everything is at most this often rather
+    // than every frame. The sky turns 15 degrees an hour, so a few seconds moves it
+    // a small fraction of a pixel, while running all 35 objects - Sun, Moon and
+    // planets through their own orbital maths included - ten times a second would
+    // cost far more than drawing them does.
+    const SKY_REFRESH_SEC = 5;
+
+    // Holds the display awake while this screen is up. You are looking at the sky
+    // rather than at the watch, and glancing back to a display that has timed out
+    // makes it useless for aiming.
+    //
+    // The backlight always obeys the device timeout, so it has to be asked again
+    // every few seconds rather than switched on once.
+    const WAKE_INTERVAL_SEC = 3;
+
+    // An AMOLED panel has burn in protection, and the system throws rather than
+    // hold the display on for ever - about a minute at a stretch. When it does, it
+    // wants the panel rested, so stop asking for this long instead of throwing on
+    // every tick from there on.
+    const WAKE_COOLDOWN_SEC = 10;
+
     // Half the field of view mapped across the display. The picture is the whole
     // screen - nothing is carved out of it for the text - so the width of the glass
     // and this angle between them are all there is to how much sky fits.
@@ -43,8 +65,9 @@ class PointerView extends WatchUi.View {
     const DATA_FONT = Graphics.FONT_TINY;
     const LABEL_FONT = Graphics.FONT_XTINY;
 
-    // Readout rows along the bottom: object and aim altitude, object and aim
-    // azimuth, then the two lines of turn-and-tilt guidance.
+    // Readout rows the single-object mode needs along the bottom: object and aim
+    // altitude, object and aim azimuth, then the two lines of turn-and-tilt
+    // guidance. Showing the whole catalogue needs one row, and says so itself.
     const DATA_ROWS = 4;
 
     // Room left inside the rim, so nothing lands where the round glass has already
@@ -59,7 +82,7 @@ class PointerView extends WatchUi.View {
     const CHEVRON_SIZE = 10;
     const MARKER_REACH = 22;
 
-    hidden var _obj as Lang.Dictionary;
+    hidden var _obj as Lang.Dictionary?;
     hidden var _lat as Lang.Float?;
     hidden var _lon as Lang.Float?;
     hidden var _headingDeg as Lang.Float?;
@@ -72,7 +95,14 @@ class PointerView extends WatchUi.View {
     hidden var _haveUsableFix as Lang.Boolean;
     hidden var _usingGps as Lang.Boolean;
 
-    function initialize(obj as Lang.Dictionary) {
+    // Whole-catalogue mode only: where everything was last worked out, and when.
+    hidden var _sky as Lang.Array?;
+    hidden var _skyAt as Lang.Number;
+
+    // Not before this second is the display asked to stay awake again.
+    hidden var _wakeAt as Lang.Number;
+
+    function initialize(obj as Lang.Dictionary?) {
         View.initialize();
         _obj = obj;
         _lat = null;
@@ -84,6 +114,9 @@ class PointerView extends WatchUi.View {
         _streaming = false;
         _haveUsableFix = false;
         _usingGps = false;
+        _sky = null;
+        _skyAt = 0;
+        _wakeAt = 0;
     }
 
     function onShow() as Void {
@@ -152,6 +185,8 @@ class PointerView extends WatchUi.View {
         var deg = info.position.toDegrees();
         _lat = deg[0].toFloat();
         _lon = deg[1].toFloat();
+        // Stood somewhere else now, so the cached sky no longer answers for here.
+        _sky = null;
 
         var acc = info.accuracy;
         if (acc != null && acc >= Position.QUALITY_USABLE) {
@@ -201,7 +236,29 @@ class PointerView extends WatchUi.View {
         if (info has :mag && info.mag != null) {
             applyMag(info.mag);
         }
+        keepAwake();
         WatchUi.requestUpdate();
+    }
+
+    // Asks the system to keep the display lit, at most once every
+    // WAKE_INTERVAL_SEC. The backlight respects the device timeout whatever an app
+    // wants, so holding it on means re-arming it, not setting it once.
+    function keepAwake() as Void {
+        if (!(Attention has :backlight)) {
+            return;
+        }
+        var now = Time.now().value();
+        if (now < _wakeAt) {
+            return;
+        }
+        try {
+            Attention.backlight(true);
+            _wakeAt = now + WAKE_INTERVAL_SEC;
+        } catch (ex) {
+            // Burn in protection has refused. Let the panel have the rest it is
+            // asking for and come back for it.
+            _wakeAt = now + WAKE_COOLDOWN_SEC;
+        }
     }
 
     function applyHeading(headingDeg as Lang.Float) as Void {
@@ -282,8 +339,10 @@ class PointerView extends WatchUi.View {
         return h / 12;
     }
 
-    function dataRow(dc as Graphics.Dc, h as Lang.Number) as Lang.Number {
-        return h - TEXT_MARGIN - DATA_ROWS * dc.getFontHeight(DATA_FONT);
+    // Top of the first of rows readout lines, counted back from the bottom so the
+    // block always ends the same distance inside the rim however many it needs.
+    function dataRow(dc as Graphics.Dc, h as Lang.Number, rows as Lang.Number) as Lang.Number {
+        return h - TEXT_MARGIN - rows * dc.getFontHeight(DATA_FONT);
     }
 
     function onUpdate(dc as Graphics.Dc) as Void {
@@ -323,10 +382,48 @@ class PointerView extends WatchUi.View {
             return;
         }
 
+        // The picture is built in the watch's own frame: it is what you would see
+        // looking out through the back, so it rolls with the wrist. Grids and object
+        // share one mapping, so they always agree. None of it needs the watch to be
+        // held any particular way - rest it flat and it looks straight down at the
+        // nadir, with the vertical circles meeting in the middle of the screen.
+        //
+        // Nothing is clipped and nothing is reserved: the sky is laid down across
+        // the whole display first, and the text goes on top of it below.
         var g = Gregorian.utcInfo(Time.now(), Time.FORMAT_SHORT);
         var jd = SkyMath.julianDay(g.year, g.month, g.day, g.hour, g.min, g.sec);
-        var raDec = SkyCatalog.getRaDec(_obj, jd);
         var lstDeg = SkyMath.lst(jd, lon);
+
+        // Where the Sun is, and which way is up, both in the watch axes. The Sun
+        // lights everything else out there, so it is what sets the Moon a phase;
+        // the zenith is what lays Saturn a set of rings the right way up. Worked
+        // out once here and handed down rather than found again per object.
+        var sunRaDec = SolarLunar.sunPosition(jd);
+        var sunAltAz = SkyMath.raDecToAltAz(sunRaDec[0], sunRaDec[1], lat, lstDeg);
+        var sunEnu = SkyMath.horizontalToEnu(sunAltAz[1], sunAltAz[0]);
+        var sunOffset = DeviceAim.viewOffset(frame, sunEnu[0], sunEnu[1], sunEnu[2]);
+        var zenith = DeviceAim.viewOffset(frame, 0.0, 0.0, 1.0);
+
+        var view = layout(dc);
+        var horizonStep = Settings.horizonStep();
+        var equatorialStep = Settings.equatorialStep();
+        HorizonGrid.draw(dc, frame, view, horizonStep);
+        EquatorialGrid.draw(dc, frame, view, equatorialStep, lat, lstDeg);
+
+        // Whole-catalogue mode. There is no object being aimed at, so there is
+        // nothing to be told to turn towards: all it can usefully say is where the
+        // watch is currently pointing.
+        if (_obj == null) {
+            drawAllObjects(dc, view, frame, lat, jd, lstDeg, sunOffset, zenith);
+            drawScale(dc, view, horizonStep, equatorialStep);
+            dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_TRANSPARENT);
+            dc.drawText(cx, dataRow(dc, h, 1), DATA_FONT,
+                "Alt " + signedDegrees(aimElev) + "  Az " + headingDeg.format("%.0f"),
+                Graphics.TEXT_JUSTIFY_CENTER);
+            return;
+        }
+
+        var raDec = SkyCatalog.getRaDec(_obj, jd);
         var altAz = SkyMath.raDecToAltAz(raDec[0], raDec[1], lat, lstDeg);
         // raDecToAltAz answers for Earth's centre; correct it to the watch on the
         // surface, and for the atmosphere bending the view.
@@ -338,27 +435,16 @@ class PointerView extends WatchUi.View {
         var objEnu = SkyMath.horizontalToEnu(az, alt);
         var objOffset = DeviceAim.viewOffset(frame, objEnu[0], objEnu[1], objEnu[2]);
         var onTarget = SkyMath.dacos(objOffset[2]) < LOCK_DEGREES;
-
-        // The picture is built in the watch's own frame: it is what you would see
-        // looking out through the back, so it rolls with the wrist. Grid and object
-        // share one mapping, so they always agree. None of it needs the watch to be
-        // held any particular way - rest it flat and it looks straight down at the
-        // nadir, with the vertical circles meeting in the middle of the screen.
-        //
-        // Nothing is clipped and nothing is reserved: the sky is laid down across
-        // the whole display first, and the text goes on top of it below.
-        var view = layout(dc);
-        HorizonGrid.draw(dc, frame, view);
-        drawObject(dc, view, objOffset, alt, onTarget);
+        drawObject(dc, view, objOffset, alt, onTarget, sunOffset, zenith);
 
         dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_TRANSPARENT);
         dc.drawText(cx, nameRow(h), NAME_FONT, _obj[:name], Graphics.TEXT_JUSTIFY_CENTER);
-        drawScale(dc, view);
+        drawScale(dc, view, horizonStep, equatorialStep);
 
         // Object against where the watch is actually aimed, on both axes. Each pair
         // should converge as you settle onto the object, which makes a sensor axis
         // that runs the wrong way obvious instead of just puzzling.
-        var row = dataRow(dc, h);
+        var row = dataRow(dc, h, DATA_ROWS);
         var step = dc.getFontHeight(DATA_FONT);
 
         var altColor;
@@ -424,7 +510,7 @@ class PointerView extends WatchUi.View {
     // Draws the object as a dot that slides in from the edge of the screen as the
     // offset from the aim axis shrinks. Outside the field of view the dot pins to
     // the edge with a chevron pointing further the way to move.
-    function drawObject(dc as Graphics.Dc, view as Lang.Array<Lang.Numeric>, offset as Lang.Array<Lang.Float>, alt as Lang.Float, onTarget as Lang.Boolean) as Void {
+    function drawObject(dc as Graphics.Dc, view as Lang.Array<Lang.Numeric>, offset as Lang.Array<Lang.Float>, alt as Lang.Float, onTarget as Lang.Boolean, sunOffset as Lang.Array, zenith as Lang.Array) as Void {
         var cx = view[0];
         var cy = view[1];
         var focal = view[2];
@@ -494,15 +580,14 @@ class PointerView extends WatchUi.View {
 
         if (onTarget) {
             dc.setColor(Graphics.COLOR_GREEN, Graphics.COLOR_TRANSPARENT);
-            dc.drawCircle(dotX, dotY, objectRadius(_obj) + 6);
+            dc.drawCircle(dotX, dotY, ObjectArt.radius(_obj) + 6);
         }
 
-        dc.setColor(objectColor(_obj), Graphics.COLOR_TRANSPARENT);
-        dc.fillCircle(dotX, dotY, objectRadius(_obj));
+        ObjectArt.draw(dc, dotX, dotY, _obj, ObjectArt.color(_obj), offset, sunOffset, zenith);
 
         if (alt < 0) {
             dc.setColor(Graphics.COLOR_RED, Graphics.COLOR_TRANSPARENT);
-            dc.drawCircle(dotX, dotY, objectRadius(_obj) + 3);
+            dc.drawCircle(dotX, dotY, ObjectArt.radius(_obj) + 3);
         }
 
         if (hDir != 0) {
@@ -513,22 +598,104 @@ class PointerView extends WatchUi.View {
         }
     }
 
-    // What one cell of the sky grid is worth, sat under the name over on the right
-    // and pulled in to where the round glass actually reaches on that row.
+    // What each grid's cells are worth, one line per grid that is switched on, in
+    // the top right where the sky is emptiest. Each line names its frame, since two
+    // grids at different spacings would otherwise be a bare number apiece.
     //
     // Nothing at all is drawn at the middle of the screen. Where the watch points
     // is the centre of the display whether it is marked or not, and the reticle
     // that used to sit there - a cross, and a run of ticks out along both axes -
     // only crowded the object at exactly the moment you had aimed at it.
-    function drawScale(dc as Graphics.Dc, view as Lang.Array<Lang.Numeric>) as Void {
+    function drawScale(dc as Graphics.Dc, view as Lang.Array<Lang.Numeric>, horizonStep as Lang.Number, equatorialStep as Lang.Number) as Void {
+        var y = nameRow(dc.getHeight()) + dc.getFontHeight(NAME_FONT) + GAP;
+        dc.setColor(Graphics.COLOR_DK_GRAY, Graphics.COLOR_TRANSPARENT);
+        if (horizonStep > 0) {
+            drawScaleLine(dc, view, y, horizonStep.toString() + " alt/az");
+            y += dc.getFontHeight(LABEL_FONT);
+        }
+        if (equatorialStep > 0) {
+            drawScaleLine(dc, view, y, equatorialStep.toString() + " ra/dec");
+        }
+    }
+
+    // Right-justified as far out as the round glass reaches on that row.
+    function drawScaleLine(dc as Graphics.Dc, view as Lang.Array<Lang.Numeric>, y as Lang.Number, text as Lang.String) as Void {
         var cx = view[0];
         var cy = view[1];
+        var x = cx + screenHalfWidth(dc, cy, y + dc.getFontHeight(LABEL_FONT) / 2);
+        dc.drawText(x, y, LABEL_FONT, text, Graphics.TEXT_JUSTIFY_RIGHT);
+    }
 
-        dc.setColor(Graphics.COLOR_DK_GRAY, Graphics.COLOR_TRANSPARENT);
-        var labelY = nameRow(dc.getHeight()) + dc.getFontHeight(NAME_FONT) + GAP;
-        var labelX = cx + screenHalfWidth(dc, cy, labelY + dc.getFontHeight(LABEL_FONT) / 2);
-        dc.drawText(labelX, labelY, LABEL_FONT,
-            HorizonGrid.AZ_LINE_STEP.toString() + " grid", Graphics.TEXT_JUSTIFY_RIGHT);
+    // Every object in the catalogue at once, drawn as a plain sky map: no marker is
+    // pinned to the rim and no chevron points off it, because with the whole sky on
+    // show there is nothing in particular to be steered towards. An object that is
+    // not out in front of the watch is simply left out.
+    //
+    // Below the horizon they are darkened rather than greyed out, so they still
+    // read as underfoot without losing the colour and the face that identify them.
+    function drawAllObjects(dc as Graphics.Dc, view as Lang.Array<Lang.Numeric>, frame as Lang.Array<Lang.Float>, lat as Lang.Float, jd as Lang.Double, lstDeg as Lang.Double, sunOffset as Lang.Array, zenith as Lang.Array) as Void {
+        var w = dc.getWidth();
+        var h = dc.getHeight();
+        var cx = view[0];
+        var cy = view[1];
+        var focal = view[2];
+
+        var sky = skyPositions(lat, jd, lstDeg);
+        var i = 0;
+        while (i < sky.size()) {
+            var entry = sky[i];
+            var enu = entry[1];
+            // The offset is wanted as well as the screen point - it is what orients
+            // the phase and the rings - so the projection is done here rather than
+            // through DeviceAim.screenPoint, which would work it out twice.
+            var offset = DeviceAim.viewOffset(frame, enu[0], enu[1], enu[2]);
+            var forward = offset[2];
+            if (forward >= DeviceAim.MIN_FORWARD) {
+                var px = (cx + focal * offset[0] / forward).toNumber();
+                var py = (cy - focal * offset[1] / forward).toNumber();
+                if (px >= 0 && px < w && py >= 0 && py < h) {
+                    var obj = entry[0];
+                    var base = ObjectArt.color(obj);
+                    if (entry[2] < 0) {
+                        // Underfoot. Darkened rather than replaced with a flat grey:
+                        // one grey for everything threw away the colour and the face
+                        // that say which object it is, which left the Sun a plain
+                        // disc and the planets indistinguishable from dim stars.
+                        base = ObjectArt.shade(base, 1, 3);
+                    }
+                    ObjectArt.draw(dc, px, py, obj, base, offset, sunOffset, zenith);
+                }
+            }
+            i += 1;
+        }
+    }
+
+    // Where every object in the catalogue is, as [object, ENU direction, altitude],
+    // worked out at most every SKY_REFRESH_SEC and held between times. Only the
+    // projection onto the screen is redone per frame, which is what keeps this mode
+    // as cheap to draw as the single-object one.
+    function skyPositions(lat as Lang.Float, jd as Lang.Double, lstDeg as Lang.Double) as Lang.Array {
+        var now = Time.now().value();
+        var cached = _sky;
+        if (cached != null && now - _skyAt < SKY_REFRESH_SEC) {
+            return cached;
+        }
+
+        var list = SkyCatalog.objects();
+        var out = [];
+        var i = 0;
+        while (i < list.size()) {
+            var obj = list[i];
+            var raDec = SkyCatalog.getRaDec(obj, jd);
+            var altAz = SkyMath.raDecToAltAz(raDec[0], raDec[1], lat, lstDeg);
+            var alt = SkyMath.apparentAltitude(altAz[0], SkyCatalog.horizontalParallax(obj, jd));
+            out.add([obj, SkyMath.horizontalToEnu(altAz[1], alt), alt]);
+            i += 1;
+        }
+
+        _sky = out;
+        _skyAt = now;
+        return out;
     }
 
     // How far out the round glass reaches on a given row, measured from the middle
@@ -579,60 +746,5 @@ class PointerView extends WatchUi.View {
                 [tipX + size, tipY - dirY * size]
             ]);
         }
-    }
-
-    // Approximate on-screen color for the selected object.
-    function objectColor(obj as Lang.Dictionary) as Lang.Number {
-        var type = obj[:type];
-        if (type == :sun) {
-            return Graphics.COLOR_YELLOW;
-        }
-        if (type == :moon) {
-            return Graphics.COLOR_LT_GRAY;
-        }
-        if (type == :planet) {
-            var id = obj[:id];
-            if (id.equals("mars")) {
-                return Graphics.COLOR_ORANGE;
-            }
-            if (id.equals("venus")) {
-                return Graphics.COLOR_WHITE;
-            }
-            if (id.equals("mercury")) {
-                return Graphics.COLOR_LT_GRAY;
-            }
-            if (id.equals("jupiter")) {
-                return Graphics.COLOR_YELLOW;
-            }
-            return Graphics.COLOR_ORANGE;
-        }
-        return Graphics.COLOR_WHITE;
-    }
-
-    // Dot radius: fixed for Sun/Moon/planets, magnitude-scaled for stars
-    // (brighter, lower-magnitude stars draw larger, matching how they look in the sky).
-    function objectRadius(obj as Lang.Dictionary) as Lang.Number {
-        var type = obj[:type];
-        if (type == :sun) {
-            return 20;
-        }
-        if (type == :moon) {
-            return 16;
-        }
-        if (type == :planet) {
-            return 6;
-        }
-        var mag = obj[:mag];
-        if (mag == null) {
-            return 3;
-        }
-        var r = (5.0 - mag).toNumber();
-        if (r < 2) {
-            r = 2;
-        }
-        if (r > 7) {
-            r = 7;
-        }
-        return r;
     }
 }
