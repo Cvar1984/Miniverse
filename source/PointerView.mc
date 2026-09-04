@@ -34,11 +34,33 @@ class PointerView extends WatchUi.View {
     // Spacing of the aim reticle's ticks, in degrees.
     const GRID_STEP = 15.0;
 
-    // Half the field of view mapped across the drawing area, and half its height
-    // in pixels. The width is taken from the screen, the height kept short so the
-    // sky does not run into the readouts underneath.
+    // Half the field of view mapped across the display. The picture is the whole
+    // screen - nothing is carved out of it for the text - so the width of the glass
+    // and this angle between them are all there is to how much sky fits.
     const FOV_HALF = 45.0;
-    const GRID_HALF_Y = 65.0;
+
+    // The name and the readouts are drawn straight onto the sky, the way the tick
+    // note always has been, so they are sized to stay legible over grid lines
+    // rather than to fit into a band of their own.
+    const NAME_FONT = Graphics.FONT_MEDIUM;
+    const DATA_FONT = Graphics.FONT_TINY;
+    const LABEL_FONT = Graphics.FONT_XTINY;
+
+    // Readout rows along the bottom: object and aim altitude, object and aim
+    // azimuth, then the two lines of turn-and-tilt guidance.
+    const DATA_ROWS = 4;
+
+    // Room left inside the rim, so nothing lands where the round glass has already
+    // run out. TEXT_MARGIN is the deeper one the readouts need, because the bottom
+    // rows of a circle are the narrowest part of it.
+    const EDGE_MARGIN = 6;
+    const TEXT_MARGIN = 16;
+    const GAP = 6;
+
+    // Half-width of the edge chevron, and how far it reaches past the marker it
+    // hangs off. Markers pin that far inside the rim so both stay on the glass.
+    const CHEVRON_SIZE = 10;
+    const MARKER_REACH = 22;
 
     hidden var _obj as Lang.Dictionary;
     hidden var _lat as Lang.Float?;
@@ -242,6 +264,31 @@ class PointerView extends WatchUi.View {
         return _headingDeg;
     }
 
+    // The screen mapping the sky is drawn with: [cx, cy, focal], where focal is
+    // the pixels-per-radian scale - see DeviceAim.screenPoint.
+    //
+    // No box is carved out of the display for the text. The name and the readouts
+    // are drawn onto the sky, the way the tick note always was, so the picture runs
+    // to all four edges instead of sitting in a letterbox with black bands above
+    // and below it.
+    function layout(dc as Graphics.Dc) as Lang.Array<Lang.Numeric> {
+        var cx = dc.getWidth() / 2;
+        return [cx, dc.getHeight() / 2, cx / SkyMath.dtan(FOV_HALF)];
+    }
+
+    // Top of the object name, and top of the first readout row.
+    //
+    // Neither is pushed hard against the rim: the screen is round, so the rows at
+    // the very top and bottom are the narrowest on it, and a long name such as
+    // Alpha Centauri would have its ends cut off by the bezel up there.
+    function nameRow(h as Lang.Number) as Lang.Number {
+        return h / 12;
+    }
+
+    function dataRow(dc as Graphics.Dc, h as Lang.Number) as Lang.Number {
+        return h - TEXT_MARGIN - DATA_ROWS * dc.getFontHeight(DATA_FONT);
+    }
+
     function onUpdate(dc as Graphics.Dc) as Void {
         var w = dc.getWidth();
         var h = dc.getHeight();
@@ -261,7 +308,7 @@ class PointerView extends WatchUi.View {
             } else {
                 locStatus = "Locating...";
             }
-            dc.drawText(cx, cy, Graphics.FONT_SMALL, locStatus, Graphics.TEXT_JUSTIFY_CENTER);
+            drawStatus(dc, cx, cy, locStatus);
             return;
         }
 
@@ -269,13 +316,13 @@ class PointerView extends WatchUi.View {
         var accel = _accel;
         var mag = _mag;
         if (headingDeg == null || accel == null || mag == null) {
-            dc.drawText(cx, cy, Graphics.FONT_SMALL, "Waiting for sensors...", Graphics.TEXT_JUSTIFY_CENTER);
+            drawStatus(dc, cx, cy, "Waiting for sensors...");
             return;
         }
         var aimElev = DeviceAim.aimElevation(accel);
         var frame = DeviceAim.deviceFrame(accel, mag);
         if (aimElev == null || frame == null) {
-            dc.drawText(cx, cy, Graphics.FONT_SMALL, "Waiting for sensors...", Graphics.TEXT_JUSTIFY_CENTER);
+            drawStatus(dc, cx, cy, "Waiting for sensors...");
             return;
         }
 
@@ -289,9 +336,6 @@ class PointerView extends WatchUi.View {
         var alt = SkyMath.apparentAltitude(altAz[0], SkyCatalog.horizontalParallax(_obj, jd));
         var az = altAz[1];
 
-        dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_TRANSPARENT);
-        dc.drawText(cx, 34, Graphics.FONT_SMALL, _obj[:name], Graphics.TEXT_JUSTIFY_CENTER);
-
         // Where the object sits looking out through the back. Forward is the
         // cosine of the angle off the aim, so it settles the lock on its own.
         var objEnu = SkyMath.horizontalToEnu(az, alt);
@@ -303,21 +347,23 @@ class PointerView extends WatchUi.View {
         // share one mapping, so they always agree. None of it needs the watch to be
         // held any particular way - rest it flat and it looks straight down at the
         // nadir, with the vertical circles meeting in the middle of the screen.
-        var halfX = (cx - 26).toFloat();
-        var view = [cx, cy, halfX, GRID_HALF_Y, halfX / SkyMath.dtan(FOV_HALF)];
+        //
+        // Nothing is clipped and nothing is reserved: the sky is laid down across
+        // the whole display first, and the text goes on top of it below.
+        var view = layout(dc);
         drawReticle(dc, view);
-
-        // Clipped to the view box, since sky lines run off in every direction and
-        // would otherwise scrawl over the readouts below.
-        dc.setClip(cx - halfX.toNumber(), (cy - GRID_HALF_Y).toNumber(),
-            (2 * halfX).toNumber(), (2 * GRID_HALF_Y).toNumber());
         HorizonGrid.draw(dc, frame, view);
         drawObject(dc, view, objOffset, alt, onTarget);
-        dc.clearClip();
+
+        dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_TRANSPARENT);
+        dc.drawText(cx, nameRow(h), NAME_FONT, _obj[:name], Graphics.TEXT_JUSTIFY_CENTER);
 
         // Object against where the watch is actually aimed, on both axes. Each pair
         // should converge as you settle onto the object, which makes a sensor axis
         // that runs the wrong way obvious instead of just puzzling.
+        var row = dataRow(dc, h);
+        var step = dc.getFontHeight(DATA_FONT);
+
         var altColor;
         if (alt >= 0) {
             altColor = Graphics.COLOR_WHITE;
@@ -326,15 +372,15 @@ class PointerView extends WatchUi.View {
         }
         var elevLine = "Alt obj " + signedDegrees(alt) + "  aim " + signedDegrees(aimElev);
         dc.setColor(altColor, Graphics.COLOR_TRANSPARENT);
-        dc.drawText(cx, cy + 70, Graphics.FONT_XTINY, elevLine, Graphics.TEXT_JUSTIFY_CENTER);
+        dc.drawText(cx, row, DATA_FONT, elevLine, Graphics.TEXT_JUSTIFY_CENTER);
 
         dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_TRANSPARENT);
-        dc.drawText(cx, cy + 88, Graphics.FONT_XTINY,
+        dc.drawText(cx, row + step, DATA_FONT,
             "Az obj " + az.format("%.0f") + "  aim " + headingDeg.format("%.0f"),
             Graphics.TEXT_JUSTIFY_CENTER);
 
         if (onTarget) {
-            dc.drawText(cx, cy + 110, Graphics.FONT_XTINY, "On target", Graphics.TEXT_JUSTIFY_CENTER);
+            dc.drawText(cx, row + 2 * step, DATA_FONT, "On target", Graphics.TEXT_JUSTIFY_CENTER);
             return;
         }
 
@@ -347,7 +393,7 @@ class PointerView extends WatchUi.View {
         // there. The picture above still holds, so only these two lines drop out.
         var basis = DeviceAim.aimBasis(aimElev, headingDeg);
         if (basis == null) {
-            dc.drawText(cx, cy + 110, Graphics.FONT_XTINY, "Aimed straight up/down", Graphics.TEXT_JUSTIFY_CENTER);
+            dc.drawText(cx, row + 2 * step, DATA_FONT, "Aimed straight up/down", Graphics.TEXT_JUSTIFY_CENTER);
             return;
         }
 
@@ -367,19 +413,32 @@ class PointerView extends WatchUi.View {
         } else {
             vLabel = " down";
         }
-        dc.drawText(cx, cy + 108, Graphics.FONT_XTINY, "Turn " + hAngle.abs().format("%.0f") + hLabel, Graphics.TEXT_JUSTIFY_CENTER);
-        dc.drawText(cx, cy + 126, Graphics.FONT_XTINY, "Tilt " + vAngle.abs().format("%.0f") + vLabel, Graphics.TEXT_JUSTIFY_CENTER);
+        dc.drawText(cx, row + 2 * step, DATA_FONT, "Turn " + hAngle.abs().format("%.0f") + hLabel, Graphics.TEXT_JUSTIFY_CENTER);
+        dc.drawText(cx, row + 3 * step, DATA_FONT, "Tilt " + vAngle.abs().format("%.0f") + vLabel, Graphics.TEXT_JUSTIFY_CENTER);
+    }
+
+    // A waiting message has the whole screen to itself, so it is centred both ways
+    // rather than hung off the middle line with all its weight below the centre.
+    function drawStatus(dc as Graphics.Dc, cx as Lang.Number, cy as Lang.Number, text as Lang.String) as Void {
+        dc.drawText(cx, cy, Graphics.FONT_SMALL, text,
+            Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER);
     }
 
     // Draws the object as a dot that slides in from the edge of the screen as the
     // offset from the aim axis shrinks. Outside the field of view the dot pins to
     // the edge with a chevron pointing further the way to move.
-    function drawObject(dc as Graphics.Dc, view as Lang.Array, offset as Lang.Array<Lang.Float>, alt as Lang.Float, onTarget as Lang.Boolean) as Void {
+    function drawObject(dc as Graphics.Dc, view as Lang.Array<Lang.Numeric>, offset as Lang.Array<Lang.Float>, alt as Lang.Float, onTarget as Lang.Boolean) as Void {
         var cx = view[0];
         var cy = view[1];
-        var halfX = view[2];
-        var halfY = view[3];
-        var focal = view[4];
+        var focal = view[2];
+
+        // Pinning stops short of the rim by the chevron's reach, so a pinned marker
+        // and the chevron hanging off it are both drawn whole instead of running off
+        // the glass exactly when they are the only thing left to steer by.
+        var edgeLeft = MARKER_REACH;
+        var edgeTop = MARKER_REACH;
+        var edgeRight = dc.getWidth() - MARKER_REACH;
+        var edgeBottom = dc.getHeight() - MARKER_REACH;
 
         // The perspective divide is what makes the object land where a camera
         // would put it rather than merely in the right general direction.
@@ -400,31 +459,40 @@ class PointerView extends WatchUi.View {
             if (span < 0.000001) {
                 span = 1.0;
             }
-            dotX = (cx + 4 * halfX * right / span).toNumber();
-            dotY = (cy - 4 * halfY * up / span).toNumber();
+            var push = 4 * dc.getWidth();
+            dotX = (cx + push * right / span).toNumber();
+            dotY = (cy - push * up / span).toNumber();
         }
 
-        // Pin to the edge of the view box, remembering which way it went so the
+        // Pin to the edge of the screen, remembering which way it went so the
         // chevron can point after it.
         var hDir = 0;
         var vDir = 0;
-        var left = (cx - halfX).toNumber();
-        var rightEdge = (cx + halfX).toNumber();
-        var top = (cy - halfY).toNumber();
-        var bottom = (cy + halfY).toNumber();
-        if (dotX < left) {
-            dotX = left;
+        if (dotX < edgeLeft) {
+            dotX = edgeLeft;
             hDir = -1;
-        } else if (dotX > rightEdge) {
-            dotX = rightEdge;
+        } else if (dotX > edgeRight) {
+            dotX = edgeRight;
             hDir = 1;
         }
-        if (dotY < top) {
-            dotY = top;
+        if (dotY < edgeTop) {
+            dotY = edgeTop;
             vDir = -1;
-        } else if (dotY > bottom) {
-            dotY = bottom;
+        } else if (dotY > edgeBottom) {
+            dotY = edgeBottom;
             vDir = 1;
+        }
+
+        // The corners those edges meet at are off a round display, so a marker
+        // pinned into one would sit behind the bezel. Pull it back along the line
+        // from the centre, which leaves it pointing the same way as it went out.
+        var limit = cx - MARKER_REACH;
+        var dx = dotX - cx;
+        var dy = dotY - cy;
+        var reach = Math.sqrt(dx * dx + dy * dy);
+        if (reach > limit) {
+            dotX = (cx + limit * dx / reach).toNumber();
+            dotY = (cy + limit * dy / reach).toNumber();
         }
 
         if (onTarget) {
@@ -452,31 +520,29 @@ class PointerView extends WatchUi.View {
     // watch points, and ticks every GRID_STEP degrees along each axis for scale.
     // Ticks rather than full rules, so this reads as a separate layer from the
     // celestial grid crossing it rather than competing with it.
-    function drawReticle(dc as Graphics.Dc, view as Lang.Array) as Void {
+    function drawReticle(dc as Graphics.Dc, view as Lang.Array<Lang.Numeric>) as Void {
         var cx = view[0];
         var cy = view[1];
-        var halfX = view[2];
-        var halfY = view[3];
-        var focal = view[4];
+        var focal = view[2];
 
         // Ticks sit where the perspective puts each angle, so they measure the
-        // picture rather than merely dividing the box into equal pieces.
+        // picture rather than merely dividing the screen into equal pieces.
         dc.setColor(Graphics.COLOR_DK_GRAY, Graphics.COLOR_TRANSPARENT);
         var step = GRID_STEP;
         while (step < 90.0) {
             var offset = focal * SkyMath.dtan(step);
-            if (offset <= halfX) {
+            if (offset > cx && offset > cy) {
+                break;
+            }
+            if (offset <= cx) {
                 var dx = offset.toNumber();
                 dc.drawLine(cx - dx, cy - 5, cx - dx, cy + 5);
                 dc.drawLine(cx + dx, cy - 5, cx + dx, cy + 5);
             }
-            if (offset <= halfY) {
+            if (offset <= cy) {
                 var dy = offset.toNumber();
                 dc.drawLine(cx - 5, cy - dy, cx + 5, cy - dy);
                 dc.drawLine(cx - 5, cy + dy, cx + 5, cy + dy);
-            }
-            if (offset > halfX && offset > halfY) {
-                break;
             }
             step += GRID_STEP;
         }
@@ -485,9 +551,24 @@ class PointerView extends WatchUi.View {
         dc.drawLine(cx - 14, cy, cx + 14, cy);
         dc.drawLine(cx, cy - 14, cx, cy + 14);
 
+        // What the ticks are worth, sat under the name over on the right and pulled
+        // in to where the round glass actually reaches on that row.
         dc.setColor(Graphics.COLOR_DK_GRAY, Graphics.COLOR_TRANSPARENT);
-        dc.drawText((cx + halfX).toNumber(), (cy - halfY).toNumber() - 20, Graphics.FONT_XTINY,
+        var labelY = nameRow(dc.getHeight()) + dc.getFontHeight(NAME_FONT) + GAP;
+        var labelX = cx + screenHalfWidth(dc, cy, labelY + dc.getFontHeight(LABEL_FONT) / 2);
+        dc.drawText(labelX, labelY, LABEL_FONT,
             GRID_STEP.format("%.0f") + " ticks", Graphics.TEXT_JUSTIFY_RIGHT);
+    }
+
+    // How far out the round glass reaches on a given row, measured from the middle
+    // line, so a label can sit as far out as there is screen for it.
+    function screenHalfWidth(dc as Graphics.Dc, cy as Lang.Numeric, y as Lang.Numeric) as Lang.Number {
+        var r = dc.getWidth() / 2;
+        var dy = (y - cy).abs();
+        if (dy >= r) {
+            return 0;
+        }
+        return Math.sqrt(r * r - dy * dy).toNumber() - EDGE_MARGIN;
     }
 
     function signedDegrees(deg as Lang.Float) as Lang.String {
@@ -510,9 +591,9 @@ class PointerView extends WatchUi.View {
     // Small triangle at the edge of the sky strip pointing further the way to move.
     // Exactly one of dirX/dirY should be non-zero.
     function drawChevron(dc as Graphics.Dc, x as Lang.Numeric, y as Lang.Numeric, dirX as Lang.Number, dirY as Lang.Number) as Void {
-        var size = 10;
-        var tipX = x + dirX * (size + 10);
-        var tipY = y + dirY * (size + 10);
+        var size = CHEVRON_SIZE;
+        var tipX = x + dirX * (2 * size);
+        var tipY = y + dirY * (2 * size);
         dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_TRANSPARENT);
         if (dirX != 0) {
             dc.fillPolygon([
