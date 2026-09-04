@@ -14,9 +14,14 @@ using Toybox.Lang as Lang;
 // Each plotted point costs a handful of trig calls, so the sampling constants
 // below are the knob to turn if this ever costs too much frame time.
 module HorizonGrid {
-    const ALT_LINE_STEP = 30;   // circles of equal altitude this far apart
+    // The sky turns 360 degrees in 24 hours, so 15 degrees is one hour of it.
+    // Both sets of lines are spaced that far apart, which makes every cell of the
+    // grid an hour wide and matches the reticle ticks exactly - PointerView draws
+    // those at the same 15 degrees, so the ticks measure the grid rather than just
+    // sitting over it.
+    const ALT_LINE_STEP = 15;   // circles of equal altitude this far apart
     const ALT_LIMIT = 60;       // highest and lowest one drawn
-    const AZ_LINE_STEP = 45;    // vertical circles this far apart, so eight compass points
+    const AZ_LINE_STEP = 15;    // vertical circles this far apart, so 24 of them
     const AZ_SAMPLE = 20;       // plotted point spacing round a circle of equal altitude
     const ALT_SAMPLE = 20;      // plotted point spacing along a vertical circle
 
