@@ -31,9 +31,6 @@ class PointerView extends WatchUi.View {
 
     const LOCK_DEGREES = 8.0;
 
-    // Spacing of the aim reticle's ticks, in degrees.
-    const GRID_STEP = 15.0;
-
     // Half the field of view mapped across the display. The picture is the whole
     // screen - nothing is carved out of it for the text - so the width of the glass
     // and this angle between them are all there is to how much sky fits.
@@ -351,12 +348,12 @@ class PointerView extends WatchUi.View {
         // Nothing is clipped and nothing is reserved: the sky is laid down across
         // the whole display first, and the text goes on top of it below.
         var view = layout(dc);
-        drawReticle(dc, view);
         HorizonGrid.draw(dc, frame, view);
         drawObject(dc, view, objOffset, alt, onTarget);
 
         dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_TRANSPARENT);
         dc.drawText(cx, nameRow(h), NAME_FONT, _obj[:name], Graphics.TEXT_JUSTIFY_CENTER);
+        drawScale(dc, view);
 
         // Object against where the watch is actually aimed, on both axes. Each pair
         // should converge as you settle onto the object, which makes a sensor axis
@@ -516,48 +513,22 @@ class PointerView extends WatchUi.View {
         }
     }
 
-    // The aim reference, drawn under the sky grid: a centre cross for where the
-    // watch points, and ticks every GRID_STEP degrees along each axis for scale.
-    // Ticks rather than full rules, so this reads as a separate layer from the
-    // celestial grid crossing it rather than competing with it.
-    function drawReticle(dc as Graphics.Dc, view as Lang.Array<Lang.Numeric>) as Void {
+    // What one cell of the sky grid is worth, sat under the name over on the right
+    // and pulled in to where the round glass actually reaches on that row.
+    //
+    // Nothing at all is drawn at the middle of the screen. Where the watch points
+    // is the centre of the display whether it is marked or not, and the reticle
+    // that used to sit there - a cross, and a run of ticks out along both axes -
+    // only crowded the object at exactly the moment you had aimed at it.
+    function drawScale(dc as Graphics.Dc, view as Lang.Array<Lang.Numeric>) as Void {
         var cx = view[0];
         var cy = view[1];
-        var focal = view[2];
 
-        // Ticks sit where the perspective puts each angle, so they measure the
-        // picture rather than merely dividing the screen into equal pieces.
-        dc.setColor(Graphics.COLOR_DK_GRAY, Graphics.COLOR_TRANSPARENT);
-        var step = GRID_STEP;
-        while (step < 90.0) {
-            var offset = focal * SkyMath.dtan(step);
-            if (offset > cx && offset > cy) {
-                break;
-            }
-            if (offset <= cx) {
-                var dx = offset.toNumber();
-                dc.drawLine(cx - dx, cy - 5, cx - dx, cy + 5);
-                dc.drawLine(cx + dx, cy - 5, cx + dx, cy + 5);
-            }
-            if (offset <= cy) {
-                var dy = offset.toNumber();
-                dc.drawLine(cx - 5, cy - dy, cx + 5, cy - dy);
-                dc.drawLine(cx - 5, cy + dy, cx + 5, cy + dy);
-            }
-            step += GRID_STEP;
-        }
-
-        dc.setColor(Graphics.COLOR_LT_GRAY, Graphics.COLOR_TRANSPARENT);
-        dc.drawLine(cx - 14, cy, cx + 14, cy);
-        dc.drawLine(cx, cy - 14, cx, cy + 14);
-
-        // What the ticks are worth, sat under the name over on the right and pulled
-        // in to where the round glass actually reaches on that row.
         dc.setColor(Graphics.COLOR_DK_GRAY, Graphics.COLOR_TRANSPARENT);
         var labelY = nameRow(dc.getHeight()) + dc.getFontHeight(NAME_FONT) + GAP;
         var labelX = cx + screenHalfWidth(dc, cy, labelY + dc.getFontHeight(LABEL_FONT) / 2);
         dc.drawText(labelX, labelY, LABEL_FONT,
-            GRID_STEP.format("%.0f") + " ticks", Graphics.TEXT_JUSTIFY_RIGHT);
+            HorizonGrid.AZ_LINE_STEP.toString() + " grid", Graphics.TEXT_JUSTIFY_RIGHT);
     }
 
     // How far out the round glass reaches on a given row, measured from the middle
