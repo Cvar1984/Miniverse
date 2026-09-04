@@ -1,0 +1,585 @@
+[ @file = "C:\Users\Cvar1\Downloads\Apps\source\SkyCatalog.mc"; @line = 2; @symbol_moduledef = [SkyCatalog,2,7,17]; ]
+module SkyCatalog {
+    [ @file = "C:\Users\Cvar1\Downloads\Apps\source\SkyCatalog.mc"; @line = 2; ]
+    <init> {
+    }
+    [ @file = "C:\Users\Cvar1\Downloads\Apps\source\SkyCatalog.mc"; @line = 3; @position = 8; @symbol_vardef = [_objects,3,8,16]; ]
+    var _objects = null;
+    [ @file = "C:\Users\Cvar1\Downloads\Apps\source\SkyCatalog.mc"; @line = 5; @symbol_functiondef = [objects,5,13,20]; ]
+    function objects() {
+C__Users_Cvar1_Downloads_Apps_source_SkyCatalog_mc_5_23_10_4_start:
+[ "C:\Users\Cvar1\Downloads\Apps\source\SkyCatalog.mc" 6 8 ]
+C__Users_Cvar1_Downloads_Apps_source_SkyCatalog_mc_6_8_8_8_if_stmt:
+        symbol [ _objects %tmp.2 6 12 20 ];
+        %tmp.2 = getv ? :_objects;
+        %tmp.3 = null;
+        %tmp.4 = eq %tmp.2 %tmp.3;
+        bf %tmp.4 @C__Users_Cvar1_Downloads_Apps_source_SkyCatalog_mc_6_8_8_8_if_end;
+C__Users_Cvar1_Downloads_Apps_source_SkyCatalog_mc_6_8_8_8_if_true:
+C__Users_Cvar1_Downloads_Apps_source_SkyCatalog_mc_6_30_8_8_start:
+[ "C:\Users\Cvar1\Downloads\Apps\source\SkyCatalog.mc" 7 12 ]
+        %tmp.5 = self;
+        symbol [ buildObjects %tmp.6 7 23 35 ];
+        %tmp.6 = getv function %tmp.5 :buildObjects;
+        %tmp.7 = invoke %tmp.5 %tmp.6();
+        symbol [ _objects ? 7 12 20 ];
+        putv self :_objects %tmp.7;
+C__Users_Cvar1_Downloads_Apps_source_SkyCatalog_mc_6_30_8_8_stop:
+        goto @C__Users_Cvar1_Downloads_Apps_source_SkyCatalog_mc_6_8_8_8_if_end;
+C__Users_Cvar1_Downloads_Apps_source_SkyCatalog_mc_6_8_8_8_if_end:
+[ "C:\Users\Cvar1\Downloads\Apps\source\SkyCatalog.mc" 9 8 ]
+        symbol [ _objects %tmp.9 9 15 23 ];
+        %tmp.9 = getv ? :_objects;
+        ret %tmp.9;
+C__Users_Cvar1_Downloads_Apps_source_SkyCatalog_mc_5_23_10_4_stop:
+    }
+    [ @file = "C:\Users\Cvar1\Downloads\Apps\source\SkyCatalog.mc"; @line = 12; @symbol_functiondef = [buildObjects,12,13,25]; ]
+    function buildObjects() {
+C__Users_Cvar1_Downloads_Apps_source_SkyCatalog_mc_12_28_30_4_start:
+[ "C:\Users\Cvar1\Downloads\Apps\source\SkyCatalog.mc" 13 8 ]
+        [ "C__Users_Cvar1_Downloads_Apps_source_SkyCatalog_mc_12_28_30_4_start" "C__Users_Cvar1_Downloads_Apps_source_SkyCatalog_mc_12_28_30_4_stop" ]
+        %list.1 = local;
+        symbol [ list %list.1 13 12 16 ];
+        %tmp.1 = newa 7;
+        %tmp.2 = newd 3;
+        %tmp.4 = const :id;
+        symbol [ id %tmp.4 14 14 16 const ];
+        %tmp.5 = "sun";
+        %tmp.6 = dup %tmp.2;
+        %tmp.7 = aputv %tmp.6 %tmp.4 %tmp.5;
+        %tmp.9 = const :name;
+        symbol [ name %tmp.9 14 28 32 const ];
+        %tmp.10 = "Sun";
+        %tmp.11 = dup %tmp.7;
+        %tmp.12 = aputv %tmp.11 %tmp.9 %tmp.10;
+        %tmp.14 = const :type;
+        symbol [ type %tmp.14 14 44 48 const ];
+        %tmp.16 = const :sun;
+        symbol [ sun %tmp.16 14 53 56 const ];
+        %tmp.17 = dup %tmp.12;
+        %tmp.18 = aputv %tmp.17 %tmp.14 %tmp.16;
+        %tmp.19 = dup %tmp.1;
+        %tmp.20 = aputv %tmp.19 0 %tmp.18;
+        %tmp.21 = newd 3;
+        %tmp.23 = const :id;
+        symbol [ id %tmp.23 15 14 16 const ];
+        %tmp.24 = "moon";
+        %tmp.25 = dup %tmp.21;
+        %tmp.26 = aputv %tmp.25 %tmp.23 %tmp.24;
+        %tmp.28 = const :name;
+        symbol [ name %tmp.28 15 29 33 const ];
+        %tmp.29 = "Moon";
+        %tmp.30 = dup %tmp.26;
+        %tmp.31 = aputv %tmp.30 %tmp.28 %tmp.29;
+        %tmp.33 = const :type;
+        symbol [ type %tmp.33 15 46 50 const ];
+        %tmp.35 = const :moon;
+        symbol [ moon %tmp.35 15 55 59 const ];
+        %tmp.36 = dup %tmp.31;
+        %tmp.37 = aputv %tmp.36 %tmp.33 %tmp.35;
+        %tmp.38 = dup %tmp.20;
+        %tmp.39 = aputv %tmp.38 1 %tmp.37;
+        %tmp.40 = newd 3;
+        %tmp.42 = const :id;
+        symbol [ id %tmp.42 16 14 16 const ];
+        %tmp.43 = "mercury";
+        %tmp.44 = dup %tmp.40;
+        %tmp.45 = aputv %tmp.44 %tmp.42 %tmp.43;
+        %tmp.47 = const :name;
+        symbol [ name %tmp.47 16 32 36 const ];
+        %tmp.48 = "Mercury";
+        %tmp.49 = dup %tmp.45;
+        %tmp.50 = aputv %tmp.49 %tmp.47 %tmp.48;
+        %tmp.52 = const :type;
+        symbol [ type %tmp.52 16 52 56 const ];
+        %tmp.54 = const :planet;
+        symbol [ planet %tmp.54 16 61 67 const ];
+        %tmp.55 = dup %tmp.50;
+        %tmp.56 = aputv %tmp.55 %tmp.52 %tmp.54;
+        %tmp.57 = dup %tmp.39;
+        %tmp.58 = aputv %tmp.57 2 %tmp.56;
+        %tmp.59 = newd 3;
+        %tmp.61 = const :id;
+        symbol [ id %tmp.61 17 14 16 const ];
+        %tmp.62 = "venus";
+        %tmp.63 = dup %tmp.59;
+        %tmp.64 = aputv %tmp.63 %tmp.61 %tmp.62;
+        %tmp.66 = const :name;
+        symbol [ name %tmp.66 17 30 34 const ];
+        %tmp.67 = "Venus";
+        %tmp.68 = dup %tmp.64;
+        %tmp.69 = aputv %tmp.68 %tmp.66 %tmp.67;
+        %tmp.71 = const :type;
+        symbol [ type %tmp.71 17 48 52 const ];
+        %tmp.73 = const :planet;
+        symbol [ planet %tmp.73 17 57 63 const ];
+        %tmp.74 = dup %tmp.69;
+        %tmp.75 = aputv %tmp.74 %tmp.71 %tmp.73;
+        %tmp.76 = dup %tmp.58;
+        %tmp.77 = aputv %tmp.76 3 %tmp.75;
+        %tmp.78 = newd 3;
+        %tmp.80 = const :id;
+        symbol [ id %tmp.80 18 14 16 const ];
+        %tmp.81 = "mars";
+        %tmp.82 = dup %tmp.78;
+        %tmp.83 = aputv %tmp.82 %tmp.80 %tmp.81;
+        %tmp.85 = const :name;
+        symbol [ name %tmp.85 18 29 33 const ];
+        %tmp.86 = "Mars";
+        %tmp.87 = dup %tmp.83;
+        %tmp.88 = aputv %tmp.87 %tmp.85 %tmp.86;
+        %tmp.90 = const :type;
+        symbol [ type %tmp.90 18 46 50 const ];
+        %tmp.92 = const :planet;
+        symbol [ planet %tmp.92 18 55 61 const ];
+        %tmp.93 = dup %tmp.88;
+        %tmp.94 = aputv %tmp.93 %tmp.90 %tmp.92;
+        %tmp.95 = dup %tmp.77;
+        %tmp.96 = aputv %tmp.95 4 %tmp.94;
+        %tmp.97 = newd 3;
+        %tmp.99 = const :id;
+        symbol [ id %tmp.99 19 14 16 const ];
+        %tmp.100 = "jupiter";
+        %tmp.101 = dup %tmp.97;
+        %tmp.102 = aputv %tmp.101 %tmp.99 %tmp.100;
+        %tmp.104 = const :name;
+        symbol [ name %tmp.104 19 32 36 const ];
+        %tmp.105 = "Jupiter";
+        %tmp.106 = dup %tmp.102;
+        %tmp.107 = aputv %tmp.106 %tmp.104 %tmp.105;
+        %tmp.109 = const :type;
+        symbol [ type %tmp.109 19 52 56 const ];
+        %tmp.111 = const :planet;
+        symbol [ planet %tmp.111 19 61 67 const ];
+        %tmp.112 = dup %tmp.107;
+        %tmp.113 = aputv %tmp.112 %tmp.109 %tmp.111;
+        %tmp.114 = dup %tmp.96;
+        %tmp.115 = aputv %tmp.114 5 %tmp.113;
+        %tmp.116 = newd 3;
+        %tmp.118 = const :id;
+        symbol [ id %tmp.118 20 14 16 const ];
+        %tmp.119 = "saturn";
+        %tmp.120 = dup %tmp.116;
+        %tmp.121 = aputv %tmp.120 %tmp.118 %tmp.119;
+        %tmp.123 = const :name;
+        symbol [ name %tmp.123 20 31 35 const ];
+        %tmp.124 = "Saturn";
+        %tmp.125 = dup %tmp.121;
+        %tmp.126 = aputv %tmp.125 %tmp.123 %tmp.124;
+        %tmp.128 = const :type;
+        symbol [ type %tmp.128 20 50 54 const ];
+        %tmp.130 = const :planet;
+        symbol [ planet %tmp.130 20 59 65 const ];
+        %tmp.131 = dup %tmp.126;
+        %tmp.132 = aputv %tmp.131 %tmp.128 %tmp.130;
+        %tmp.133 = dup %tmp.115;
+        %tmp.134 = aputv %tmp.133 6 %tmp.132;
+        lputv %list.1 %tmp.134;
+        symbol [ list %list.1 13 12 16 ];
+[ "C:\Users\Cvar1\Downloads\Apps\source\SkyCatalog.mc" 22 8 ]
+        [ "C__Users_Cvar1_Downloads_Apps_source_SkyCatalog_mc_12_28_30_4_start" "C__Users_Cvar1_Downloads_Apps_source_SkyCatalog_mc_12_28_30_4_stop" ]
+        %stars.2 = local;
+        symbol [ stars %stars.2 22 12 17 ];
+        symbol [ StarCatalog %tmp.136 22 20 31 ];
+        %tmp.136 = getv ? :StarCatalog;
+        symbol [ getStars %tmp.137 22 32 40 ];
+        %tmp.137 = getv function %tmp.136 :getStars;
+        %tmp.138 = invoke %tmp.136 %tmp.137();
+        lputv %stars.2 %tmp.138;
+        symbol [ stars %stars.2 22 12 17 ];
+[ "C:\Users\Cvar1\Downloads\Apps\source\SkyCatalog.mc" 23 8 ]
+        [ "C__Users_Cvar1_Downloads_Apps_source_SkyCatalog_mc_12_28_30_4_start" "C__Users_Cvar1_Downloads_Apps_source_SkyCatalog_mc_12_28_30_4_stop" ]
+        %i.3 = local;
+        symbol [ i %i.3 23 12 13 ];
+        %tmp.139 = 0;
+        lputv %i.3 %tmp.139;
+        symbol [ i %i.3 23 12 13 ];
+[ "C:\Users\Cvar1\Downloads\Apps\source\SkyCatalog.mc" 24 8 ]
+        while @C__Users_Cvar1_Downloads_Apps_source_SkyCatalog_mc_24_8_28_8_while_test @C__Users_Cvar1_Downloads_Apps_source_SkyCatalog_mc_24_8_28_8_while_end;
+C__Users_Cvar1_Downloads_Apps_source_SkyCatalog_mc_24_8_28_8_while_test:
+        %tmp.140 = lgetv %i.3;
+        symbol [ i %tmp.140 24 15 16 ];
+        %tmp.141 = lgetv %stars.2;
+        symbol [ stars %tmp.141 24 19 24 ];
+        symbol [ size %tmp.142 24 25 29 ];
+        %tmp.142 = getv function %tmp.141 :size;
+        %tmp.143 = invoke %tmp.141 %tmp.142();
+        %tmp.144 = lt %tmp.140 %tmp.143;
+        bf %tmp.144 @C__Users_Cvar1_Downloads_Apps_source_SkyCatalog_mc_24_8_28_8_while_end;
+C__Users_Cvar1_Downloads_Apps_source_SkyCatalog_mc_24_8_28_8_while_begin:
+C__Users_Cvar1_Downloads_Apps_source_SkyCatalog_mc_24_33_28_8_start:
+[ "C:\Users\Cvar1\Downloads\Apps\source\SkyCatalog.mc" 25 12 ]
+        [ "C__Users_Cvar1_Downloads_Apps_source_SkyCatalog_mc_24_33_28_8_start" "C__Users_Cvar1_Downloads_Apps_source_SkyCatalog_mc_24_33_28_8_stop" ]
+        %s.4 = local;
+        symbol [ s %s.4 25 16 17 ];
+        %tmp.145 = lgetv %stars.2;
+        symbol [ stars %tmp.145 25 20 25 ];
+        %tmp.146 = lgetv %i.3;
+        symbol [ i %tmp.146 25 26 27 ];
+        %tmp.147 = agetv %tmp.145 %tmp.146;
+        lputv %s.4 %tmp.147;
+        symbol [ s %s.4 25 16 17 ];
+[ "C:\Users\Cvar1\Downloads\Apps\source\SkyCatalog.mc" 26 12 ]
+        %tmp.148 = lgetv %list.1;
+        symbol [ list %tmp.148 26 12 16 ];
+        symbol [ add %tmp.149 26 17 20 ];
+        %tmp.149 = getv function %tmp.148 :add;
+        %tmp.150 = newd 5;
+        %tmp.152 = const :id;
+        symbol [ id %tmp.152 26 23 25 const ];
+        %tmp.153 = "star_";
+        %tmp.154 = lgetv %i.3;
+        symbol [ i %tmp.154 26 39 40 ];
+        %tmp.155 = add %tmp.153 %tmp.154;
+        %tmp.156 = dup %tmp.150;
+        %tmp.157 = aputv %tmp.156 %tmp.152 %tmp.155;
+        %tmp.159 = const :name;
+        symbol [ name %tmp.159 26 43 47 const ];
+        %tmp.160 = lgetv %s.4;
+        symbol [ s %tmp.160 26 51 52 ];
+        %tmp.162 = const :name;
+        symbol [ name %tmp.162 26 54 58 const ];
+        %tmp.163 = agetv %tmp.160 %tmp.162;
+        %tmp.164 = dup %tmp.157;
+        %tmp.165 = aputv %tmp.164 %tmp.159 %tmp.163;
+        %tmp.167 = const :type;
+        symbol [ type %tmp.167 26 62 66 const ];
+        %tmp.169 = const :star;
+        symbol [ star %tmp.169 26 71 75 const ];
+        %tmp.170 = dup %tmp.165;
+        %tmp.171 = aputv %tmp.170 %tmp.167 %tmp.169;
+        %tmp.173 = const :ra;
+        symbol [ ra %tmp.173 26 78 80 const ];
+        %tmp.174 = lgetv %s.4;
+        symbol [ s %tmp.174 26 84 85 ];
+        %tmp.176 = const :ra;
+        symbol [ ra %tmp.176 26 87 89 const ];
+        %tmp.177 = agetv %tmp.174 %tmp.176;
+        %tmp.178 = dup %tmp.171;
+        %tmp.179 = aputv %tmp.178 %tmp.173 %tmp.177;
+        %tmp.181 = const :dec;
+        symbol [ dec %tmp.181 26 93 96 const ];
+        %tmp.182 = lgetv %s.4;
+        symbol [ s %tmp.182 26 100 101 ];
+        %tmp.184 = const :dec;
+        symbol [ dec %tmp.184 26 103 106 const ];
+        %tmp.185 = agetv %tmp.182 %tmp.184;
+        %tmp.186 = dup %tmp.179;
+        %tmp.187 = aputv %tmp.186 %tmp.181 %tmp.185;
+        invoke %tmp.148 %tmp.149(%tmp.187);
+[ "C:\Users\Cvar1\Downloads\Apps\source\SkyCatalog.mc" 27 12 ]
+        %tmp.188 = lgetv %i.3;
+        symbol [ i %tmp.188 27 12 13 ];
+        %tmp.189 = 1;
+        %tmp.190 = add %tmp.188 %tmp.189;
+        lputv %i.3 %tmp.190;
+        symbol [ i %i.3 27 12 13 ];
+C__Users_Cvar1_Downloads_Apps_source_SkyCatalog_mc_24_33_28_8_stop:
+        goto @C__Users_Cvar1_Downloads_Apps_source_SkyCatalog_mc_24_8_28_8_while_test;
+C__Users_Cvar1_Downloads_Apps_source_SkyCatalog_mc_24_8_28_8_while_end:
+[ "C:\Users\Cvar1\Downloads\Apps\source\SkyCatalog.mc" 29 8 ]
+        %tmp.191 = lgetv %list.1;
+        symbol [ list %tmp.191 29 15 19 ];
+        ret %tmp.191;
+C__Users_Cvar1_Downloads_Apps_source_SkyCatalog_mc_12_28_30_4_stop:
+    }
+    [ @file = "C:\Users\Cvar1\Downloads\Apps\source\SkyCatalog.mc"; @line = 32; @symbol_functiondef = [findById,32,13,21]; @symbol_param<0> = [id,32,22,24]; ]
+    function findById(id) {
+C__Users_Cvar1_Downloads_Apps_source_SkyCatalog_mc_32_26_42_4_start:
+[ "C:\Users\Cvar1\Downloads\Apps\source\SkyCatalog.mc" 33 8 ]
+        [ "C__Users_Cvar1_Downloads_Apps_source_SkyCatalog_mc_32_26_42_4_start" "C__Users_Cvar1_Downloads_Apps_source_SkyCatalog_mc_32_26_42_4_stop" ]
+        %list.1 = local;
+        symbol [ list %list.1 33 12 16 ];
+        %tmp.1 = self;
+        symbol [ objects %tmp.2 33 19 26 ];
+        %tmp.2 = getv function %tmp.1 :objects;
+        %tmp.3 = invoke %tmp.1 %tmp.2();
+        lputv %list.1 %tmp.3;
+        symbol [ list %list.1 33 12 16 ];
+[ "C:\Users\Cvar1\Downloads\Apps\source\SkyCatalog.mc" 34 8 ]
+        [ "C__Users_Cvar1_Downloads_Apps_source_SkyCatalog_mc_32_26_42_4_start" "C__Users_Cvar1_Downloads_Apps_source_SkyCatalog_mc_32_26_42_4_stop" ]
+        %i.2 = local;
+        symbol [ i %i.2 34 12 13 ];
+        %tmp.4 = 0;
+        lputv %i.2 %tmp.4;
+        symbol [ i %i.2 34 12 13 ];
+[ "C:\Users\Cvar1\Downloads\Apps\source\SkyCatalog.mc" 35 8 ]
+        while @C__Users_Cvar1_Downloads_Apps_source_SkyCatalog_mc_35_8_40_8_while_test @C__Users_Cvar1_Downloads_Apps_source_SkyCatalog_mc_35_8_40_8_while_end;
+C__Users_Cvar1_Downloads_Apps_source_SkyCatalog_mc_35_8_40_8_while_test:
+        %tmp.5 = lgetv %i.2;
+        symbol [ i %tmp.5 35 15 16 ];
+        %tmp.6 = lgetv %list.1;
+        symbol [ list %tmp.6 35 19 23 ];
+        symbol [ size %tmp.7 35 24 28 ];
+        %tmp.7 = getv function %tmp.6 :size;
+        %tmp.8 = invoke %tmp.6 %tmp.7();
+        %tmp.9 = lt %tmp.5 %tmp.8;
+        bf %tmp.9 @C__Users_Cvar1_Downloads_Apps_source_SkyCatalog_mc_35_8_40_8_while_end;
+C__Users_Cvar1_Downloads_Apps_source_SkyCatalog_mc_35_8_40_8_while_begin:
+C__Users_Cvar1_Downloads_Apps_source_SkyCatalog_mc_35_32_40_8_start:
+[ "C:\Users\Cvar1\Downloads\Apps\source\SkyCatalog.mc" 36 12 ]
+C__Users_Cvar1_Downloads_Apps_source_SkyCatalog_mc_36_12_38_12_if_stmt:
+        %tmp.10 = lgetv %list.1;
+        symbol [ list %tmp.10 36 16 20 ];
+        %tmp.11 = lgetv %i.2;
+        symbol [ i %tmp.11 36 21 22 ];
+        %tmp.12 = agetv %tmp.10 %tmp.11;
+        %tmp.14 = const :id;
+        symbol [ id %tmp.14 36 25 27 const ];
+        %tmp.15 = agetv %tmp.12 %tmp.14;
+        symbol [ equals %tmp.16 36 29 35 ];
+        %tmp.16 = getv function %tmp.15 :equals;
+        %tmp.17 = lgetv %id;
+        symbol [ id %tmp.17 36 36 38 ];
+        %tmp.18 = invoke %tmp.15 %tmp.16(%tmp.17);
+        bf %tmp.18 @C__Users_Cvar1_Downloads_Apps_source_SkyCatalog_mc_36_12_38_12_if_end;
+C__Users_Cvar1_Downloads_Apps_source_SkyCatalog_mc_36_12_38_12_if_true:
+C__Users_Cvar1_Downloads_Apps_source_SkyCatalog_mc_36_41_38_12_start:
+[ "C:\Users\Cvar1\Downloads\Apps\source\SkyCatalog.mc" 37 16 ]
+        %tmp.19 = lgetv %list.1;
+        symbol [ list %tmp.19 37 23 27 ];
+        %tmp.20 = lgetv %i.2;
+        symbol [ i %tmp.20 37 28 29 ];
+        %tmp.21 = agetv %tmp.19 %tmp.20;
+        ret %tmp.21;
+C__Users_Cvar1_Downloads_Apps_source_SkyCatalog_mc_36_41_38_12_stop:
+        goto @C__Users_Cvar1_Downloads_Apps_source_SkyCatalog_mc_36_12_38_12_if_end;
+C__Users_Cvar1_Downloads_Apps_source_SkyCatalog_mc_36_12_38_12_if_end:
+[ "C:\Users\Cvar1\Downloads\Apps\source\SkyCatalog.mc" 39 12 ]
+        %tmp.22 = lgetv %i.2;
+        symbol [ i %tmp.22 39 12 13 ];
+        %tmp.23 = 1;
+        %tmp.24 = add %tmp.22 %tmp.23;
+        lputv %i.2 %tmp.24;
+        symbol [ i %i.2 39 12 13 ];
+C__Users_Cvar1_Downloads_Apps_source_SkyCatalog_mc_35_32_40_8_stop:
+        goto @C__Users_Cvar1_Downloads_Apps_source_SkyCatalog_mc_35_8_40_8_while_test;
+C__Users_Cvar1_Downloads_Apps_source_SkyCatalog_mc_35_8_40_8_while_end:
+[ "C:\Users\Cvar1\Downloads\Apps\source\SkyCatalog.mc" 41 8 ]
+        %tmp.25 = null;
+        ret %tmp.25;
+C__Users_Cvar1_Downloads_Apps_source_SkyCatalog_mc_32_26_42_4_stop:
+    }
+    [ @file = "C:\Users\Cvar1\Downloads\Apps\source\SkyCatalog.mc"; @line = 44; @symbol_functiondef = [filterByType,44,13,25]; @symbol_param<0> = [t,44,26,27]; ]
+    function filterByType(t) {
+C__Users_Cvar1_Downloads_Apps_source_SkyCatalog_mc_44_29_55_4_start:
+[ "C:\Users\Cvar1\Downloads\Apps\source\SkyCatalog.mc" 45 8 ]
+        [ "C__Users_Cvar1_Downloads_Apps_source_SkyCatalog_mc_44_29_55_4_start" "C__Users_Cvar1_Downloads_Apps_source_SkyCatalog_mc_44_29_55_4_stop" ]
+        %list.1 = local;
+        symbol [ list %list.1 45 12 16 ];
+        %tmp.1 = self;
+        symbol [ objects %tmp.2 45 19 26 ];
+        %tmp.2 = getv function %tmp.1 :objects;
+        %tmp.3 = invoke %tmp.1 %tmp.2();
+        lputv %list.1 %tmp.3;
+        symbol [ list %list.1 45 12 16 ];
+[ "C:\Users\Cvar1\Downloads\Apps\source\SkyCatalog.mc" 46 8 ]
+        [ "C__Users_Cvar1_Downloads_Apps_source_SkyCatalog_mc_44_29_55_4_start" "C__Users_Cvar1_Downloads_Apps_source_SkyCatalog_mc_44_29_55_4_stop" ]
+        %out.2 = local;
+        symbol [ out %out.2 46 12 15 ];
+        %tmp.4 = newa 0;
+        lputv %out.2 %tmp.4;
+        symbol [ out %out.2 46 12 15 ];
+[ "C:\Users\Cvar1\Downloads\Apps\source\SkyCatalog.mc" 47 8 ]
+        [ "C__Users_Cvar1_Downloads_Apps_source_SkyCatalog_mc_44_29_55_4_start" "C__Users_Cvar1_Downloads_Apps_source_SkyCatalog_mc_44_29_55_4_stop" ]
+        %i.3 = local;
+        symbol [ i %i.3 47 12 13 ];
+        %tmp.5 = 0;
+        lputv %i.3 %tmp.5;
+        symbol [ i %i.3 47 12 13 ];
+[ "C:\Users\Cvar1\Downloads\Apps\source\SkyCatalog.mc" 48 8 ]
+        while @C__Users_Cvar1_Downloads_Apps_source_SkyCatalog_mc_48_8_53_8_while_test @C__Users_Cvar1_Downloads_Apps_source_SkyCatalog_mc_48_8_53_8_while_end;
+C__Users_Cvar1_Downloads_Apps_source_SkyCatalog_mc_48_8_53_8_while_test:
+        %tmp.6 = lgetv %i.3;
+        symbol [ i %tmp.6 48 15 16 ];
+        %tmp.7 = lgetv %list.1;
+        symbol [ list %tmp.7 48 19 23 ];
+        symbol [ size %tmp.8 48 24 28 ];
+        %tmp.8 = getv function %tmp.7 :size;
+        %tmp.9 = invoke %tmp.7 %tmp.8();
+        %tmp.10 = lt %tmp.6 %tmp.9;
+        bf %tmp.10 @C__Users_Cvar1_Downloads_Apps_source_SkyCatalog_mc_48_8_53_8_while_end;
+C__Users_Cvar1_Downloads_Apps_source_SkyCatalog_mc_48_8_53_8_while_begin:
+C__Users_Cvar1_Downloads_Apps_source_SkyCatalog_mc_48_32_53_8_start:
+[ "C:\Users\Cvar1\Downloads\Apps\source\SkyCatalog.mc" 49 12 ]
+C__Users_Cvar1_Downloads_Apps_source_SkyCatalog_mc_49_12_51_12_if_stmt:
+        %tmp.11 = lgetv %list.1;
+        symbol [ list %tmp.11 49 16 20 ];
+        %tmp.12 = lgetv %i.3;
+        symbol [ i %tmp.12 49 21 22 ];
+        %tmp.13 = agetv %tmp.11 %tmp.12;
+        %tmp.15 = const :type;
+        symbol [ type %tmp.15 49 25 29 const ];
+        %tmp.16 = agetv %tmp.13 %tmp.15;
+        %tmp.17 = lgetv %t;
+        symbol [ t %tmp.17 49 34 35 ];
+        %tmp.18 = eq %tmp.16 %tmp.17;
+        bf %tmp.18 @C__Users_Cvar1_Downloads_Apps_source_SkyCatalog_mc_49_12_51_12_if_end;
+C__Users_Cvar1_Downloads_Apps_source_SkyCatalog_mc_49_12_51_12_if_true:
+C__Users_Cvar1_Downloads_Apps_source_SkyCatalog_mc_49_37_51_12_start:
+[ "C:\Users\Cvar1\Downloads\Apps\source\SkyCatalog.mc" 50 16 ]
+        %tmp.19 = lgetv %out.2;
+        symbol [ out %tmp.19 50 16 19 ];
+        symbol [ add %tmp.20 50 20 23 ];
+        %tmp.20 = getv function %tmp.19 :add;
+        %tmp.21 = lgetv %list.1;
+        symbol [ list %tmp.21 50 24 28 ];
+        %tmp.22 = lgetv %i.3;
+        symbol [ i %tmp.22 50 29 30 ];
+        %tmp.23 = agetv %tmp.21 %tmp.22;
+        invoke %tmp.19 %tmp.20(%tmp.23);
+C__Users_Cvar1_Downloads_Apps_source_SkyCatalog_mc_49_37_51_12_stop:
+        goto @C__Users_Cvar1_Downloads_Apps_source_SkyCatalog_mc_49_12_51_12_if_end;
+C__Users_Cvar1_Downloads_Apps_source_SkyCatalog_mc_49_12_51_12_if_end:
+[ "C:\Users\Cvar1\Downloads\Apps\source\SkyCatalog.mc" 52 12 ]
+        %tmp.24 = lgetv %i.3;
+        symbol [ i %tmp.24 52 12 13 ];
+        %tmp.25 = 1;
+        %tmp.26 = add %tmp.24 %tmp.25;
+        lputv %i.3 %tmp.26;
+        symbol [ i %i.3 52 12 13 ];
+C__Users_Cvar1_Downloads_Apps_source_SkyCatalog_mc_48_32_53_8_stop:
+        goto @C__Users_Cvar1_Downloads_Apps_source_SkyCatalog_mc_48_8_53_8_while_test;
+C__Users_Cvar1_Downloads_Apps_source_SkyCatalog_mc_48_8_53_8_while_end:
+[ "C:\Users\Cvar1\Downloads\Apps\source\SkyCatalog.mc" 54 8 ]
+        %tmp.27 = lgetv %out.2;
+        symbol [ out %tmp.27 54 15 18 ];
+        ret %tmp.27;
+C__Users_Cvar1_Downloads_Apps_source_SkyCatalog_mc_44_29_55_4_stop:
+    }
+    [ @file = "C:\Users\Cvar1\Downloads\Apps\source\SkyCatalog.mc"; @line = 57; @symbol_functiondef = [planets,57,13,20]; ]
+    function planets() {
+C__Users_Cvar1_Downloads_Apps_source_SkyCatalog_mc_57_23_59_4_start:
+[ "C:\Users\Cvar1\Downloads\Apps\source\SkyCatalog.mc" 58 8 ]
+        %tmp.1 = self;
+        symbol [ filterByType %tmp.2 58 15 27 ];
+        %tmp.2 = getv function %tmp.1 :filterByType;
+        %tmp.4 = const :planet;
+        symbol [ planet %tmp.4 58 29 35 const ];
+        %tmp.5 = invoke %tmp.1 %tmp.2(%tmp.4);
+        ret %tmp.5;
+C__Users_Cvar1_Downloads_Apps_source_SkyCatalog_mc_57_23_59_4_stop:
+    }
+    [ @file = "C:\Users\Cvar1\Downloads\Apps\source\SkyCatalog.mc"; @line = 61; @symbol_functiondef = [stars,61,13,18]; ]
+    function stars() {
+C__Users_Cvar1_Downloads_Apps_source_SkyCatalog_mc_61_21_63_4_start:
+[ "C:\Users\Cvar1\Downloads\Apps\source\SkyCatalog.mc" 62 8 ]
+        %tmp.1 = self;
+        symbol [ filterByType %tmp.2 62 15 27 ];
+        %tmp.2 = getv function %tmp.1 :filterByType;
+        %tmp.4 = const :star;
+        symbol [ star %tmp.4 62 29 33 const ];
+        %tmp.5 = invoke %tmp.1 %tmp.2(%tmp.4);
+        ret %tmp.5;
+C__Users_Cvar1_Downloads_Apps_source_SkyCatalog_mc_61_21_63_4_stop:
+    }
+    [ @file = "C:\Users\Cvar1\Downloads\Apps\source\SkyCatalog.mc"; @line = 66; @symbol_functiondef = [getRaDec,66,13,21]; @symbol_param<0> = [obj,66,22,25]; @symbol_param<1> = [jd,66,27,29]; ]
+    function getRaDec(obj, jd) {
+C__Users_Cvar1_Downloads_Apps_source_SkyCatalog_mc_66_31_76_4_start:
+[ "C:\Users\Cvar1\Downloads\Apps\source\SkyCatalog.mc" 67 8 ]
+        [ "C__Users_Cvar1_Downloads_Apps_source_SkyCatalog_mc_66_31_76_4_start" "C__Users_Cvar1_Downloads_Apps_source_SkyCatalog_mc_66_31_76_4_stop" ]
+        %type.1 = local;
+        symbol [ type %type.1 67 12 16 ];
+        %tmp.1 = lgetv %obj;
+        symbol [ obj %tmp.1 67 19 22 ];
+        %tmp.3 = const :type;
+        symbol [ type %tmp.3 67 24 28 const ];
+        %tmp.4 = agetv %tmp.1 %tmp.3;
+        lputv %type.1 %tmp.4;
+        symbol [ type %type.1 67 12 16 ];
+[ "C:\Users\Cvar1\Downloads\Apps\source\SkyCatalog.mc" 68 8 ]
+C__Users_Cvar1_Downloads_Apps_source_SkyCatalog_mc_68_8_74_8_if_stmt:
+        %tmp.5 = lgetv %type.1;
+        symbol [ type %tmp.5 68 12 16 ];
+        %tmp.7 = const :sun;
+        symbol [ sun %tmp.7 68 21 24 const ];
+        %tmp.8 = eq %tmp.5 %tmp.7;
+        bf %tmp.8 @C__Users_Cvar1_Downloads_Apps_source_SkyCatalog_mc_68_8_74_8_if_false;
+C__Users_Cvar1_Downloads_Apps_source_SkyCatalog_mc_68_8_74_8_if_true:
+C__Users_Cvar1_Downloads_Apps_source_SkyCatalog_mc_68_26_70_8_start:
+[ "C:\Users\Cvar1\Downloads\Apps\source\SkyCatalog.mc" 69 12 ]
+        symbol [ SolarLunar %tmp.10 69 19 29 ];
+        %tmp.10 = getv ? :SolarLunar;
+        symbol [ sunPosition %tmp.11 69 30 41 ];
+        %tmp.11 = getv function %tmp.10 :sunPosition;
+        %tmp.12 = lgetv %jd;
+        symbol [ jd %tmp.12 69 42 44 ];
+        %tmp.13 = invoke %tmp.10 %tmp.11(%tmp.12);
+        ret %tmp.13;
+C__Users_Cvar1_Downloads_Apps_source_SkyCatalog_mc_68_26_70_8_stop:
+        goto @C__Users_Cvar1_Downloads_Apps_source_SkyCatalog_mc_68_8_74_8_if_end;
+C__Users_Cvar1_Downloads_Apps_source_SkyCatalog_mc_68_8_74_8_if_false:
+[ "C:\Users\Cvar1\Downloads\Apps\source\SkyCatalog.mc" 70 15 ]
+C__Users_Cvar1_Downloads_Apps_source_SkyCatalog_mc_70_15_74_8_if_stmt:
+        %tmp.14 = lgetv %type.1;
+        symbol [ type %tmp.14 70 19 23 ];
+        %tmp.16 = const :moon;
+        symbol [ moon %tmp.16 70 28 32 const ];
+        %tmp.17 = eq %tmp.14 %tmp.16;
+        bf %tmp.17 @C__Users_Cvar1_Downloads_Apps_source_SkyCatalog_mc_70_15_74_8_if_false;
+C__Users_Cvar1_Downloads_Apps_source_SkyCatalog_mc_70_15_74_8_if_true:
+C__Users_Cvar1_Downloads_Apps_source_SkyCatalog_mc_70_34_72_8_start:
+[ "C:\Users\Cvar1\Downloads\Apps\source\SkyCatalog.mc" 71 12 ]
+        symbol [ SolarLunar %tmp.19 71 19 29 ];
+        %tmp.19 = getv ? :SolarLunar;
+        symbol [ moonPosition %tmp.20 71 30 42 ];
+        %tmp.20 = getv function %tmp.19 :moonPosition;
+        %tmp.21 = lgetv %jd;
+        symbol [ jd %tmp.21 71 43 45 ];
+        %tmp.22 = invoke %tmp.19 %tmp.20(%tmp.21);
+        ret %tmp.22;
+C__Users_Cvar1_Downloads_Apps_source_SkyCatalog_mc_70_34_72_8_stop:
+        goto @C__Users_Cvar1_Downloads_Apps_source_SkyCatalog_mc_70_15_74_8_if_end;
+C__Users_Cvar1_Downloads_Apps_source_SkyCatalog_mc_70_15_74_8_if_false:
+[ "C:\Users\Cvar1\Downloads\Apps\source\SkyCatalog.mc" 72 15 ]
+C__Users_Cvar1_Downloads_Apps_source_SkyCatalog_mc_72_15_74_8_if_stmt:
+        %tmp.23 = lgetv %type.1;
+        symbol [ type %tmp.23 72 19 23 ];
+        %tmp.25 = const :planet;
+        symbol [ planet %tmp.25 72 28 34 const ];
+        %tmp.26 = eq %tmp.23 %tmp.25;
+        bf %tmp.26 @C__Users_Cvar1_Downloads_Apps_source_SkyCatalog_mc_72_15_74_8_if_end;
+C__Users_Cvar1_Downloads_Apps_source_SkyCatalog_mc_72_15_74_8_if_true:
+C__Users_Cvar1_Downloads_Apps_source_SkyCatalog_mc_72_36_74_8_start:
+[ "C:\Users\Cvar1\Downloads\Apps\source\SkyCatalog.mc" 73 12 ]
+        symbol [ Planets %tmp.28 73 19 26 ];
+        %tmp.28 = getv ? :Planets;
+        symbol [ planetPosition %tmp.29 73 27 41 ];
+        %tmp.29 = getv function %tmp.28 :planetPosition;
+        %tmp.30 = lgetv %obj;
+        symbol [ obj %tmp.30 73 42 45 ];
+        %tmp.32 = const :id;
+        symbol [ id %tmp.32 73 47 49 const ];
+        %tmp.33 = agetv %tmp.30 %tmp.32;
+        %tmp.34 = lgetv %jd;
+        symbol [ jd %tmp.34 73 52 54 ];
+        %tmp.35 = invoke %tmp.28 %tmp.29(%tmp.33, %tmp.34);
+        ret %tmp.35;
+C__Users_Cvar1_Downloads_Apps_source_SkyCatalog_mc_72_36_74_8_stop:
+        goto @C__Users_Cvar1_Downloads_Apps_source_SkyCatalog_mc_72_15_74_8_if_end;
+C__Users_Cvar1_Downloads_Apps_source_SkyCatalog_mc_72_15_74_8_if_end:
+C__Users_Cvar1_Downloads_Apps_source_SkyCatalog_mc_70_15_74_8_if_end:
+C__Users_Cvar1_Downloads_Apps_source_SkyCatalog_mc_68_8_74_8_if_end:
+[ "C:\Users\Cvar1\Downloads\Apps\source\SkyCatalog.mc" 75 8 ]
+        %tmp.36 = newa 2;
+        %tmp.37 = lgetv %obj;
+        symbol [ obj %tmp.37 75 16 19 ];
+        %tmp.39 = const :ra;
+        symbol [ ra %tmp.39 75 21 23 const ];
+        %tmp.40 = agetv %tmp.37 %tmp.39;
+        %tmp.41 = dup %tmp.36;
+        %tmp.42 = aputv %tmp.41 0 %tmp.40;
+        %tmp.43 = lgetv %obj;
+        symbol [ obj %tmp.43 75 26 29 ];
+        %tmp.45 = const :dec;
+        symbol [ dec %tmp.45 75 31 34 const ];
+        %tmp.46 = agetv %tmp.43 %tmp.45;
+        %tmp.47 = dup %tmp.42;
+        %tmp.48 = aputv %tmp.47 1 %tmp.46;
+        ret %tmp.48;
+C__Users_Cvar1_Downloads_Apps_source_SkyCatalog_mc_66_31_76_4_stop:
+    }
+}
+[ @file = "C:\Users\Cvar1\Downloads\Apps\source\SkyCatalog.mc"; @line = 2; ]
+<init> {
+}

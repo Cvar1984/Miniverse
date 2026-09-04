@@ -1,0 +1,1157 @@
+[ @file = "C:\Users\Cvar1\Downloads\Apps\source\Planets.mc"; @line = 1; @symbol_usingdef<0> = [Toybox,1,6,12]; @symbol_usingdef<1> = [Math,1,13,17]; @symbol_usingAlias = [Math,1,21,25]; ]
+using Toybox.Math as :Math;
+[ @file = "C:\Users\Cvar1\Downloads\Apps\source\Planets.mc"; @line = 7; @symbol_moduledef = [Planets,7,7,14]; ]
+module Planets {
+    [ @file = "C:\Users\Cvar1\Downloads\Apps\source\Planets.mc"; @line = 7; ]
+    <init> {
+    }
+    [ @file = "C:\Users\Cvar1\Downloads\Apps\source\Planets.mc"; @line = 8; @symbol_functiondef = [eccentricAnomaly,8,13,29]; @symbol_param<0> = [mDeg,8,30,34]; @symbol_param<1> = [e,8,36,37]; ]
+    function eccentricAnomaly(mDeg, e) {
+C__Users_Cvar1_Downloads_Apps_source_Planets_mc_8_39_21_4_start:
+[ "C:\Users\Cvar1\Downloads\Apps\source\Planets.mc" 9 8 ]
+        [ "C__Users_Cvar1_Downloads_Apps_source_Planets_mc_8_39_21_4_start" "C__Users_Cvar1_Downloads_Apps_source_Planets_mc_8_39_21_4_stop" ]
+        %eAnom.1 = local;
+        symbol [ eAnom %eAnom.1 9 12 17 ];
+        %tmp.1 = lgetv %mDeg;
+        symbol [ mDeg %tmp.1 9 20 24 ];
+        symbol [ SkyMath %tmp.3 9 27 34 ];
+        %tmp.3 = getv ? :SkyMath;
+        symbol [ RAD2DEG %tmp.4 9 35 42 ];
+        %tmp.4 = getv %tmp.3 :RAD2DEG;
+        %tmp.5 = lgetv %e;
+        symbol [ e %tmp.5 9 45 46 ];
+        %tmp.6 = mul %tmp.4 %tmp.5;
+        symbol [ SkyMath %tmp.8 9 49 56 ];
+        %tmp.8 = getv ? :SkyMath;
+        symbol [ dsin %tmp.9 9 57 61 ];
+        %tmp.9 = getv function %tmp.8 :dsin;
+        %tmp.10 = lgetv %mDeg;
+        symbol [ mDeg %tmp.10 9 62 66 ];
+        %tmp.11 = invoke %tmp.8 %tmp.9(%tmp.10);
+        %tmp.12 = mul %tmp.6 %tmp.11;
+        %tmp.13 = 1.0;
+        %tmp.14 = lgetv %e;
+        symbol [ e %tmp.14 9 77 78 ];
+        symbol [ SkyMath %tmp.16 9 81 88 ];
+        %tmp.16 = getv ? :SkyMath;
+        symbol [ dcos %tmp.17 9 89 93 ];
+        %tmp.17 = getv function %tmp.16 :dcos;
+        %tmp.18 = lgetv %mDeg;
+        symbol [ mDeg %tmp.18 9 94 98 ];
+        %tmp.19 = invoke %tmp.16 %tmp.17(%tmp.18);
+        %tmp.20 = mul %tmp.14 %tmp.19;
+        %tmp.21 = add %tmp.13 %tmp.20;
+        %tmp.22 = mul %tmp.12 %tmp.21;
+        %tmp.23 = add %tmp.1 %tmp.22;
+        lputv %eAnom.1 %tmp.23;
+        symbol [ eAnom %eAnom.1 9 12 17 ];
+[ "C:\Users\Cvar1\Downloads\Apps\source\Planets.mc" 10 8 ]
+        [ "C__Users_Cvar1_Downloads_Apps_source_Planets_mc_8_39_21_4_start" "C__Users_Cvar1_Downloads_Apps_source_Planets_mc_8_39_21_4_stop" ]
+        %i.2 = local;
+        symbol [ i %i.2 10 12 13 ];
+        %tmp.24 = 0;
+        lputv %i.2 %tmp.24;
+        symbol [ i %i.2 10 12 13 ];
+[ "C:\Users\Cvar1\Downloads\Apps\source\Planets.mc" 11 8 ]
+        while @C__Users_Cvar1_Downloads_Apps_source_Planets_mc_11_8_19_8_while_test @C__Users_Cvar1_Downloads_Apps_source_Planets_mc_11_8_19_8_while_end;
+C__Users_Cvar1_Downloads_Apps_source_Planets_mc_11_8_19_8_while_test:
+        %tmp.25 = lgetv %i.2;
+        symbol [ i %tmp.25 11 15 16 ];
+        %tmp.26 = 8;
+        %tmp.27 = lt %tmp.25 %tmp.26;
+        bf %tmp.27 @C__Users_Cvar1_Downloads_Apps_source_Planets_mc_11_8_19_8_while_end;
+C__Users_Cvar1_Downloads_Apps_source_Planets_mc_11_8_19_8_while_begin:
+C__Users_Cvar1_Downloads_Apps_source_Planets_mc_11_22_19_8_start:
+[ "C:\Users\Cvar1\Downloads\Apps\source\Planets.mc" 12 12 ]
+        [ "C__Users_Cvar1_Downloads_Apps_source_Planets_mc_11_22_19_8_start" "C__Users_Cvar1_Downloads_Apps_source_Planets_mc_11_22_19_8_stop" ]
+        %dM.3 = local;
+        symbol [ dM %dM.3 12 16 18 ];
+        %tmp.28 = lgetv %mDeg;
+        symbol [ mDeg %tmp.28 12 21 25 ];
+        %tmp.29 = lgetv %eAnom.1;
+        symbol [ eAnom %tmp.29 12 29 34 ];
+        symbol [ SkyMath %tmp.31 12 37 44 ];
+        %tmp.31 = getv ? :SkyMath;
+        symbol [ RAD2DEG %tmp.32 12 45 52 ];
+        %tmp.32 = getv %tmp.31 :RAD2DEG;
+        %tmp.33 = lgetv %e;
+        symbol [ e %tmp.33 12 55 56 ];
+        %tmp.34 = mul %tmp.32 %tmp.33;
+        symbol [ SkyMath %tmp.36 12 59 66 ];
+        %tmp.36 = getv ? :SkyMath;
+        symbol [ dsin %tmp.37 12 67 71 ];
+        %tmp.37 = getv function %tmp.36 :dsin;
+        %tmp.38 = lgetv %eAnom.1;
+        symbol [ eAnom %tmp.38 12 72 77 ];
+        %tmp.39 = invoke %tmp.36 %tmp.37(%tmp.38);
+        %tmp.40 = mul %tmp.34 %tmp.39;
+        %tmp.41 = sub %tmp.29 %tmp.40;
+        %tmp.42 = sub %tmp.28 %tmp.41;
+        lputv %dM.3 %tmp.42;
+        symbol [ dM %dM.3 12 16 18 ];
+[ "C:\Users\Cvar1\Downloads\Apps\source\Planets.mc" 13 12 ]
+        [ "C__Users_Cvar1_Downloads_Apps_source_Planets_mc_11_22_19_8_start" "C__Users_Cvar1_Downloads_Apps_source_Planets_mc_11_22_19_8_stop" ]
+        %dE.4 = local;
+        symbol [ dE %dE.4 13 16 18 ];
+        %tmp.43 = lgetv %dM.3;
+        symbol [ dM %tmp.43 13 21 23 ];
+        %tmp.44 = 1.0;
+        %tmp.45 = lgetv %e;
+        symbol [ e %tmp.45 13 33 34 ];
+        symbol [ SkyMath %tmp.47 13 37 44 ];
+        %tmp.47 = getv ? :SkyMath;
+        symbol [ dcos %tmp.48 13 45 49 ];
+        %tmp.48 = getv function %tmp.47 :dcos;
+        %tmp.49 = lgetv %eAnom.1;
+        symbol [ eAnom %tmp.49 13 50 55 ];
+        %tmp.50 = invoke %tmp.47 %tmp.48(%tmp.49);
+        %tmp.51 = mul %tmp.45 %tmp.50;
+        %tmp.52 = sub %tmp.44 %tmp.51;
+        %tmp.53 = div %tmp.43 %tmp.52;
+        lputv %dE.4 %tmp.53;
+        symbol [ dE %dE.4 13 16 18 ];
+[ "C:\Users\Cvar1\Downloads\Apps\source\Planets.mc" 14 12 ]
+        %tmp.54 = lgetv %eAnom.1;
+        symbol [ eAnom %tmp.54 14 12 17 ];
+        %tmp.55 = lgetv %dE.4;
+        symbol [ dE %tmp.55 14 21 23 ];
+        %tmp.56 = add %tmp.54 %tmp.55;
+        lputv %eAnom.1 %tmp.56;
+        symbol [ eAnom %eAnom.1 14 12 17 ];
+[ "C:\Users\Cvar1\Downloads\Apps\source\Planets.mc" 15 12 ]
+C__Users_Cvar1_Downloads_Apps_source_Planets_mc_15_12_17_12_if_stmt:
+        %tmp.57 = lgetv %dE.4;
+        symbol [ dE %tmp.57 15 16 18 ];
+        symbol [ abs %tmp.58 15 19 22 ];
+        %tmp.58 = getv function %tmp.57 :abs;
+        %tmp.59 = invoke %tmp.57 %tmp.58();
+        %tmp.60 = 0.000001;
+        %tmp.61 = lt %tmp.59 %tmp.60;
+        bf %tmp.61 @C__Users_Cvar1_Downloads_Apps_source_Planets_mc_15_12_17_12_if_end;
+C__Users_Cvar1_Downloads_Apps_source_Planets_mc_15_12_17_12_if_true:
+C__Users_Cvar1_Downloads_Apps_source_Planets_mc_15_37_17_12_start:
+[ "C:\Users\Cvar1\Downloads\Apps\source\Planets.mc" 16 16 ]
+        goto break @C__Users_Cvar1_Downloads_Apps_source_Planets_mc_11_8_19_8_while_end;
+C__Users_Cvar1_Downloads_Apps_source_Planets_mc_15_37_17_12_stop:
+        goto @C__Users_Cvar1_Downloads_Apps_source_Planets_mc_15_12_17_12_if_end;
+C__Users_Cvar1_Downloads_Apps_source_Planets_mc_15_12_17_12_if_end:
+[ "C:\Users\Cvar1\Downloads\Apps\source\Planets.mc" 18 12 ]
+        %tmp.62 = lgetv %i.2;
+        symbol [ i %tmp.62 18 12 13 ];
+        %tmp.63 = 1;
+        %tmp.64 = add %tmp.62 %tmp.63;
+        lputv %i.2 %tmp.64;
+        symbol [ i %i.2 18 12 13 ];
+C__Users_Cvar1_Downloads_Apps_source_Planets_mc_11_22_19_8_stop:
+        goto @C__Users_Cvar1_Downloads_Apps_source_Planets_mc_11_8_19_8_while_test;
+C__Users_Cvar1_Downloads_Apps_source_Planets_mc_11_8_19_8_while_end:
+[ "C:\Users\Cvar1\Downloads\Apps\source\Planets.mc" 20 8 ]
+        %tmp.65 = lgetv %eAnom.1;
+        symbol [ eAnom %tmp.65 20 15 20 ];
+        ret %tmp.65;
+C__Users_Cvar1_Downloads_Apps_source_Planets_mc_8_39_21_4_stop:
+    }
+    [ @file = "C:\Users\Cvar1\Downloads\Apps\source\Planets.mc"; @line = 24; @symbol_functiondef = [heliocentric,24,13,25]; @symbol_param<0> = [nDeg,24,26,30]; @symbol_param<1> = [iDeg,24,32,36]; @symbol_param<2> = [wDeg,24,38,42]; @symbol_param<3> = [a,24,44,45]; @symbol_param<4> = [e,24,47,48]; @symbol_param<5> = [mDeg,24,50,54]; ]
+    function heliocentric(nDeg, iDeg, wDeg, a, e, mDeg) {
+C__Users_Cvar1_Downloads_Apps_source_Planets_mc_24_56_35_4_start:
+[ "C:\Users\Cvar1\Downloads\Apps\source\Planets.mc" 25 8 ]
+        [ "C__Users_Cvar1_Downloads_Apps_source_Planets_mc_24_56_35_4_start" "C__Users_Cvar1_Downloads_Apps_source_Planets_mc_24_56_35_4_stop" ]
+        %eAnom.1 = local;
+        symbol [ eAnom %eAnom.1 25 12 17 ];
+        %tmp.1 = self;
+        symbol [ eccentricAnomaly %tmp.2 25 20 36 ];
+        %tmp.2 = getv function %tmp.1 :eccentricAnomaly;
+        %tmp.3 = lgetv %mDeg;
+        symbol [ mDeg %tmp.3 25 37 41 ];
+        %tmp.4 = lgetv %e;
+        symbol [ e %tmp.4 25 43 44 ];
+        %tmp.5 = invoke %tmp.1 %tmp.2(%tmp.3, %tmp.4);
+        lputv %eAnom.1 %tmp.5;
+        symbol [ eAnom %eAnom.1 25 12 17 ];
+[ "C:\Users\Cvar1\Downloads\Apps\source\Planets.mc" 26 8 ]
+        [ "C__Users_Cvar1_Downloads_Apps_source_Planets_mc_24_56_35_4_start" "C__Users_Cvar1_Downloads_Apps_source_Planets_mc_24_56_35_4_stop" ]
+        %xv.2 = local;
+        symbol [ xv %xv.2 26 12 14 ];
+        %tmp.6 = lgetv %a;
+        symbol [ a %tmp.6 26 17 18 ];
+        symbol [ SkyMath %tmp.8 26 22 29 ];
+        %tmp.8 = getv ? :SkyMath;
+        symbol [ dcos %tmp.9 26 30 34 ];
+        %tmp.9 = getv function %tmp.8 :dcos;
+        %tmp.10 = lgetv %eAnom.1;
+        symbol [ eAnom %tmp.10 26 35 40 ];
+        %tmp.11 = invoke %tmp.8 %tmp.9(%tmp.10);
+        %tmp.12 = lgetv %e;
+        symbol [ e %tmp.12 26 44 45 ];
+        %tmp.13 = sub %tmp.11 %tmp.12;
+        %tmp.14 = mul %tmp.6 %tmp.13;
+        lputv %xv.2 %tmp.14;
+        symbol [ xv %xv.2 26 12 14 ];
+[ "C:\Users\Cvar1\Downloads\Apps\source\Planets.mc" 27 8 ]
+        [ "C__Users_Cvar1_Downloads_Apps_source_Planets_mc_24_56_35_4_start" "C__Users_Cvar1_Downloads_Apps_source_Planets_mc_24_56_35_4_stop" ]
+        %yv.3 = local;
+        symbol [ yv %yv.3 27 12 14 ];
+        %tmp.15 = lgetv %a;
+        symbol [ a %tmp.15 27 17 18 ];
+        symbol [ Math %tmp.16 27 21 25 ];
+        %tmp.16 = getm $.Toybox.Math;
+        symbol [ sqrt %tmp.17 27 26 30 ];
+        %tmp.17 = getv function %tmp.16 :sqrt;
+        %tmp.18 = 1.0;
+        %tmp.19 = lgetv %e;
+        symbol [ e %tmp.19 27 37 38 ];
+        %tmp.20 = lgetv %e;
+        symbol [ e %tmp.20 27 41 42 ];
+        %tmp.21 = mul %tmp.19 %tmp.20;
+        %tmp.22 = sub %tmp.18 %tmp.21;
+        %tmp.23 = invoke %tmp.16 %tmp.17(%tmp.22);
+        %tmp.24 = mul %tmp.15 %tmp.23;
+        symbol [ SkyMath %tmp.26 27 46 53 ];
+        %tmp.26 = getv ? :SkyMath;
+        symbol [ dsin %tmp.27 27 54 58 ];
+        %tmp.27 = getv function %tmp.26 :dsin;
+        %tmp.28 = lgetv %eAnom.1;
+        symbol [ eAnom %tmp.28 27 59 64 ];
+        %tmp.29 = invoke %tmp.26 %tmp.27(%tmp.28);
+        %tmp.30 = mul %tmp.24 %tmp.29;
+        lputv %yv.3 %tmp.30;
+        symbol [ yv %yv.3 27 12 14 ];
+[ "C:\Users\Cvar1\Downloads\Apps\source\Planets.mc" 28 8 ]
+        [ "C__Users_Cvar1_Downloads_Apps_source_Planets_mc_24_56_35_4_start" "C__Users_Cvar1_Downloads_Apps_source_Planets_mc_24_56_35_4_stop" ]
+        %r.4 = local;
+        symbol [ r %r.4 28 12 13 ];
+        symbol [ Math %tmp.31 28 16 20 ];
+        %tmp.31 = getm $.Toybox.Math;
+        symbol [ sqrt %tmp.32 28 21 25 ];
+        %tmp.32 = getv function %tmp.31 :sqrt;
+        %tmp.33 = lgetv %xv.2;
+        symbol [ xv %tmp.33 28 26 28 ];
+        %tmp.34 = lgetv %xv.2;
+        symbol [ xv %tmp.34 28 31 33 ];
+        %tmp.35 = mul %tmp.33 %tmp.34;
+        %tmp.36 = lgetv %yv.3;
+        symbol [ yv %tmp.36 28 36 38 ];
+        %tmp.37 = lgetv %yv.3;
+        symbol [ yv %tmp.37 28 41 43 ];
+        %tmp.38 = mul %tmp.36 %tmp.37;
+        %tmp.39 = add %tmp.35 %tmp.38;
+        %tmp.40 = invoke %tmp.31 %tmp.32(%tmp.39);
+        lputv %r.4 %tmp.40;
+        symbol [ r %r.4 28 12 13 ];
+[ "C:\Users\Cvar1\Downloads\Apps\source\Planets.mc" 29 8 ]
+        [ "C__Users_Cvar1_Downloads_Apps_source_Planets_mc_24_56_35_4_start" "C__Users_Cvar1_Downloads_Apps_source_Planets_mc_24_56_35_4_stop" ]
+        %v.5 = local;
+        symbol [ v %v.5 29 12 13 ];
+        symbol [ SkyMath %tmp.42 29 16 23 ];
+        %tmp.42 = getv ? :SkyMath;
+        symbol [ datan2 %tmp.43 29 24 30 ];
+        %tmp.43 = getv function %tmp.42 :datan2;
+        %tmp.44 = lgetv %yv.3;
+        symbol [ yv %tmp.44 29 31 33 ];
+        %tmp.45 = lgetv %xv.2;
+        symbol [ xv %tmp.45 29 35 37 ];
+        %tmp.46 = invoke %tmp.42 %tmp.43(%tmp.44, %tmp.45);
+        lputv %v.5 %tmp.46;
+        symbol [ v %v.5 29 12 13 ];
+[ "C:\Users\Cvar1\Downloads\Apps\source\Planets.mc" 30 8 ]
+        [ "C__Users_Cvar1_Downloads_Apps_source_Planets_mc_24_56_35_4_start" "C__Users_Cvar1_Downloads_Apps_source_Planets_mc_24_56_35_4_stop" ]
+        %vw.6 = local;
+        symbol [ vw %vw.6 30 12 14 ];
+        %tmp.47 = lgetv %v.5;
+        symbol [ v %tmp.47 30 17 18 ];
+        %tmp.48 = lgetv %wDeg;
+        symbol [ wDeg %tmp.48 30 21 25 ];
+        %tmp.49 = add %tmp.47 %tmp.48;
+        lputv %vw.6 %tmp.49;
+        symbol [ vw %vw.6 30 12 14 ];
+[ "C:\Users\Cvar1\Downloads\Apps\source\Planets.mc" 31 8 ]
+        [ "C__Users_Cvar1_Downloads_Apps_source_Planets_mc_24_56_35_4_start" "C__Users_Cvar1_Downloads_Apps_source_Planets_mc_24_56_35_4_stop" ]
+        %xh.7 = local;
+        symbol [ xh %xh.7 31 12 14 ];
+        %tmp.50 = lgetv %r.4;
+        symbol [ r %tmp.50 31 17 18 ];
+        symbol [ SkyMath %tmp.52 31 22 29 ];
+        %tmp.52 = getv ? :SkyMath;
+        symbol [ dcos %tmp.53 31 30 34 ];
+        %tmp.53 = getv function %tmp.52 :dcos;
+        %tmp.54 = lgetv %nDeg;
+        symbol [ nDeg %tmp.54 31 35 39 ];
+        %tmp.55 = invoke %tmp.52 %tmp.53(%tmp.54);
+        symbol [ SkyMath %tmp.57 31 43 50 ];
+        %tmp.57 = getv ? :SkyMath;
+        symbol [ dcos %tmp.58 31 51 55 ];
+        %tmp.58 = getv function %tmp.57 :dcos;
+        %tmp.59 = lgetv %vw.6;
+        symbol [ vw %tmp.59 31 56 58 ];
+        %tmp.60 = invoke %tmp.57 %tmp.58(%tmp.59);
+        %tmp.61 = mul %tmp.55 %tmp.60;
+        symbol [ SkyMath %tmp.63 31 62 69 ];
+        %tmp.63 = getv ? :SkyMath;
+        symbol [ dsin %tmp.64 31 70 74 ];
+        %tmp.64 = getv function %tmp.63 :dsin;
+        %tmp.65 = lgetv %nDeg;
+        symbol [ nDeg %tmp.65 31 75 79 ];
+        %tmp.66 = invoke %tmp.63 %tmp.64(%tmp.65);
+        symbol [ SkyMath %tmp.68 31 83 90 ];
+        %tmp.68 = getv ? :SkyMath;
+        symbol [ dsin %tmp.69 31 91 95 ];
+        %tmp.69 = getv function %tmp.68 :dsin;
+        %tmp.70 = lgetv %vw.6;
+        symbol [ vw %tmp.70 31 96 98 ];
+        %tmp.71 = invoke %tmp.68 %tmp.69(%tmp.70);
+        %tmp.72 = mul %tmp.66 %tmp.71;
+        symbol [ SkyMath %tmp.74 31 102 109 ];
+        %tmp.74 = getv ? :SkyMath;
+        symbol [ dcos %tmp.75 31 110 114 ];
+        %tmp.75 = getv function %tmp.74 :dcos;
+        %tmp.76 = lgetv %iDeg;
+        symbol [ iDeg %tmp.76 31 115 119 ];
+        %tmp.77 = invoke %tmp.74 %tmp.75(%tmp.76);
+        %tmp.78 = mul %tmp.72 %tmp.77;
+        %tmp.79 = sub %tmp.61 %tmp.78;
+        %tmp.80 = mul %tmp.50 %tmp.79;
+        lputv %xh.7 %tmp.80;
+        symbol [ xh %xh.7 31 12 14 ];
+[ "C:\Users\Cvar1\Downloads\Apps\source\Planets.mc" 32 8 ]
+        [ "C__Users_Cvar1_Downloads_Apps_source_Planets_mc_24_56_35_4_start" "C__Users_Cvar1_Downloads_Apps_source_Planets_mc_24_56_35_4_stop" ]
+        %yh.8 = local;
+        symbol [ yh %yh.8 32 12 14 ];
+        %tmp.81 = lgetv %r.4;
+        symbol [ r %tmp.81 32 17 18 ];
+        symbol [ SkyMath %tmp.83 32 22 29 ];
+        %tmp.83 = getv ? :SkyMath;
+        symbol [ dsin %tmp.84 32 30 34 ];
+        %tmp.84 = getv function %tmp.83 :dsin;
+        %tmp.85 = lgetv %nDeg;
+        symbol [ nDeg %tmp.85 32 35 39 ];
+        %tmp.86 = invoke %tmp.83 %tmp.84(%tmp.85);
+        symbol [ SkyMath %tmp.88 32 43 50 ];
+        %tmp.88 = getv ? :SkyMath;
+        symbol [ dcos %tmp.89 32 51 55 ];
+        %tmp.89 = getv function %tmp.88 :dcos;
+        %tmp.90 = lgetv %vw.6;
+        symbol [ vw %tmp.90 32 56 58 ];
+        %tmp.91 = invoke %tmp.88 %tmp.89(%tmp.90);
+        %tmp.92 = mul %tmp.86 %tmp.91;
+        symbol [ SkyMath %tmp.94 32 62 69 ];
+        %tmp.94 = getv ? :SkyMath;
+        symbol [ dcos %tmp.95 32 70 74 ];
+        %tmp.95 = getv function %tmp.94 :dcos;
+        %tmp.96 = lgetv %nDeg;
+        symbol [ nDeg %tmp.96 32 75 79 ];
+        %tmp.97 = invoke %tmp.94 %tmp.95(%tmp.96);
+        symbol [ SkyMath %tmp.99 32 83 90 ];
+        %tmp.99 = getv ? :SkyMath;
+        symbol [ dsin %tmp.100 32 91 95 ];
+        %tmp.100 = getv function %tmp.99 :dsin;
+        %tmp.101 = lgetv %vw.6;
+        symbol [ vw %tmp.101 32 96 98 ];
+        %tmp.102 = invoke %tmp.99 %tmp.100(%tmp.101);
+        %tmp.103 = mul %tmp.97 %tmp.102;
+        symbol [ SkyMath %tmp.105 32 102 109 ];
+        %tmp.105 = getv ? :SkyMath;
+        symbol [ dcos %tmp.106 32 110 114 ];
+        %tmp.106 = getv function %tmp.105 :dcos;
+        %tmp.107 = lgetv %iDeg;
+        symbol [ iDeg %tmp.107 32 115 119 ];
+        %tmp.108 = invoke %tmp.105 %tmp.106(%tmp.107);
+        %tmp.109 = mul %tmp.103 %tmp.108;
+        %tmp.110 = add %tmp.92 %tmp.109;
+        %tmp.111 = mul %tmp.81 %tmp.110;
+        lputv %yh.8 %tmp.111;
+        symbol [ yh %yh.8 32 12 14 ];
+[ "C:\Users\Cvar1\Downloads\Apps\source\Planets.mc" 33 8 ]
+        [ "C__Users_Cvar1_Downloads_Apps_source_Planets_mc_24_56_35_4_start" "C__Users_Cvar1_Downloads_Apps_source_Planets_mc_24_56_35_4_stop" ]
+        %zh.9 = local;
+        symbol [ zh %zh.9 33 12 14 ];
+        %tmp.112 = lgetv %r.4;
+        symbol [ r %tmp.112 33 17 18 ];
+        symbol [ SkyMath %tmp.114 33 22 29 ];
+        %tmp.114 = getv ? :SkyMath;
+        symbol [ dsin %tmp.115 33 30 34 ];
+        %tmp.115 = getv function %tmp.114 :dsin;
+        %tmp.116 = lgetv %vw.6;
+        symbol [ vw %tmp.116 33 35 37 ];
+        %tmp.117 = invoke %tmp.114 %tmp.115(%tmp.116);
+        symbol [ SkyMath %tmp.119 33 41 48 ];
+        %tmp.119 = getv ? :SkyMath;
+        symbol [ dsin %tmp.120 33 49 53 ];
+        %tmp.120 = getv function %tmp.119 :dsin;
+        %tmp.121 = lgetv %iDeg;
+        symbol [ iDeg %tmp.121 33 54 58 ];
+        %tmp.122 = invoke %tmp.119 %tmp.120(%tmp.121);
+        %tmp.123 = mul %tmp.117 %tmp.122;
+        %tmp.124 = mul %tmp.112 %tmp.123;
+        lputv %zh.9 %tmp.124;
+        symbol [ zh %zh.9 33 12 14 ];
+[ "C:\Users\Cvar1\Downloads\Apps\source\Planets.mc" 34 8 ]
+        %tmp.125 = newa 3;
+        %tmp.126 = lgetv %xh.7;
+        symbol [ xh %tmp.126 34 16 18 ];
+        %tmp.127 = dup %tmp.125;
+        %tmp.128 = aputv %tmp.127 0 %tmp.126;
+        %tmp.129 = lgetv %yh.8;
+        symbol [ yh %tmp.129 34 20 22 ];
+        %tmp.130 = dup %tmp.128;
+        %tmp.131 = aputv %tmp.130 1 %tmp.129;
+        %tmp.132 = lgetv %zh.9;
+        symbol [ zh %tmp.132 34 24 26 ];
+        %tmp.133 = dup %tmp.131;
+        %tmp.134 = aputv %tmp.133 2 %tmp.132;
+        ret %tmp.134;
+C__Users_Cvar1_Downloads_Apps_source_Planets_mc_24_56_35_4_stop:
+    }
+    [ @file = "C:\Users\Cvar1\Downloads\Apps\source\Planets.mc"; @line = 39; @symbol_functiondef = [sunGeocentric,39,13,26]; @symbol_param<0> = [d,39,27,28]; ]
+    function sunGeocentric(d) {
+C__Users_Cvar1_Downloads_Apps_source_Planets_mc_39_30_49_4_start:
+[ "C:\Users\Cvar1\Downloads\Apps\source\Planets.mc" 40 8 ]
+        [ "C__Users_Cvar1_Downloads_Apps_source_Planets_mc_39_30_49_4_start" "C__Users_Cvar1_Downloads_Apps_source_Planets_mc_39_30_49_4_stop" ]
+        %w.1 = local;
+        symbol [ w %w.1 40 12 13 ];
+        symbol [ SkyMath %tmp.2 40 16 23 ];
+        %tmp.2 = getv ? :SkyMath;
+        symbol [ norm360 %tmp.3 40 24 31 ];
+        %tmp.3 = getv function %tmp.2 :norm360;
+        %tmp.4 = 282.9404;
+        %tmp.5 = 0.0000470935;
+        %tmp.6 = lgetv %d;
+        symbol [ d %tmp.6 40 58 59 ];
+        %tmp.7 = mul %tmp.5 %tmp.6;
+        %tmp.8 = add %tmp.4 %tmp.7;
+        %tmp.9 = invoke %tmp.2 %tmp.3(%tmp.8);
+        lputv %w.1 %tmp.9;
+        symbol [ w %w.1 40 12 13 ];
+[ "C:\Users\Cvar1\Downloads\Apps\source\Planets.mc" 41 8 ]
+        [ "C__Users_Cvar1_Downloads_Apps_source_Planets_mc_39_30_49_4_start" "C__Users_Cvar1_Downloads_Apps_source_Planets_mc_39_30_49_4_stop" ]
+        %e.2 = local;
+        symbol [ e %e.2 41 12 13 ];
+        %tmp.10 = 0.016709;
+        %tmp.11 = 0.000000001151;
+        %tmp.12 = lgetv %d;
+        symbol [ d %tmp.12 41 44 45 ];
+        %tmp.13 = mul %tmp.11 %tmp.12;
+        %tmp.14 = sub %tmp.10 %tmp.13;
+        lputv %e.2 %tmp.14;
+        symbol [ e %e.2 41 12 13 ];
+[ "C:\Users\Cvar1\Downloads\Apps\source\Planets.mc" 42 8 ]
+        [ "C__Users_Cvar1_Downloads_Apps_source_Planets_mc_39_30_49_4_start" "C__Users_Cvar1_Downloads_Apps_source_Planets_mc_39_30_49_4_stop" ]
+        %m.3 = local;
+        symbol [ m %m.3 42 12 13 ];
+        symbol [ SkyMath %tmp.16 42 16 23 ];
+        %tmp.16 = getv ? :SkyMath;
+        symbol [ norm360 %tmp.17 42 24 31 ];
+        %tmp.17 = getv function %tmp.16 :norm360;
+        %tmp.18 = 356.0470;
+        %tmp.19 = 0.9856002585;
+        %tmp.20 = lgetv %d;
+        symbol [ d %tmp.20 42 58 59 ];
+        %tmp.21 = mul %tmp.19 %tmp.20;
+        %tmp.22 = add %tmp.18 %tmp.21;
+        %tmp.23 = invoke %tmp.16 %tmp.17(%tmp.22);
+        lputv %m.3 %tmp.23;
+        symbol [ m %m.3 42 12 13 ];
+[ "C:\Users\Cvar1\Downloads\Apps\source\Planets.mc" 43 8 ]
+        [ "C__Users_Cvar1_Downloads_Apps_source_Planets_mc_39_30_49_4_start" "C__Users_Cvar1_Downloads_Apps_source_Planets_mc_39_30_49_4_stop" ]
+        %eAnom.4 = local;
+        symbol [ eAnom %eAnom.4 43 12 17 ];
+        %tmp.24 = self;
+        symbol [ eccentricAnomaly %tmp.25 43 20 36 ];
+        %tmp.25 = getv function %tmp.24 :eccentricAnomaly;
+        %tmp.26 = lgetv %m.3;
+        symbol [ m %tmp.26 43 37 38 ];
+        %tmp.27 = lgetv %e.2;
+        symbol [ e %tmp.27 43 40 41 ];
+        %tmp.28 = invoke %tmp.24 %tmp.25(%tmp.26, %tmp.27);
+        lputv %eAnom.4 %tmp.28;
+        symbol [ eAnom %eAnom.4 43 12 17 ];
+[ "C:\Users\Cvar1\Downloads\Apps\source\Planets.mc" 44 8 ]
+        [ "C__Users_Cvar1_Downloads_Apps_source_Planets_mc_39_30_49_4_start" "C__Users_Cvar1_Downloads_Apps_source_Planets_mc_39_30_49_4_stop" ]
+        %xv.5 = local;
+        symbol [ xv %xv.5 44 12 14 ];
+        symbol [ SkyMath %tmp.30 44 17 24 ];
+        %tmp.30 = getv ? :SkyMath;
+        symbol [ dcos %tmp.31 44 25 29 ];
+        %tmp.31 = getv function %tmp.30 :dcos;
+        %tmp.32 = lgetv %eAnom.4;
+        symbol [ eAnom %tmp.32 44 30 35 ];
+        %tmp.33 = invoke %tmp.30 %tmp.31(%tmp.32);
+        %tmp.34 = lgetv %e.2;
+        symbol [ e %tmp.34 44 39 40 ];
+        %tmp.35 = sub %tmp.33 %tmp.34;
+        lputv %xv.5 %tmp.35;
+        symbol [ xv %xv.5 44 12 14 ];
+[ "C:\Users\Cvar1\Downloads\Apps\source\Planets.mc" 45 8 ]
+        [ "C__Users_Cvar1_Downloads_Apps_source_Planets_mc_39_30_49_4_start" "C__Users_Cvar1_Downloads_Apps_source_Planets_mc_39_30_49_4_stop" ]
+        %yv.6 = local;
+        symbol [ yv %yv.6 45 12 14 ];
+        symbol [ Math %tmp.36 45 17 21 ];
+        %tmp.36 = getm $.Toybox.Math;
+        symbol [ sqrt %tmp.37 45 22 26 ];
+        %tmp.37 = getv function %tmp.36 :sqrt;
+        %tmp.38 = 1.0;
+        %tmp.39 = lgetv %e.2;
+        symbol [ e %tmp.39 45 33 34 ];
+        %tmp.40 = lgetv %e.2;
+        symbol [ e %tmp.40 45 37 38 ];
+        %tmp.41 = mul %tmp.39 %tmp.40;
+        %tmp.42 = sub %tmp.38 %tmp.41;
+        %tmp.43 = invoke %tmp.36 %tmp.37(%tmp.42);
+        symbol [ SkyMath %tmp.45 45 42 49 ];
+        %tmp.45 = getv ? :SkyMath;
+        symbol [ dsin %tmp.46 45 50 54 ];
+        %tmp.46 = getv function %tmp.45 :dsin;
+        %tmp.47 = lgetv %eAnom.4;
+        symbol [ eAnom %tmp.47 45 55 60 ];
+        %tmp.48 = invoke %tmp.45 %tmp.46(%tmp.47);
+        %tmp.49 = mul %tmp.43 %tmp.48;
+        lputv %yv.6 %tmp.49;
+        symbol [ yv %yv.6 45 12 14 ];
+[ "C:\Users\Cvar1\Downloads\Apps\source\Planets.mc" 46 8 ]
+        [ "C__Users_Cvar1_Downloads_Apps_source_Planets_mc_39_30_49_4_start" "C__Users_Cvar1_Downloads_Apps_source_Planets_mc_39_30_49_4_stop" ]
+        %r.7 = local;
+        symbol [ r %r.7 46 12 13 ];
+        symbol [ Math %tmp.50 46 16 20 ];
+        %tmp.50 = getm $.Toybox.Math;
+        symbol [ sqrt %tmp.51 46 21 25 ];
+        %tmp.51 = getv function %tmp.50 :sqrt;
+        %tmp.52 = lgetv %xv.5;
+        symbol [ xv %tmp.52 46 26 28 ];
+        %tmp.53 = lgetv %xv.5;
+        symbol [ xv %tmp.53 46 31 33 ];
+        %tmp.54 = mul %tmp.52 %tmp.53;
+        %tmp.55 = lgetv %yv.6;
+        symbol [ yv %tmp.55 46 36 38 ];
+        %tmp.56 = lgetv %yv.6;
+        symbol [ yv %tmp.56 46 41 43 ];
+        %tmp.57 = mul %tmp.55 %tmp.56;
+        %tmp.58 = add %tmp.54 %tmp.57;
+        %tmp.59 = invoke %tmp.50 %tmp.51(%tmp.58);
+        lputv %r.7 %tmp.59;
+        symbol [ r %r.7 46 12 13 ];
+[ "C:\Users\Cvar1\Downloads\Apps\source\Planets.mc" 47 8 ]
+        [ "C__Users_Cvar1_Downloads_Apps_source_Planets_mc_39_30_49_4_start" "C__Users_Cvar1_Downloads_Apps_source_Planets_mc_39_30_49_4_stop" ]
+        %lonSun.8 = local;
+        symbol [ lonSun %lonSun.8 47 12 18 ];
+        symbol [ SkyMath %tmp.61 47 21 28 ];
+        %tmp.61 = getv ? :SkyMath;
+        symbol [ norm360 %tmp.62 47 29 36 ];
+        %tmp.62 = getv function %tmp.61 :norm360;
+        symbol [ SkyMath %tmp.64 47 37 44 ];
+        %tmp.64 = getv ? :SkyMath;
+        symbol [ datan2 %tmp.65 47 45 51 ];
+        %tmp.65 = getv function %tmp.64 :datan2;
+        %tmp.66 = lgetv %yv.6;
+        symbol [ yv %tmp.66 47 52 54 ];
+        %tmp.67 = lgetv %xv.5;
+        symbol [ xv %tmp.67 47 56 58 ];
+        %tmp.68 = invoke %tmp.64 %tmp.65(%tmp.66, %tmp.67);
+        %tmp.69 = lgetv %w.1;
+        symbol [ w %tmp.69 47 62 63 ];
+        %tmp.70 = add %tmp.68 %tmp.69;
+        %tmp.71 = invoke %tmp.61 %tmp.62(%tmp.70);
+        lputv %lonSun.8 %tmp.71;
+        symbol [ lonSun %lonSun.8 47 12 18 ];
+[ "C:\Users\Cvar1\Downloads\Apps\source\Planets.mc" 48 8 ]
+        %tmp.72 = newa 2;
+        %tmp.73 = lgetv %r.7;
+        symbol [ r %tmp.73 48 16 17 ];
+        symbol [ SkyMath %tmp.75 48 20 27 ];
+        %tmp.75 = getv ? :SkyMath;
+        symbol [ dcos %tmp.76 48 28 32 ];
+        %tmp.76 = getv function %tmp.75 :dcos;
+        %tmp.77 = lgetv %lonSun.8;
+        symbol [ lonSun %tmp.77 48 33 39 ];
+        %tmp.78 = invoke %tmp.75 %tmp.76(%tmp.77);
+        %tmp.79 = mul %tmp.73 %tmp.78;
+        %tmp.80 = dup %tmp.72;
+        %tmp.81 = aputv %tmp.80 0 %tmp.79;
+        %tmp.82 = lgetv %r.7;
+        symbol [ r %tmp.82 48 42 43 ];
+        symbol [ SkyMath %tmp.84 48 46 53 ];
+        %tmp.84 = getv ? :SkyMath;
+        symbol [ dsin %tmp.85 48 54 58 ];
+        %tmp.85 = getv function %tmp.84 :dsin;
+        %tmp.86 = lgetv %lonSun.8;
+        symbol [ lonSun %tmp.86 48 59 65 ];
+        %tmp.87 = invoke %tmp.84 %tmp.85(%tmp.86);
+        %tmp.88 = mul %tmp.82 %tmp.87;
+        %tmp.89 = dup %tmp.81;
+        %tmp.90 = aputv %tmp.89 1 %tmp.88;
+        ret %tmp.90;
+C__Users_Cvar1_Downloads_Apps_source_Planets_mc_39_30_49_4_stop:
+    }
+    [ @file = "C:\Users\Cvar1\Downloads\Apps\source\Planets.mc"; @line = 52; @symbol_functiondef = [elementsFor,52,13,24]; @symbol_param<0> = [id,52,25,27]; @symbol_param<1> = [d,52,29,30]; ]
+    function elementsFor(id, d) {
+C__Users_Cvar1_Downloads_Apps_source_Planets_mc_52_32_99_4_start:
+[ "C:\Users\Cvar1\Downloads\Apps\source\Planets.mc" 53 8 ]
+C__Users_Cvar1_Downloads_Apps_source_Planets_mc_53_8_89_8_if_stmt:
+        %tmp.1 = lgetv %id;
+        symbol [ id %tmp.1 53 12 14 ];
+        symbol [ equals %tmp.2 53 15 21 ];
+        %tmp.2 = getv function %tmp.1 :equals;
+        %tmp.3 = "mercury";
+        %tmp.4 = invoke %tmp.1 %tmp.2(%tmp.3);
+        bf %tmp.4 @C__Users_Cvar1_Downloads_Apps_source_Planets_mc_53_8_89_8_if_false;
+C__Users_Cvar1_Downloads_Apps_source_Planets_mc_53_8_89_8_if_true:
+C__Users_Cvar1_Downloads_Apps_source_Planets_mc_53_34_62_8_start:
+[ "C:\Users\Cvar1\Downloads\Apps\source\Planets.mc" 54 12 ]
+        %tmp.5 = newa 6;
+        symbol [ SkyMath %tmp.7 55 16 23 ];
+        %tmp.7 = getv ? :SkyMath;
+        symbol [ norm360 %tmp.8 55 24 31 ];
+        %tmp.8 = getv function %tmp.7 :norm360;
+        %tmp.9 = 48.3313;
+        %tmp.10 = 0.0000324587;
+        %tmp.11 = lgetv %d;
+        symbol [ d %tmp.11 55 57 58 ];
+        %tmp.12 = mul %tmp.10 %tmp.11;
+        %tmp.13 = add %tmp.9 %tmp.12;
+        %tmp.14 = invoke %tmp.7 %tmp.8(%tmp.13);
+        %tmp.15 = dup %tmp.5;
+        %tmp.16 = aputv %tmp.15 0 %tmp.14;
+        %tmp.17 = 7.0047;
+        %tmp.18 = 0.00000005;
+        %tmp.19 = lgetv %d;
+        symbol [ d %tmp.19 56 38 39 ];
+        %tmp.20 = mul %tmp.18 %tmp.19;
+        %tmp.21 = add %tmp.17 %tmp.20;
+        %tmp.22 = dup %tmp.16;
+        %tmp.23 = aputv %tmp.22 1 %tmp.21;
+        symbol [ SkyMath %tmp.25 57 16 23 ];
+        %tmp.25 = getv ? :SkyMath;
+        symbol [ norm360 %tmp.26 57 24 31 ];
+        %tmp.26 = getv function %tmp.25 :norm360;
+        %tmp.27 = 29.1241;
+        %tmp.28 = 0.0000101444;
+        %tmp.29 = lgetv %d;
+        symbol [ d %tmp.29 57 57 58 ];
+        %tmp.30 = mul %tmp.28 %tmp.29;
+        %tmp.31 = add %tmp.27 %tmp.30;
+        %tmp.32 = invoke %tmp.25 %tmp.26(%tmp.31);
+        %tmp.33 = dup %tmp.23;
+        %tmp.34 = aputv %tmp.33 2 %tmp.32;
+        %tmp.35 = 0.387098;
+        %tmp.36 = dup %tmp.34;
+        %tmp.37 = aputv %tmp.36 3 %tmp.35;
+        %tmp.38 = 0.205635;
+        %tmp.39 = 0.000000000559;
+        %tmp.40 = lgetv %d;
+        symbol [ d %tmp.40 59 44 45 ];
+        %tmp.41 = mul %tmp.39 %tmp.40;
+        %tmp.42 = add %tmp.38 %tmp.41;
+        %tmp.43 = dup %tmp.37;
+        %tmp.44 = aputv %tmp.43 4 %tmp.42;
+        symbol [ SkyMath %tmp.46 60 16 23 ];
+        %tmp.46 = getv ? :SkyMath;
+        symbol [ norm360 %tmp.47 60 24 31 ];
+        %tmp.47 = getv function %tmp.46 :norm360;
+        %tmp.48 = 168.6562;
+        %tmp.49 = 4.0923344368;
+        %tmp.50 = lgetv %d;
+        symbol [ d %tmp.50 60 58 59 ];
+        %tmp.51 = mul %tmp.49 %tmp.50;
+        %tmp.52 = add %tmp.48 %tmp.51;
+        %tmp.53 = invoke %tmp.46 %tmp.47(%tmp.52);
+        %tmp.54 = dup %tmp.44;
+        %tmp.55 = aputv %tmp.54 5 %tmp.53;
+        ret %tmp.55;
+C__Users_Cvar1_Downloads_Apps_source_Planets_mc_53_34_62_8_stop:
+        goto @C__Users_Cvar1_Downloads_Apps_source_Planets_mc_53_8_89_8_if_end;
+C__Users_Cvar1_Downloads_Apps_source_Planets_mc_53_8_89_8_if_false:
+[ "C:\Users\Cvar1\Downloads\Apps\source\Planets.mc" 62 15 ]
+C__Users_Cvar1_Downloads_Apps_source_Planets_mc_62_15_89_8_if_stmt:
+        %tmp.56 = lgetv %id;
+        symbol [ id %tmp.56 62 19 21 ];
+        symbol [ equals %tmp.57 62 22 28 ];
+        %tmp.57 = getv function %tmp.56 :equals;
+        %tmp.58 = "venus";
+        %tmp.59 = invoke %tmp.56 %tmp.57(%tmp.58);
+        bf %tmp.59 @C__Users_Cvar1_Downloads_Apps_source_Planets_mc_62_15_89_8_if_false;
+C__Users_Cvar1_Downloads_Apps_source_Planets_mc_62_15_89_8_if_true:
+C__Users_Cvar1_Downloads_Apps_source_Planets_mc_62_39_71_8_start:
+[ "C:\Users\Cvar1\Downloads\Apps\source\Planets.mc" 63 12 ]
+        %tmp.60 = newa 6;
+        symbol [ SkyMath %tmp.62 64 16 23 ];
+        %tmp.62 = getv ? :SkyMath;
+        symbol [ norm360 %tmp.63 64 24 31 ];
+        %tmp.63 = getv function %tmp.62 :norm360;
+        %tmp.64 = 76.6799;
+        %tmp.65 = 0.0000246590;
+        %tmp.66 = lgetv %d;
+        symbol [ d %tmp.66 64 57 58 ];
+        %tmp.67 = mul %tmp.65 %tmp.66;
+        %tmp.68 = add %tmp.64 %tmp.67;
+        %tmp.69 = invoke %tmp.62 %tmp.63(%tmp.68);
+        %tmp.70 = dup %tmp.60;
+        %tmp.71 = aputv %tmp.70 0 %tmp.69;
+        %tmp.72 = 3.3946;
+        %tmp.73 = 0.0000000275;
+        %tmp.74 = lgetv %d;
+        symbol [ d %tmp.74 65 40 41 ];
+        %tmp.75 = mul %tmp.73 %tmp.74;
+        %tmp.76 = add %tmp.72 %tmp.75;
+        %tmp.77 = dup %tmp.71;
+        %tmp.78 = aputv %tmp.77 1 %tmp.76;
+        symbol [ SkyMath %tmp.80 66 16 23 ];
+        %tmp.80 = getv ? :SkyMath;
+        symbol [ norm360 %tmp.81 66 24 31 ];
+        %tmp.81 = getv function %tmp.80 :norm360;
+        %tmp.82 = 54.8910;
+        %tmp.83 = 0.0000138374;
+        %tmp.84 = lgetv %d;
+        symbol [ d %tmp.84 66 57 58 ];
+        %tmp.85 = mul %tmp.83 %tmp.84;
+        %tmp.86 = add %tmp.82 %tmp.85;
+        %tmp.87 = invoke %tmp.80 %tmp.81(%tmp.86);
+        %tmp.88 = dup %tmp.78;
+        %tmp.89 = aputv %tmp.88 2 %tmp.87;
+        %tmp.90 = 0.723330;
+        %tmp.91 = dup %tmp.89;
+        %tmp.92 = aputv %tmp.91 3 %tmp.90;
+        %tmp.93 = 0.006773;
+        %tmp.94 = 0.000000001302;
+        %tmp.95 = lgetv %d;
+        symbol [ d %tmp.95 68 44 45 ];
+        %tmp.96 = mul %tmp.94 %tmp.95;
+        %tmp.97 = sub %tmp.93 %tmp.96;
+        %tmp.98 = dup %tmp.92;
+        %tmp.99 = aputv %tmp.98 4 %tmp.97;
+        symbol [ SkyMath %tmp.101 69 16 23 ];
+        %tmp.101 = getv ? :SkyMath;
+        symbol [ norm360 %tmp.102 69 24 31 ];
+        %tmp.102 = getv function %tmp.101 :norm360;
+        %tmp.103 = 48.0052;
+        %tmp.104 = 1.6021302244;
+        %tmp.105 = lgetv %d;
+        symbol [ d %tmp.105 69 57 58 ];
+        %tmp.106 = mul %tmp.104 %tmp.105;
+        %tmp.107 = add %tmp.103 %tmp.106;
+        %tmp.108 = invoke %tmp.101 %tmp.102(%tmp.107);
+        %tmp.109 = dup %tmp.99;
+        %tmp.110 = aputv %tmp.109 5 %tmp.108;
+        ret %tmp.110;
+C__Users_Cvar1_Downloads_Apps_source_Planets_mc_62_39_71_8_stop:
+        goto @C__Users_Cvar1_Downloads_Apps_source_Planets_mc_62_15_89_8_if_end;
+C__Users_Cvar1_Downloads_Apps_source_Planets_mc_62_15_89_8_if_false:
+[ "C:\Users\Cvar1\Downloads\Apps\source\Planets.mc" 71 15 ]
+C__Users_Cvar1_Downloads_Apps_source_Planets_mc_71_15_89_8_if_stmt:
+        %tmp.111 = lgetv %id;
+        symbol [ id %tmp.111 71 19 21 ];
+        symbol [ equals %tmp.112 71 22 28 ];
+        %tmp.112 = getv function %tmp.111 :equals;
+        %tmp.113 = "mars";
+        %tmp.114 = invoke %tmp.111 %tmp.112(%tmp.113);
+        bf %tmp.114 @C__Users_Cvar1_Downloads_Apps_source_Planets_mc_71_15_89_8_if_false;
+C__Users_Cvar1_Downloads_Apps_source_Planets_mc_71_15_89_8_if_true:
+C__Users_Cvar1_Downloads_Apps_source_Planets_mc_71_38_80_8_start:
+[ "C:\Users\Cvar1\Downloads\Apps\source\Planets.mc" 72 12 ]
+        %tmp.115 = newa 6;
+        symbol [ SkyMath %tmp.117 73 16 23 ];
+        %tmp.117 = getv ? :SkyMath;
+        symbol [ norm360 %tmp.118 73 24 31 ];
+        %tmp.118 = getv function %tmp.117 :norm360;
+        %tmp.119 = 49.5574;
+        %tmp.120 = 0.0000211081;
+        %tmp.121 = lgetv %d;
+        symbol [ d %tmp.121 73 57 58 ];
+        %tmp.122 = mul %tmp.120 %tmp.121;
+        %tmp.123 = add %tmp.119 %tmp.122;
+        %tmp.124 = invoke %tmp.117 %tmp.118(%tmp.123);
+        %tmp.125 = dup %tmp.115;
+        %tmp.126 = aputv %tmp.125 0 %tmp.124;
+        %tmp.127 = 1.8497;
+        %tmp.128 = 0.0000000178;
+        %tmp.129 = lgetv %d;
+        symbol [ d %tmp.129 74 40 41 ];
+        %tmp.130 = mul %tmp.128 %tmp.129;
+        %tmp.131 = sub %tmp.127 %tmp.130;
+        %tmp.132 = dup %tmp.126;
+        %tmp.133 = aputv %tmp.132 1 %tmp.131;
+        symbol [ SkyMath %tmp.135 75 16 23 ];
+        %tmp.135 = getv ? :SkyMath;
+        symbol [ norm360 %tmp.136 75 24 31 ];
+        %tmp.136 = getv function %tmp.135 :norm360;
+        %tmp.137 = 286.5016;
+        %tmp.138 = 0.0000292961;
+        %tmp.139 = lgetv %d;
+        symbol [ d %tmp.139 75 58 59 ];
+        %tmp.140 = mul %tmp.138 %tmp.139;
+        %tmp.141 = add %tmp.137 %tmp.140;
+        %tmp.142 = invoke %tmp.135 %tmp.136(%tmp.141);
+        %tmp.143 = dup %tmp.133;
+        %tmp.144 = aputv %tmp.143 2 %tmp.142;
+        %tmp.145 = 1.523688;
+        %tmp.146 = dup %tmp.144;
+        %tmp.147 = aputv %tmp.146 3 %tmp.145;
+        %tmp.148 = 0.093405;
+        %tmp.149 = 0.000000002516;
+        %tmp.150 = lgetv %d;
+        symbol [ d %tmp.150 77 44 45 ];
+        %tmp.151 = mul %tmp.149 %tmp.150;
+        %tmp.152 = add %tmp.148 %tmp.151;
+        %tmp.153 = dup %tmp.147;
+        %tmp.154 = aputv %tmp.153 4 %tmp.152;
+        symbol [ SkyMath %tmp.156 78 16 23 ];
+        %tmp.156 = getv ? :SkyMath;
+        symbol [ norm360 %tmp.157 78 24 31 ];
+        %tmp.157 = getv function %tmp.156 :norm360;
+        %tmp.158 = 18.6021;
+        %tmp.159 = 0.5240207766;
+        %tmp.160 = lgetv %d;
+        symbol [ d %tmp.160 78 57 58 ];
+        %tmp.161 = mul %tmp.159 %tmp.160;
+        %tmp.162 = add %tmp.158 %tmp.161;
+        %tmp.163 = invoke %tmp.156 %tmp.157(%tmp.162);
+        %tmp.164 = dup %tmp.154;
+        %tmp.165 = aputv %tmp.164 5 %tmp.163;
+        ret %tmp.165;
+C__Users_Cvar1_Downloads_Apps_source_Planets_mc_71_38_80_8_stop:
+        goto @C__Users_Cvar1_Downloads_Apps_source_Planets_mc_71_15_89_8_if_end;
+C__Users_Cvar1_Downloads_Apps_source_Planets_mc_71_15_89_8_if_false:
+[ "C:\Users\Cvar1\Downloads\Apps\source\Planets.mc" 80 15 ]
+C__Users_Cvar1_Downloads_Apps_source_Planets_mc_80_15_89_8_if_stmt:
+        %tmp.166 = lgetv %id;
+        symbol [ id %tmp.166 80 19 21 ];
+        symbol [ equals %tmp.167 80 22 28 ];
+        %tmp.167 = getv function %tmp.166 :equals;
+        %tmp.168 = "jupiter";
+        %tmp.169 = invoke %tmp.166 %tmp.167(%tmp.168);
+        bf %tmp.169 @C__Users_Cvar1_Downloads_Apps_source_Planets_mc_80_15_89_8_if_end;
+C__Users_Cvar1_Downloads_Apps_source_Planets_mc_80_15_89_8_if_true:
+C__Users_Cvar1_Downloads_Apps_source_Planets_mc_80_41_89_8_start:
+[ "C:\Users\Cvar1\Downloads\Apps\source\Planets.mc" 81 12 ]
+        %tmp.170 = newa 6;
+        symbol [ SkyMath %tmp.172 82 16 23 ];
+        %tmp.172 = getv ? :SkyMath;
+        symbol [ norm360 %tmp.173 82 24 31 ];
+        %tmp.173 = getv function %tmp.172 :norm360;
+        %tmp.174 = 100.4542;
+        %tmp.175 = 0.0000276854;
+        %tmp.176 = lgetv %d;
+        symbol [ d %tmp.176 82 58 59 ];
+        %tmp.177 = mul %tmp.175 %tmp.176;
+        %tmp.178 = add %tmp.174 %tmp.177;
+        %tmp.179 = invoke %tmp.172 %tmp.173(%tmp.178);
+        %tmp.180 = dup %tmp.170;
+        %tmp.181 = aputv %tmp.180 0 %tmp.179;
+        %tmp.182 = 1.3030;
+        %tmp.183 = 0.0000001557;
+        %tmp.184 = lgetv %d;
+        symbol [ d %tmp.184 83 40 41 ];
+        %tmp.185 = mul %tmp.183 %tmp.184;
+        %tmp.186 = sub %tmp.182 %tmp.185;
+        %tmp.187 = dup %tmp.181;
+        %tmp.188 = aputv %tmp.187 1 %tmp.186;
+        symbol [ SkyMath %tmp.190 84 16 23 ];
+        %tmp.190 = getv ? :SkyMath;
+        symbol [ norm360 %tmp.191 84 24 31 ];
+        %tmp.191 = getv function %tmp.190 :norm360;
+        %tmp.192 = 273.8777;
+        %tmp.193 = 0.0000164505;
+        %tmp.194 = lgetv %d;
+        symbol [ d %tmp.194 84 58 59 ];
+        %tmp.195 = mul %tmp.193 %tmp.194;
+        %tmp.196 = add %tmp.192 %tmp.195;
+        %tmp.197 = invoke %tmp.190 %tmp.191(%tmp.196);
+        %tmp.198 = dup %tmp.188;
+        %tmp.199 = aputv %tmp.198 2 %tmp.197;
+        %tmp.200 = 5.20256;
+        %tmp.201 = dup %tmp.199;
+        %tmp.202 = aputv %tmp.201 3 %tmp.200;
+        %tmp.203 = 0.048498;
+        %tmp.204 = 0.000000004469;
+        %tmp.205 = lgetv %d;
+        symbol [ d %tmp.205 86 44 45 ];
+        %tmp.206 = mul %tmp.204 %tmp.205;
+        %tmp.207 = add %tmp.203 %tmp.206;
+        %tmp.208 = dup %tmp.202;
+        %tmp.209 = aputv %tmp.208 4 %tmp.207;
+        symbol [ SkyMath %tmp.211 87 16 23 ];
+        %tmp.211 = getv ? :SkyMath;
+        symbol [ norm360 %tmp.212 87 24 31 ];
+        %tmp.212 = getv function %tmp.211 :norm360;
+        %tmp.213 = 19.8950;
+        %tmp.214 = 0.0830853001;
+        %tmp.215 = lgetv %d;
+        symbol [ d %tmp.215 87 57 58 ];
+        %tmp.216 = mul %tmp.214 %tmp.215;
+        %tmp.217 = add %tmp.213 %tmp.216;
+        %tmp.218 = invoke %tmp.211 %tmp.212(%tmp.217);
+        %tmp.219 = dup %tmp.209;
+        %tmp.220 = aputv %tmp.219 5 %tmp.218;
+        ret %tmp.220;
+C__Users_Cvar1_Downloads_Apps_source_Planets_mc_80_41_89_8_stop:
+        goto @C__Users_Cvar1_Downloads_Apps_source_Planets_mc_80_15_89_8_if_end;
+C__Users_Cvar1_Downloads_Apps_source_Planets_mc_80_15_89_8_if_end:
+C__Users_Cvar1_Downloads_Apps_source_Planets_mc_71_15_89_8_if_end:
+C__Users_Cvar1_Downloads_Apps_source_Planets_mc_62_15_89_8_if_end:
+C__Users_Cvar1_Downloads_Apps_source_Planets_mc_53_8_89_8_if_end:
+[ "C:\Users\Cvar1\Downloads\Apps\source\Planets.mc" 91 8 ]
+        %tmp.221 = newa 6;
+        symbol [ SkyMath %tmp.223 92 12 19 ];
+        %tmp.223 = getv ? :SkyMath;
+        symbol [ norm360 %tmp.224 92 20 27 ];
+        %tmp.224 = getv function %tmp.223 :norm360;
+        %tmp.225 = 113.6634;
+        %tmp.226 = 0.0000238980;
+        %tmp.227 = lgetv %d;
+        symbol [ d %tmp.227 92 54 55 ];
+        %tmp.228 = mul %tmp.226 %tmp.227;
+        %tmp.229 = add %tmp.225 %tmp.228;
+        %tmp.230 = invoke %tmp.223 %tmp.224(%tmp.229);
+        %tmp.231 = dup %tmp.221;
+        %tmp.232 = aputv %tmp.231 0 %tmp.230;
+        %tmp.233 = 2.4886;
+        %tmp.234 = 0.0000001081;
+        %tmp.235 = lgetv %d;
+        symbol [ d %tmp.235 93 36 37 ];
+        %tmp.236 = mul %tmp.234 %tmp.235;
+        %tmp.237 = sub %tmp.233 %tmp.236;
+        %tmp.238 = dup %tmp.232;
+        %tmp.239 = aputv %tmp.238 1 %tmp.237;
+        symbol [ SkyMath %tmp.241 94 12 19 ];
+        %tmp.241 = getv ? :SkyMath;
+        symbol [ norm360 %tmp.242 94 20 27 ];
+        %tmp.242 = getv function %tmp.241 :norm360;
+        %tmp.243 = 339.3939;
+        %tmp.244 = 0.0000297661;
+        %tmp.245 = lgetv %d;
+        symbol [ d %tmp.245 94 54 55 ];
+        %tmp.246 = mul %tmp.244 %tmp.245;
+        %tmp.247 = add %tmp.243 %tmp.246;
+        %tmp.248 = invoke %tmp.241 %tmp.242(%tmp.247);
+        %tmp.249 = dup %tmp.239;
+        %tmp.250 = aputv %tmp.249 2 %tmp.248;
+        %tmp.251 = 9.55475;
+        %tmp.252 = dup %tmp.250;
+        %tmp.253 = aputv %tmp.252 3 %tmp.251;
+        %tmp.254 = 0.055546;
+        %tmp.255 = 0.000000009499;
+        %tmp.256 = lgetv %d;
+        symbol [ d %tmp.256 96 40 41 ];
+        %tmp.257 = mul %tmp.255 %tmp.256;
+        %tmp.258 = sub %tmp.254 %tmp.257;
+        %tmp.259 = dup %tmp.253;
+        %tmp.260 = aputv %tmp.259 4 %tmp.258;
+        symbol [ SkyMath %tmp.262 97 12 19 ];
+        %tmp.262 = getv ? :SkyMath;
+        symbol [ norm360 %tmp.263 97 20 27 ];
+        %tmp.263 = getv function %tmp.262 :norm360;
+        %tmp.264 = 316.9670;
+        %tmp.265 = 0.0334442282;
+        %tmp.266 = lgetv %d;
+        symbol [ d %tmp.266 97 54 55 ];
+        %tmp.267 = mul %tmp.265 %tmp.266;
+        %tmp.268 = add %tmp.264 %tmp.267;
+        %tmp.269 = invoke %tmp.262 %tmp.263(%tmp.268);
+        %tmp.270 = dup %tmp.260;
+        %tmp.271 = aputv %tmp.270 5 %tmp.269;
+        ret %tmp.271;
+C__Users_Cvar1_Downloads_Apps_source_Planets_mc_52_32_99_4_stop:
+    }
+    [ @file = "C:\Users\Cvar1\Downloads\Apps\source\Planets.mc"; @line = 102; @symbol_functiondef = [planetPosition,102,13,27]; @symbol_param<0> = [id,102,28,30]; @symbol_param<1> = [jd,102,32,34]; ]
+    function planetPosition(id, jd) {
+C__Users_Cvar1_Downloads_Apps_source_Planets_mc_102_36_119_4_start:
+[ "C:\Users\Cvar1\Downloads\Apps\source\Planets.mc" 103 8 ]
+        [ "C__Users_Cvar1_Downloads_Apps_source_Planets_mc_102_36_119_4_start" "C__Users_Cvar1_Downloads_Apps_source_Planets_mc_102_36_119_4_stop" ]
+        %d.1 = local;
+        symbol [ d %d.1 103 12 13 ];
+        %tmp.1 = lgetv %jd;
+        symbol [ jd %tmp.1 103 16 18 ];
+        %tmp.2 = 2451543.5;
+        %tmp.3 = sub %tmp.1 %tmp.2;
+        lputv %d.1 %tmp.3;
+        symbol [ d %d.1 103 12 13 ];
+[ "C:\Users\Cvar1\Downloads\Apps\source\Planets.mc" 104 8 ]
+        [ "C__Users_Cvar1_Downloads_Apps_source_Planets_mc_102_36_119_4_start" "C__Users_Cvar1_Downloads_Apps_source_Planets_mc_102_36_119_4_stop" ]
+        %sun.2 = local;
+        symbol [ sun %sun.2 104 12 15 ];
+        %tmp.4 = self;
+        symbol [ sunGeocentric %tmp.5 104 18 31 ];
+        %tmp.5 = getv function %tmp.4 :sunGeocentric;
+        %tmp.6 = lgetv %d.1;
+        symbol [ d %tmp.6 104 32 33 ];
+        %tmp.7 = invoke %tmp.4 %tmp.5(%tmp.6);
+        lputv %sun.2 %tmp.7;
+        symbol [ sun %sun.2 104 12 15 ];
+[ "C:\Users\Cvar1\Downloads\Apps\source\Planets.mc" 106 8 ]
+        [ "C__Users_Cvar1_Downloads_Apps_source_Planets_mc_102_36_119_4_start" "C__Users_Cvar1_Downloads_Apps_source_Planets_mc_102_36_119_4_stop" ]
+        %el.3 = local;
+        symbol [ el %el.3 106 12 14 ];
+        %tmp.8 = self;
+        symbol [ elementsFor %tmp.9 106 17 28 ];
+        %tmp.9 = getv function %tmp.8 :elementsFor;
+        %tmp.10 = lgetv %id;
+        symbol [ id %tmp.10 106 29 31 ];
+        %tmp.11 = lgetv %d.1;
+        symbol [ d %tmp.11 106 33 34 ];
+        %tmp.12 = invoke %tmp.8 %tmp.9(%tmp.10, %tmp.11);
+        lputv %el.3 %tmp.12;
+        symbol [ el %el.3 106 12 14 ];
+[ "C:\Users\Cvar1\Downloads\Apps\source\Planets.mc" 107 8 ]
+        [ "C__Users_Cvar1_Downloads_Apps_source_Planets_mc_102_36_119_4_start" "C__Users_Cvar1_Downloads_Apps_source_Planets_mc_102_36_119_4_stop" ]
+        %helio.4 = local;
+        symbol [ helio %helio.4 107 12 17 ];
+        %tmp.13 = self;
+        symbol [ heliocentric %tmp.14 107 20 32 ];
+        %tmp.14 = getv function %tmp.13 :heliocentric;
+        %tmp.15 = lgetv %el.3;
+        symbol [ el %tmp.15 107 33 35 ];
+        %tmp.16 = 0;
+        %tmp.17 = agetv %tmp.15 %tmp.16;
+        %tmp.18 = lgetv %el.3;
+        symbol [ el %tmp.18 107 40 42 ];
+        %tmp.19 = 1;
+        %tmp.20 = agetv %tmp.18 %tmp.19;
+        %tmp.21 = lgetv %el.3;
+        symbol [ el %tmp.21 107 47 49 ];
+        %tmp.22 = 2;
+        %tmp.23 = agetv %tmp.21 %tmp.22;
+        %tmp.24 = lgetv %el.3;
+        symbol [ el %tmp.24 107 54 56 ];
+        %tmp.25 = 3;
+        %tmp.26 = agetv %tmp.24 %tmp.25;
+        %tmp.27 = lgetv %el.3;
+        symbol [ el %tmp.27 107 61 63 ];
+        %tmp.28 = 4;
+        %tmp.29 = agetv %tmp.27 %tmp.28;
+        %tmp.30 = lgetv %el.3;
+        symbol [ el %tmp.30 107 68 70 ];
+        %tmp.31 = 5;
+        %tmp.32 = agetv %tmp.30 %tmp.31;
+        %tmp.33 = invoke %tmp.13 %tmp.14(%tmp.17, %tmp.20, %tmp.23, %tmp.26, %tmp.29, %tmp.32);
+        lputv %helio.4 %tmp.33;
+        symbol [ helio %helio.4 107 12 17 ];
+[ "C:\Users\Cvar1\Downloads\Apps\source\Planets.mc" 109 8 ]
+        [ "C__Users_Cvar1_Downloads_Apps_source_Planets_mc_102_36_119_4_start" "C__Users_Cvar1_Downloads_Apps_source_Planets_mc_102_36_119_4_stop" ]
+        %xg.5 = local;
+        symbol [ xg %xg.5 109 12 14 ];
+        %tmp.34 = lgetv %helio.4;
+        symbol [ helio %tmp.34 109 17 22 ];
+        %tmp.35 = 0;
+        %tmp.36 = agetv %tmp.34 %tmp.35;
+        %tmp.37 = lgetv %sun.2;
+        symbol [ sun %tmp.37 109 28 31 ];
+        %tmp.38 = 0;
+        %tmp.39 = agetv %tmp.37 %tmp.38;
+        %tmp.40 = add %tmp.36 %tmp.39;
+        lputv %xg.5 %tmp.40;
+        symbol [ xg %xg.5 109 12 14 ];
+[ "C:\Users\Cvar1\Downloads\Apps\source\Planets.mc" 110 8 ]
+        [ "C__Users_Cvar1_Downloads_Apps_source_Planets_mc_102_36_119_4_start" "C__Users_Cvar1_Downloads_Apps_source_Planets_mc_102_36_119_4_stop" ]
+        %yg.6 = local;
+        symbol [ yg %yg.6 110 12 14 ];
+        %tmp.41 = lgetv %helio.4;
+        symbol [ helio %tmp.41 110 17 22 ];
+        %tmp.42 = 1;
+        %tmp.43 = agetv %tmp.41 %tmp.42;
+        %tmp.44 = lgetv %sun.2;
+        symbol [ sun %tmp.44 110 28 31 ];
+        %tmp.45 = 1;
+        %tmp.46 = agetv %tmp.44 %tmp.45;
+        %tmp.47 = add %tmp.43 %tmp.46;
+        lputv %yg.6 %tmp.47;
+        symbol [ yg %yg.6 110 12 14 ];
+[ "C:\Users\Cvar1\Downloads\Apps\source\Planets.mc" 111 8 ]
+        [ "C__Users_Cvar1_Downloads_Apps_source_Planets_mc_102_36_119_4_start" "C__Users_Cvar1_Downloads_Apps_source_Planets_mc_102_36_119_4_stop" ]
+        %zg.7 = local;
+        symbol [ zg %zg.7 111 12 14 ];
+        %tmp.48 = lgetv %helio.4;
+        symbol [ helio %tmp.48 111 17 22 ];
+        %tmp.49 = 2;
+        %tmp.50 = agetv %tmp.48 %tmp.49;
+        lputv %zg.7 %tmp.50;
+        symbol [ zg %zg.7 111 12 14 ];
+[ "C:\Users\Cvar1\Downloads\Apps\source\Planets.mc" 113 8 ]
+        [ "C__Users_Cvar1_Downloads_Apps_source_Planets_mc_102_36_119_4_start" "C__Users_Cvar1_Downloads_Apps_source_Planets_mc_102_36_119_4_stop" ]
+        %lon.8 = local;
+        symbol [ lon %lon.8 113 12 15 ];
+        symbol [ SkyMath %tmp.52 113 18 25 ];
+        %tmp.52 = getv ? :SkyMath;
+        symbol [ norm360 %tmp.53 113 26 33 ];
+        %tmp.53 = getv function %tmp.52 :norm360;
+        symbol [ SkyMath %tmp.55 113 34 41 ];
+        %tmp.55 = getv ? :SkyMath;
+        symbol [ datan2 %tmp.56 113 42 48 ];
+        %tmp.56 = getv function %tmp.55 :datan2;
+        %tmp.57 = lgetv %yg.6;
+        symbol [ yg %tmp.57 113 49 51 ];
+        %tmp.58 = lgetv %xg.5;
+        symbol [ xg %tmp.58 113 53 55 ];
+        %tmp.59 = invoke %tmp.55 %tmp.56(%tmp.57, %tmp.58);
+        %tmp.60 = invoke %tmp.52 %tmp.53(%tmp.59);
+        lputv %lon.8 %tmp.60;
+        symbol [ lon %lon.8 113 12 15 ];
+[ "C:\Users\Cvar1\Downloads\Apps\source\Planets.mc" 114 8 ]
+        [ "C__Users_Cvar1_Downloads_Apps_source_Planets_mc_102_36_119_4_start" "C__Users_Cvar1_Downloads_Apps_source_Planets_mc_102_36_119_4_stop" ]
+        %lat.9 = local;
+        symbol [ lat %lat.9 114 12 15 ];
+        symbol [ SkyMath %tmp.62 114 18 25 ];
+        %tmp.62 = getv ? :SkyMath;
+        symbol [ datan2 %tmp.63 114 26 32 ];
+        %tmp.63 = getv function %tmp.62 :datan2;
+        %tmp.64 = lgetv %zg.7;
+        symbol [ zg %tmp.64 114 33 35 ];
+        symbol [ Math %tmp.65 114 37 41 ];
+        %tmp.65 = getm $.Toybox.Math;
+        symbol [ sqrt %tmp.66 114 42 46 ];
+        %tmp.66 = getv function %tmp.65 :sqrt;
+        %tmp.67 = lgetv %xg.5;
+        symbol [ xg %tmp.67 114 47 49 ];
+        %tmp.68 = lgetv %xg.5;
+        symbol [ xg %tmp.68 114 52 54 ];
+        %tmp.69 = mul %tmp.67 %tmp.68;
+        %tmp.70 = lgetv %yg.6;
+        symbol [ yg %tmp.70 114 57 59 ];
+        %tmp.71 = lgetv %yg.6;
+        symbol [ yg %tmp.71 114 62 64 ];
+        %tmp.72 = mul %tmp.70 %tmp.71;
+        %tmp.73 = add %tmp.69 %tmp.72;
+        %tmp.74 = invoke %tmp.65 %tmp.66(%tmp.73);
+        %tmp.75 = invoke %tmp.62 %tmp.63(%tmp.64, %tmp.74);
+        lputv %lat.9 %tmp.75;
+        symbol [ lat %lat.9 114 12 15 ];
+[ "C:\Users\Cvar1\Downloads\Apps\source\Planets.mc" 116 8 ]
+        [ "C__Users_Cvar1_Downloads_Apps_source_Planets_mc_102_36_119_4_start" "C__Users_Cvar1_Downloads_Apps_source_Planets_mc_102_36_119_4_stop" ]
+        %t.10 = local;
+        symbol [ t %t.10 116 12 13 ];
+        %tmp.76 = lgetv %jd;
+        symbol [ jd %tmp.76 116 17 19 ];
+        %tmp.77 = 2451545.0;
+        %tmp.78 = sub %tmp.76 %tmp.77;
+        %tmp.79 = 36525.0;
+        %tmp.80 = div %tmp.78 %tmp.79;
+        lputv %t.10 %tmp.80;
+        symbol [ t %t.10 116 12 13 ];
+[ "C:\Users\Cvar1\Downloads\Apps\source\Planets.mc" 117 8 ]
+        [ "C__Users_Cvar1_Downloads_Apps_source_Planets_mc_102_36_119_4_start" "C__Users_Cvar1_Downloads_Apps_source_Planets_mc_102_36_119_4_stop" ]
+        %eps.11 = local;
+        symbol [ eps %eps.11 117 12 15 ];
+        symbol [ SolarLunar %tmp.82 117 18 28 ];
+        %tmp.82 = getv ? :SolarLunar;
+        symbol [ obliquity %tmp.83 117 29 38 ];
+        %tmp.83 = getv function %tmp.82 :obliquity;
+        %tmp.84 = lgetv %t.10;
+        symbol [ t %tmp.84 117 39 40 ];
+        %tmp.85 = invoke %tmp.82 %tmp.83(%tmp.84);
+        lputv %eps.11 %tmp.85;
+        symbol [ eps %eps.11 117 12 15 ];
+[ "C:\Users\Cvar1\Downloads\Apps\source\Planets.mc" 118 8 ]
+        symbol [ SolarLunar %tmp.87 118 15 25 ];
+        %tmp.87 = getv ? :SolarLunar;
+        symbol [ eclipticToEquatorial %tmp.88 118 26 46 ];
+        %tmp.88 = getv function %tmp.87 :eclipticToEquatorial;
+        %tmp.89 = lgetv %lon.8;
+        symbol [ lon %tmp.89 118 47 50 ];
+        %tmp.90 = lgetv %lat.9;
+        symbol [ lat %tmp.90 118 52 55 ];
+        %tmp.91 = lgetv %eps.11;
+        symbol [ eps %tmp.91 118 57 60 ];
+        %tmp.92 = invoke %tmp.87 %tmp.88(%tmp.89, %tmp.90, %tmp.91);
+        ret %tmp.92;
+C__Users_Cvar1_Downloads_Apps_source_Planets_mc_102_36_119_4_stop:
+    }
+}
+[ @file = "C:\Users\Cvar1\Downloads\Apps\source\Planets.mc"; @line = 1; ]
+<init> {
+}

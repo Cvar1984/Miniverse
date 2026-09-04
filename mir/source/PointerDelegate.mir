@@ -1,0 +1,44 @@
+[ @file = "C:\Users\Cvar1\Downloads\Apps\source\PointerDelegate.mc"; @line = 1; @symbol_usingdef<0> = [Toybox,1,6,12]; @symbol_usingdef<1> = [WatchUi,1,13,20]; @symbol_usingAlias = [WatchUi,1,24,31]; ]
+using Toybox.WatchUi as :WatchUi;
+[ @file = "C:\Users\Cvar1\Downloads\Apps\source\PointerDelegate.mc"; @line = 3; @symbol_classdef = [PointerDelegate,3,6,21]; @symbol_extends<0> = [WatchUi,3,30,37]; @symbol_extends<1> = [BehaviorDelegate,3,38,54]; ]
+class PointerDelegate extends WatchUi.BehaviorDelegate {
+    [ @file = "C:\Users\Cvar1\Downloads\Apps\source\PointerDelegate.mc"; @line = 3; ]
+    <init> {
+    }
+    [ @file = "C:\Users\Cvar1\Downloads\Apps\source\PointerDelegate.mc"; @line = 3; ]
+    static
+    <init> {
+    }
+    [ @file = "C:\Users\Cvar1\Downloads\Apps\source\PointerDelegate.mc"; @line = 4; @symbol_functiondef = [initialize,4,13,23]; ]
+    function initialize() as Void {
+C__Users_Cvar1_Downloads_Apps_source_PointerDelegate_mc_4_26_6_4_start:
+[ "C:\Users\Cvar1\Downloads\Apps\source\PointerDelegate.mc" 5 8 ]
+        symbol [ BehaviorDelegate %tmp.2 5 8 24 ];
+        %tmp.2 = getv ? :BehaviorDelegate;
+        symbol [ initialize %tmp.3 5 25 35 ];
+        %tmp.3 = getv function %tmp.2 :initialize;
+        invoke %tmp.2 %tmp.3();
+C__Users_Cvar1_Downloads_Apps_source_PointerDelegate_mc_4_26_6_4_stop:
+    }
+    [ @file = "C:\Users\Cvar1\Downloads\Apps\source\PointerDelegate.mc"; @line = 8; @symbol_functiondef = [onBack,8,13,19]; ]
+    function onBack() {
+C__Users_Cvar1_Downloads_Apps_source_PointerDelegate_mc_8_22_11_4_start:
+[ "C:\Users\Cvar1\Downloads\Apps\source\PointerDelegate.mc" 9 8 ]
+        symbol [ WatchUi %tmp.1 9 8 15 ];
+        %tmp.1 = getm $.Toybox.WatchUi;
+        symbol [ popView %tmp.2 9 16 23 ];
+        %tmp.2 = getv function %tmp.1 :popView;
+        symbol [ WatchUi %tmp.3 9 24 31 ];
+        %tmp.3 = getm $.Toybox.WatchUi;
+        symbol [ SLIDE_RIGHT %tmp.4 9 32 43 ];
+        %tmp.4 = getv %tmp.3 :SLIDE_RIGHT;
+        invoke %tmp.1 %tmp.2(%tmp.4);
+[ "C:\Users\Cvar1\Downloads\Apps\source\PointerDelegate.mc" 10 8 ]
+        %tmp.5 = true;
+        ret %tmp.5;
+C__Users_Cvar1_Downloads_Apps_source_PointerDelegate_mc_8_22_11_4_stop:
+    }
+}
+[ @file = "C:\Users\Cvar1\Downloads\Apps\source\PointerDelegate.mc"; @line = 1; ]
+<init> {
+}

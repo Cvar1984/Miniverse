@@ -1,0 +1,48 @@
+[ @file = "C:\Users\Cvar1\Downloads\Apps\source\CrossoverAmoledApp.mc"; @line = 1; @symbol_usingdef<0> = [Toybox,1,6,12]; @symbol_usingdef<1> = [Application,1,13,24]; @symbol_usingAlias = [Application,1,28,39]; ]
+using Toybox.Application as :Application;
+[ @file = "C:\Users\Cvar1\Downloads\Apps\source\CrossoverAmoledApp.mc"; @line = 2; @symbol_usingdef<0> = [Toybox,2,6,12]; @symbol_usingdef<1> = [WatchUi,2,13,20]; @symbol_usingAlias = [WatchUi,2,24,31]; ]
+using Toybox.WatchUi as :WatchUi;
+[ @file = "C:\Users\Cvar1\Downloads\Apps\source\CrossoverAmoledApp.mc"; @line = 4; @symbol_classdef = [CrossoverAmoledApp,4,6,24]; @symbol_extends<0> = [Application,4,33,44]; @symbol_extends<1> = [AppBase,4,45,52]; ]
+class CrossoverAmoledApp extends Application.AppBase {
+    [ @file = "C:\Users\Cvar1\Downloads\Apps\source\CrossoverAmoledApp.mc"; @line = 4; ]
+    <init> {
+    }
+    [ @file = "C:\Users\Cvar1\Downloads\Apps\source\CrossoverAmoledApp.mc"; @line = 4; ]
+    static
+    <init> {
+    }
+    [ @file = "C:\Users\Cvar1\Downloads\Apps\source\CrossoverAmoledApp.mc"; @line = 5; @symbol_functiondef = [initialize,5,13,23]; ]
+    function initialize() as Void {
+C__Users_Cvar1_Downloads_Apps_source_CrossoverAmoledApp_mc_5_26_7_4_start:
+[ "C:\Users\Cvar1\Downloads\Apps\source\CrossoverAmoledApp.mc" 6 8 ]
+        symbol [ AppBase %tmp.2 6 8 15 ];
+        %tmp.2 = getv ? :AppBase;
+        symbol [ initialize %tmp.3 6 16 26 ];
+        %tmp.3 = getv function %tmp.2 :initialize;
+        invoke %tmp.2 %tmp.3();
+C__Users_Cvar1_Downloads_Apps_source_CrossoverAmoledApp_mc_5_26_7_4_stop:
+    }
+    [ @file = "C:\Users\Cvar1\Downloads\Apps\source\CrossoverAmoledApp.mc"; @line = 9; @symbol_functiondef = [getInitialView,9,13,27]; ]
+    function getInitialView() {
+C__Users_Cvar1_Downloads_Apps_source_CrossoverAmoledApp_mc_9_30_11_4_start:
+[ "C:\Users\Cvar1\Downloads\Apps\source\CrossoverAmoledApp.mc" 10 8 ]
+        %tmp.1 = newa 2;
+        symbol [ SkyMenus %tmp.3 10 16 24 ];
+        %tmp.3 = getv ? :SkyMenus;
+        symbol [ buildRootMenu %tmp.4 10 25 38 ];
+        %tmp.4 = getv function %tmp.3 :buildRootMenu;
+        %tmp.5 = invoke %tmp.3 %tmp.4();
+        %tmp.6 = dup %tmp.1;
+        %tmp.7 = aputv %tmp.6 0 %tmp.5;
+        symbol [ RootMenuDelegate %tmp.11 10 46 62 ];
+        %tmp.11 = getv ? :RootMenuDelegate;
+        %tmp.8 = newc %tmp.11 ();
+        %tmp.12 = dup %tmp.7;
+        %tmp.13 = aputv %tmp.12 1 %tmp.8;
+        ret %tmp.13;
+C__Users_Cvar1_Downloads_Apps_source_CrossoverAmoledApp_mc_9_30_11_4_stop:
+    }
+}
+[ @file = "C:\Users\Cvar1\Downloads\Apps\source\CrossoverAmoledApp.mc"; @line = 1; ]
+<init> {
+}

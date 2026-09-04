@@ -1,0 +1,26 @@
+[ @file = "C:\Users\Cvar1\Downloads\Apps\source\MainDelegate.mc"; @line = 1; @symbol_usingdef<0> = [Toybox,1,6,12]; @symbol_usingdef<1> = [WatchUi,1,13,20]; @symbol_usingAlias = [WatchUi,1,24,31]; ]
+using Toybox.WatchUi as :WatchUi;
+[ @file = "C:\Users\Cvar1\Downloads\Apps\source\MainDelegate.mc"; @line = 3; @symbol_classdef = [MainDelegate,3,6,18]; @symbol_extends<0> = [WatchUi,3,27,34]; @symbol_extends<1> = [BehaviorDelegate,3,35,51]; ]
+class MainDelegate extends WatchUi.BehaviorDelegate {
+    [ @file = "C:\Users\Cvar1\Downloads\Apps\source\MainDelegate.mc"; @line = 3; ]
+    <init> {
+    }
+    [ @file = "C:\Users\Cvar1\Downloads\Apps\source\MainDelegate.mc"; @line = 3; ]
+    static
+    <init> {
+    }
+    [ @file = "C:\Users\Cvar1\Downloads\Apps\source\MainDelegate.mc"; @line = 4; @symbol_functiondef = [initialize,4,13,23]; ]
+    function initialize() as Void {
+C__Users_Cvar1_Downloads_Apps_source_MainDelegate_mc_4_26_6_4_start:
+[ "C:\Users\Cvar1\Downloads\Apps\source\MainDelegate.mc" 5 8 ]
+        symbol [ BehaviorDelegate %tmp.2 5 8 24 ];
+        %tmp.2 = getv ? :BehaviorDelegate;
+        symbol [ initialize %tmp.3 5 25 35 ];
+        %tmp.3 = getv function %tmp.2 :initialize;
+        invoke %tmp.2 %tmp.3();
+C__Users_Cvar1_Downloads_Apps_source_MainDelegate_mc_4_26_6_4_stop:
+    }
+}
+[ @file = "C:\Users\Cvar1\Downloads\Apps\source\MainDelegate.mc"; @line = 1; ]
+<init> {
+}

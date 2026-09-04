@@ -1,0 +1,1278 @@
+[ @file = "C:\Users\Cvar1\Downloads\Apps\source\PointerView.mc"; @line = 1; @symbol_usingdef<0> = [Toybox,1,6,12]; @symbol_usingdef<1> = [Lang,1,13,17]; @symbol_usingAlias = [Lang,1,21,25]; ]
+using Toybox.Lang as :Lang;
+[ @file = "C:\Users\Cvar1\Downloads\Apps\source\PointerView.mc"; @line = 2; @symbol_usingdef<0> = [Toybox,2,6,12]; @symbol_usingdef<1> = [WatchUi,2,13,20]; @symbol_usingAlias = [WatchUi,2,24,31]; ]
+using Toybox.WatchUi as :WatchUi;
+[ @file = "C:\Users\Cvar1\Downloads\Apps\source\PointerView.mc"; @line = 3; @symbol_usingdef<0> = [Toybox,3,6,12]; @symbol_usingdef<1> = [Graphics,3,13,21]; @symbol_usingAlias = [Graphics,3,25,33]; ]
+using Toybox.Graphics as :Graphics;
+[ @file = "C:\Users\Cvar1\Downloads\Apps\source\PointerView.mc"; @line = 4; @symbol_usingdef<0> = [Toybox,4,6,12]; @symbol_usingdef<1> = [Position,4,13,21]; @symbol_usingAlias = [Position,4,25,33]; ]
+using Toybox.Position as :Position;
+[ @file = "C:\Users\Cvar1\Downloads\Apps\source\PointerView.mc"; @line = 5; @symbol_usingdef<0> = [Toybox,5,6,12]; @symbol_usingdef<1> = [Sensor,5,13,19]; @symbol_usingAlias = [Sensor,5,23,29]; ]
+using Toybox.Sensor as :Sensor;
+[ @file = "C:\Users\Cvar1\Downloads\Apps\source\PointerView.mc"; @line = 6; @symbol_usingdef<0> = [Toybox,6,6,12]; @symbol_usingdef<1> = [Timer,6,13,18]; @symbol_usingAlias = [Timer,6,22,27]; ]
+using Toybox.Timer as :Timer;
+[ @file = "C:\Users\Cvar1\Downloads\Apps\source\PointerView.mc"; @line = 7; @symbol_usingdef<0> = [Toybox,7,6,12]; @symbol_usingdef<1> = [Time,7,13,17]; @symbol_usingAlias = [Time,7,21,25]; ]
+using Toybox.Time as :Time;
+[ @file = "C:\Users\Cvar1\Downloads\Apps\source\PointerView.mc"; @line = 8; @symbol_usingdef<0> = [Toybox,8,6,12]; @symbol_usingdef<1> = [Time,8,13,17]; @symbol_usingdef<2> = [Gregorian,8,18,27]; @symbol_usingAlias = [Gregorian,8,31,40]; ]
+using Toybox.Time.Gregorian as :Gregorian;
+[ @file = "C:\Users\Cvar1\Downloads\Apps\source\PointerView.mc"; @line = 9; @symbol_usingdef<0> = [Toybox,9,6,12]; @symbol_usingdef<1> = [Math,9,13,17]; @symbol_usingAlias = [Math,9,21,25]; ]
+using Toybox.Math as :Math;
+[ @file = "C:\Users\Cvar1\Downloads\Apps\source\PointerView.mc"; @line = 13; @symbol_classdef = [PointerView,13,6,17]; @symbol_extends<0> = [WatchUi,13,26,33]; @symbol_extends<1> = [View,13,34,38]; ]
+class PointerView extends WatchUi.View {
+    [ @file = "C:\Users\Cvar1\Downloads\Apps\source\PointerView.mc"; @line = 13; ]
+    <init> {
+    }
+    [ @file = "C:\Users\Cvar1\Downloads\Apps\source\PointerView.mc"; @line = 13; ]
+    static
+    <init> {
+    }
+    [ @file = "C:\Users\Cvar1\Downloads\Apps\source\PointerView.mc"; @line = 14; @position = 15; @symbol_vardef = [_obj,14,15,19]; @symbol_type<0> = [Lang,14,23,27]; @symbol_type<1> = [Dictionary,14,28,38]; ]
+    protected
+    var _obj as Lang.Dictionary;
+    [ @file = "C:\Users\Cvar1\Downloads\Apps\source\PointerView.mc"; @line = 15; @position = 15; @symbol_vardef = [_lat,15,15,19]; @symbol_type<0> = [Lang,15,23,27]; @symbol_type<1> = [Float,15,28,33]; ]
+    protected
+    var _lat as Lang.Float or Null;
+    [ @file = "C:\Users\Cvar1\Downloads\Apps\source\PointerView.mc"; @line = 16; @position = 15; @symbol_vardef = [_lon,16,15,19]; @symbol_type<0> = [Lang,16,23,27]; @symbol_type<1> = [Float,16,28,33]; ]
+    protected
+    var _lon as Lang.Float or Null;
+    [ @file = "C:\Users\Cvar1\Downloads\Apps\source\PointerView.mc"; @line = 17; @position = 15; @symbol_vardef = [_headingRad,17,15,26]; @symbol_type<0> = [Lang,17,30,34]; @symbol_type<1> = [Float,17,35,40]; ]
+    protected
+    var _headingRad as Lang.Float or Null;
+    [ @file = "C:\Users\Cvar1\Downloads\Apps\source\PointerView.mc"; @line = 18; @position = 15; @symbol_vardef = [_timer,18,15,21]; @symbol_type<0> = [Timer,18,25,30]; @symbol_type<1> = [Timer,18,31,36]; ]
+    protected
+    var _timer as Timer.Timer or Null;
+    [ @file = "C:\Users\Cvar1\Downloads\Apps\source\PointerView.mc"; @line = 19; @position = 15; @symbol_vardef = [_locateTimer,19,15,27]; @symbol_type<0> = [Timer,19,31,36]; @symbol_type<1> = [Timer,19,37,42]; ]
+    protected
+    var _locateTimer as Timer.Timer or Null;
+    [ @file = "C:\Users\Cvar1\Downloads\Apps\source\PointerView.mc"; @line = 20; @position = 15; @symbol_vardef = [_haveUsableFix,20,15,29]; @symbol_type<0> = [Lang,20,33,37]; @symbol_type<1> = [Boolean,20,38,45]; ]
+    protected
+    var _haveUsableFix as Lang.Boolean;
+    [ @file = "C:\Users\Cvar1\Downloads\Apps\source\PointerView.mc"; @line = 21; @position = 15; @symbol_vardef = [_usingGps,21,15,24]; @symbol_type<0> = [Lang,21,28,32]; @symbol_type<1> = [Boolean,21,33,40]; ]
+    protected
+    var _usingGps as Lang.Boolean;
+    [ @file = "C:\Users\Cvar1\Downloads\Apps\source\PointerView.mc"; @line = 23; @symbol_functiondef = [initialize,23,13,23]; @symbol_param<0> = [obj,23,24,27]; @symbol_param<0>_type<0> = [Lang,23,31,35]; @symbol_param<0>_type<1> = [Dictionary,23,36,46]; ]
+    function initialize(obj as Lang.Dictionary) as Void {
+C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_23_48_31_4_start:
+[ "C:\Users\Cvar1\Downloads\Apps\source\PointerView.mc" 24 8 ]
+        symbol [ View %tmp.2 24 8 12 ];
+        %tmp.2 = getv ? :View;
+        symbol [ initialize %tmp.3 24 13 23 ];
+        %tmp.3 = getv function %tmp.2 :initialize;
+        invoke %tmp.2 %tmp.3();
+[ "C:\Users\Cvar1\Downloads\Apps\source\PointerView.mc" 25 8 ]
+        %tmp.4 = lgetv %obj;
+        symbol [ obj %tmp.4 25 15 18 ];
+        symbol [ _obj ? 25 8 12 ];
+        putv self :_obj %tmp.4;
+[ "C:\Users\Cvar1\Downloads\Apps\source\PointerView.mc" 26 8 ]
+        %tmp.5 = null;
+        symbol [ _lat ? 26 8 12 ];
+        putv self :_lat %tmp.5;
+[ "C:\Users\Cvar1\Downloads\Apps\source\PointerView.mc" 27 8 ]
+        %tmp.6 = null;
+        symbol [ _lon ? 27 8 12 ];
+        putv self :_lon %tmp.6;
+[ "C:\Users\Cvar1\Downloads\Apps\source\PointerView.mc" 28 8 ]
+        %tmp.7 = null;
+        symbol [ _headingRad ? 28 8 19 ];
+        putv self :_headingRad %tmp.7;
+[ "C:\Users\Cvar1\Downloads\Apps\source\PointerView.mc" 29 8 ]
+        %tmp.8 = false;
+        symbol [ _haveUsableFix ? 29 8 22 ];
+        putv self :_haveUsableFix %tmp.8;
+[ "C:\Users\Cvar1\Downloads\Apps\source\PointerView.mc" 30 8 ]
+        %tmp.9 = false;
+        symbol [ _usingGps ? 30 8 17 ];
+        putv self :_usingGps %tmp.9;
+C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_23_48_31_4_stop:
+    }
+    [ @file = "C:\Users\Cvar1\Downloads\Apps\source\PointerView.mc"; @line = 33; @symbol_functiondef = [onShow,33,13,19]; ]
+    function onShow() as Void {
+C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_33_30_46_4_start:
+[ "C:\Users\Cvar1\Downloads\Apps\source\PointerView.mc" 34 8 ]
+        symbol [ Sensor %tmp.1 34 8 14 ];
+        %tmp.1 = getm $.Toybox.Sensor;
+        symbol [ enableSensorEvents %tmp.2 34 15 33 ];
+        %tmp.2 = getv function %tmp.1 :enableSensorEvents;
+        %tmp.3 = self;
+        symbol [ method %tmp.4 34 34 40 ];
+        %tmp.4 = getv function %tmp.3 :method;
+        %tmp.6 = const :onSensor;
+        symbol [ onSensor %tmp.6 34 42 50 const ];
+        %tmp.7 = invoke %tmp.3 %tmp.4(%tmp.6);
+        invoke %tmp.1 %tmp.2(%tmp.7);
+[ "C:\Users\Cvar1\Downloads\Apps\source\PointerView.mc" 35 8 ]
+        symbol [ Timer %tmp.10 35 21 26 ];
+        %tmp.10 = getm $.Toybox.Timer;
+        symbol [ Timer %tmp.11 35 27 32 ];
+        %tmp.11 = getv function ? %tmp.10 :Timer;
+        %tmp.8 = newc %tmp.11 ();
+        symbol [ _timer ? 35 8 14 ];
+        putv self :_timer %tmp.8;
+[ "C:\Users\Cvar1\Downloads\Apps\source\PointerView.mc" 36 8 ]
+        symbol [ _timer %tmp.13 36 8 14 ];
+        %tmp.13 = getv ? :_timer;
+        symbol [ start %tmp.14 36 15 20 ];
+        %tmp.14 = getv function %tmp.13 :start;
+        %tmp.15 = self;
+        symbol [ method %tmp.16 36 21 27 ];
+        %tmp.16 = getv function %tmp.15 :method;
+        %tmp.18 = const :onTimer;
+        symbol [ onTimer %tmp.18 36 29 36 const ];
+        %tmp.19 = invoke %tmp.15 %tmp.16(%tmp.18);
+        %tmp.20 = 1000;
+        %tmp.21 = true;
+        invoke %tmp.13 %tmp.14(%tmp.19, %tmp.20, %tmp.21);
+[ "C:\Users\Cvar1\Downloads\Apps\source\PointerView.mc" 41 8 ]
+        %tmp.22 = self;
+        symbol [ applyPositionInfo %tmp.23 41 8 25 ];
+        %tmp.23 = getv function %tmp.22 :applyPositionInfo;
+        symbol [ Position %tmp.24 41 26 34 ];
+        %tmp.24 = getm $.Toybox.Position;
+        symbol [ getInfo %tmp.25 41 35 42 ];
+        %tmp.25 = getv function %tmp.24 :getInfo;
+        %tmp.26 = invoke %tmp.24 %tmp.25();
+        invoke %tmp.22 %tmp.23(%tmp.26);
+[ "C:\Users\Cvar1\Downloads\Apps\source\PointerView.mc" 42 8 ]
+        symbol [ Position %tmp.27 42 8 16 ];
+        %tmp.27 = getm $.Toybox.Position;
+        symbol [ enableLocationEvents %tmp.28 42 17 37 ];
+        %tmp.28 = getv function %tmp.27 :enableLocationEvents;
+        symbol [ Position %tmp.29 42 38 46 ];
+        %tmp.29 = getm $.Toybox.Position;
+        symbol [ LOCATION_ONE_SHOT %tmp.30 42 47 64 ];
+        %tmp.30 = getv %tmp.29 :LOCATION_ONE_SHOT;
+        %tmp.31 = self;
+        symbol [ method %tmp.32 42 66 72 ];
+        %tmp.32 = getv function %tmp.31 :method;
+        %tmp.34 = const :onPosition;
+        symbol [ onPosition %tmp.34 42 74 84 const ];
+        %tmp.35 = invoke %tmp.31 %tmp.32(%tmp.34);
+        invoke %tmp.27 %tmp.28(%tmp.30, %tmp.35);
+[ "C:\Users\Cvar1\Downloads\Apps\source\PointerView.mc" 44 8 ]
+        symbol [ Timer %tmp.38 44 27 32 ];
+        %tmp.38 = getm $.Toybox.Timer;
+        symbol [ Timer %tmp.39 44 33 38 ];
+        %tmp.39 = getv function ? %tmp.38 :Timer;
+        %tmp.36 = newc %tmp.39 ();
+        symbol [ _locateTimer ? 44 8 20 ];
+        putv self :_locateTimer %tmp.36;
+[ "C:\Users\Cvar1\Downloads\Apps\source\PointerView.mc" 45 8 ]
+        symbol [ _locateTimer %tmp.41 45 8 20 ];
+        %tmp.41 = getv ? :_locateTimer;
+        symbol [ start %tmp.42 45 21 26 ];
+        %tmp.42 = getv function %tmp.41 :start;
+        %tmp.43 = self;
+        symbol [ method %tmp.44 45 27 33 ];
+        %tmp.44 = getv function %tmp.43 :method;
+        %tmp.46 = const :onLocateTimeout;
+        symbol [ onLocateTimeout %tmp.46 45 35 50 const ];
+        %tmp.47 = invoke %tmp.43 %tmp.44(%tmp.46);
+        %tmp.48 = 4000;
+        %tmp.49 = false;
+        invoke %tmp.41 %tmp.42(%tmp.47, %tmp.48, %tmp.49);
+C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_33_30_46_4_stop:
+    }
+    [ @file = "C:\Users\Cvar1\Downloads\Apps\source\PointerView.mc"; @line = 48; @symbol_functiondef = [onHide,48,13,19]; ]
+    function onHide() as Void {
+C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_48_30_59_4_start:
+[ "C:\Users\Cvar1\Downloads\Apps\source\PointerView.mc" 49 8 ]
+        symbol [ Position %tmp.1 49 8 16 ];
+        %tmp.1 = getm $.Toybox.Position;
+        symbol [ enableLocationEvents %tmp.2 49 17 37 ];
+        %tmp.2 = getv function %tmp.1 :enableLocationEvents;
+        symbol [ Position %tmp.3 49 38 46 ];
+        %tmp.3 = getm $.Toybox.Position;
+        symbol [ LOCATION_DISABLE %tmp.4 49 47 63 ];
+        %tmp.4 = getv %tmp.3 :LOCATION_DISABLE;
+        %tmp.5 = null;
+        invoke %tmp.1 %tmp.2(%tmp.4, %tmp.5);
+[ "C:\Users\Cvar1\Downloads\Apps\source\PointerView.mc" 50 8 ]
+        symbol [ Sensor %tmp.6 50 8 14 ];
+        %tmp.6 = getm $.Toybox.Sensor;
+        symbol [ enableSensorEvents %tmp.7 50 15 33 ];
+        %tmp.7 = getv function %tmp.6 :enableSensorEvents;
+        %tmp.8 = null;
+        invoke %tmp.6 %tmp.7(%tmp.8);
+[ "C:\Users\Cvar1\Downloads\Apps\source\PointerView.mc" 51 8 ]
+C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_51_8_54_8_if_stmt:
+        symbol [ _timer %tmp.10 51 12 18 ];
+        %tmp.10 = getv ? :_timer;
+        %tmp.11 = null;
+        %tmp.12 = ne %tmp.10 %tmp.11;
+        bf %tmp.12 @C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_51_8_54_8_if_end;
+C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_51_8_54_8_if_true:
+C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_51_28_54_8_start:
+[ "C:\Users\Cvar1\Downloads\Apps\source\PointerView.mc" 52 12 ]
+        symbol [ _timer %tmp.14 52 12 18 ];
+        %tmp.14 = getv ? :_timer;
+        %tmp.15 = as %tmp.14 { (!Null) };
+        symbol [ stop %tmp.16 52 19 23 ];
+        %tmp.16 = getv function %tmp.15 :stop;
+        invoke %tmp.15 %tmp.16();
+[ "C:\Users\Cvar1\Downloads\Apps\source\PointerView.mc" 53 12 ]
+        %tmp.17 = null;
+        symbol [ _timer ? 53 12 18 ];
+        putv self :_timer %tmp.17;
+C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_51_28_54_8_stop:
+        goto @C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_51_8_54_8_if_end;
+C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_51_8_54_8_if_end:
+[ "C:\Users\Cvar1\Downloads\Apps\source\PointerView.mc" 55 8 ]
+C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_55_8_58_8_if_stmt:
+        symbol [ _locateTimer %tmp.19 55 12 24 ];
+        %tmp.19 = getv ? :_locateTimer;
+        %tmp.20 = null;
+        %tmp.21 = ne %tmp.19 %tmp.20;
+        bf %tmp.21 @C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_55_8_58_8_if_end;
+C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_55_8_58_8_if_true:
+C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_55_34_58_8_start:
+[ "C:\Users\Cvar1\Downloads\Apps\source\PointerView.mc" 56 12 ]
+        symbol [ _locateTimer %tmp.23 56 12 24 ];
+        %tmp.23 = getv ? :_locateTimer;
+        %tmp.24 = as %tmp.23 { (!Null) };
+        symbol [ stop %tmp.25 56 25 29 ];
+        %tmp.25 = getv function %tmp.24 :stop;
+        invoke %tmp.24 %tmp.25();
+[ "C:\Users\Cvar1\Downloads\Apps\source\PointerView.mc" 57 12 ]
+        %tmp.26 = null;
+        symbol [ _locateTimer ? 57 12 24 ];
+        putv self :_locateTimer %tmp.26;
+C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_55_34_58_8_stop:
+        goto @C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_55_8_58_8_if_end;
+C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_55_8_58_8_if_end:
+C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_48_30_59_4_stop:
+    }
+    [ @file = "C:\Users\Cvar1\Downloads\Apps\source\PointerView.mc"; @line = 61; @symbol_functiondef = [onPosition,61,13,23]; @symbol_param<0> = [info,61,24,28]; @symbol_param<0>_type<0> = [Position,61,32,40]; @symbol_param<0>_type<1> = [Info,61,41,45]; ]
+    function onPosition(info as Position.Info) as Void {
+C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_61_55_63_4_start:
+[ "C:\Users\Cvar1\Downloads\Apps\source\PointerView.mc" 62 8 ]
+        %tmp.1 = self;
+        symbol [ applyPositionInfo %tmp.2 62 8 25 ];
+        %tmp.2 = getv function %tmp.1 :applyPositionInfo;
+        %tmp.3 = lgetv %info;
+        symbol [ info %tmp.3 62 26 30 ];
+        invoke %tmp.1 %tmp.2(%tmp.3);
+C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_61_55_63_4_stop:
+    }
+    [ @file = "C:\Users\Cvar1\Downloads\Apps\source\PointerView.mc"; @line = 65; @symbol_functiondef = [applyPositionInfo,65,13,30]; @symbol_param<0> = [info,65,31,35]; @symbol_param<0>_type<0> = [Position,65,39,47]; @symbol_param<0>_type<1> = [Info,65,48,52]; ]
+    function applyPositionInfo(info as Position.Info) as Void {
+C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_65_62_81_4_start:
+[ "C:\Users\Cvar1\Downloads\Apps\source\PointerView.mc" 66 8 ]
+C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_66_8_68_8_if_stmt:
+        %tmp.1 = lgetv %info;
+        symbol [ info %tmp.1 66 12 16 ];
+        symbol [ position %tmp.2 66 17 25 ];
+        %tmp.2 = getv %tmp.1 :position;
+        %tmp.3 = null;
+        %tmp.4 = eq %tmp.2 %tmp.3;
+        bf %tmp.4 @C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_66_8_68_8_if_end;
+C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_66_8_68_8_if_true:
+C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_66_35_68_8_start:
+[ "C:\Users\Cvar1\Downloads\Apps\source\PointerView.mc" 67 12 ]
+        ret ?;
+C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_66_35_68_8_stop:
+        goto @C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_66_8_68_8_if_end;
+C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_66_8_68_8_if_end:
+[ "C:\Users\Cvar1\Downloads\Apps\source\PointerView.mc" 69 8 ]
+        [ "C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_65_62_81_4_start" "C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_65_62_81_4_stop" ]
+        %deg.1 = local;
+        symbol [ deg %deg.1 69 12 15 ];
+        %tmp.5 = lgetv %info;
+        symbol [ info %tmp.5 69 18 22 ];
+        symbol [ position %tmp.6 69 23 31 ];
+        %tmp.6 = getv %tmp.5 :position;
+        symbol [ toDegrees %tmp.7 69 32 41 ];
+        %tmp.7 = getv function %tmp.6 :toDegrees;
+        %tmp.8 = invoke %tmp.6 %tmp.7();
+        lputv %deg.1 %tmp.8;
+        symbol [ deg %deg.1 69 12 15 ];
+[ "C:\Users\Cvar1\Downloads\Apps\source\PointerView.mc" 70 8 ]
+        %tmp.9 = lgetv %deg.1;
+        symbol [ deg %tmp.9 70 15 18 ];
+        %tmp.10 = 0;
+        %tmp.11 = agetv %tmp.9 %tmp.10;
+        symbol [ toFloat %tmp.12 70 22 29 ];
+        %tmp.12 = getv function %tmp.11 :toFloat;
+        %tmp.13 = invoke %tmp.11 %tmp.12();
+        symbol [ _lat ? 70 8 12 ];
+        putv self :_lat %tmp.13;
+[ "C:\Users\Cvar1\Downloads\Apps\source\PointerView.mc" 71 8 ]
+        %tmp.14 = lgetv %deg.1;
+        symbol [ deg %tmp.14 71 15 18 ];
+        %tmp.15 = 1;
+        %tmp.16 = agetv %tmp.14 %tmp.15;
+        symbol [ toFloat %tmp.17 71 22 29 ];
+        %tmp.17 = getv function %tmp.16 :toFloat;
+        %tmp.18 = invoke %tmp.16 %tmp.17();
+        symbol [ _lon ? 71 8 12 ];
+        putv self :_lon %tmp.18;
+[ "C:\Users\Cvar1\Downloads\Apps\source\PointerView.mc" 73 8 ]
+        [ "C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_65_62_81_4_start" "C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_65_62_81_4_stop" ]
+        %acc.2 = local;
+        symbol [ acc %acc.2 73 12 15 ];
+        %tmp.19 = lgetv %info;
+        symbol [ info %tmp.19 73 18 22 ];
+        symbol [ accuracy %tmp.20 73 23 31 ];
+        %tmp.20 = getv %tmp.19 :accuracy;
+        lputv %acc.2 %tmp.20;
+        symbol [ acc %acc.2 73 12 15 ];
+[ "C:\Users\Cvar1\Downloads\Apps\source\PointerView.mc" 74 8 ]
+C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_74_8_80_8_if_stmt:
+C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_74_12_74_43_begin:
+        %tmp.21 = lgetv %acc.2;
+        symbol [ acc %tmp.21 74 12 15 ];
+        %tmp.22 = null;
+        %tmp.23 = ne %tmp.21 %tmp.22;
+        bf %tmp.23 @C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_74_8_80_8_if_end;
+C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_74_27_74_43_true:
+        %tmp.24 = lgetv %acc.2;
+        symbol [ acc %tmp.24 74 27 30 ];
+        %tmp.25 = as %tmp.24 { (!Null) };
+        symbol [ Position %tmp.26 74 34 42 ];
+        %tmp.26 = getm $.Toybox.Position;
+        symbol [ QUALITY_USABLE %tmp.27 74 43 57 ];
+        %tmp.27 = getv %tmp.26 :QUALITY_USABLE;
+        %tmp.28 = gte %tmp.25 %tmp.27;
+        push %tmp.28;
+C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_74_27_74_43_end:
+        %tmp.29 = phi [%tmp.23 @C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_74_12_74_43_begin] [%tmp.28 @C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_74_27_74_43_true] [%tmp.29 @C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_74_27_74_43_end];
+        bf %tmp.29 @C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_74_8_80_8_if_end;
+C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_74_8_80_8_if_true:
+C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_74_59_80_8_start:
+[ "C:\Users\Cvar1\Downloads\Apps\source\PointerView.mc" 75 12 ]
+        %tmp.30 = true;
+        symbol [ _haveUsableFix ? 75 12 26 ];
+        putv self :_haveUsableFix %tmp.30;
+[ "C:\Users\Cvar1\Downloads\Apps\source\PointerView.mc" 76 12 ]
+C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_76_12_79_12_if_stmt:
+        symbol [ _locateTimer %tmp.32 76 16 28 ];
+        %tmp.32 = getv ? :_locateTimer;
+        %tmp.33 = null;
+        %tmp.34 = ne %tmp.32 %tmp.33;
+        bf %tmp.34 @C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_76_12_79_12_if_end;
+C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_76_12_79_12_if_true:
+C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_76_38_79_12_start:
+[ "C:\Users\Cvar1\Downloads\Apps\source\PointerView.mc" 77 16 ]
+        symbol [ _locateTimer %tmp.36 77 16 28 ];
+        %tmp.36 = getv ? :_locateTimer;
+        %tmp.37 = as %tmp.36 { (!Null) };
+        symbol [ stop %tmp.38 77 29 33 ];
+        %tmp.38 = getv function %tmp.37 :stop;
+        invoke %tmp.37 %tmp.38();
+[ "C:\Users\Cvar1\Downloads\Apps\source\PointerView.mc" 78 16 ]
+        %tmp.39 = null;
+        symbol [ _locateTimer ? 78 16 28 ];
+        putv self :_locateTimer %tmp.39;
+C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_76_38_79_12_stop:
+        goto @C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_76_12_79_12_if_end;
+C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_76_12_79_12_if_end:
+C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_74_59_80_8_stop:
+        goto @C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_74_8_80_8_if_end;
+C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_74_8_80_8_if_end:
+C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_65_62_81_4_stop:
+    }
+    [ @file = "C:\Users\Cvar1\Downloads\Apps\source\PointerView.mc"; @line = 85; @symbol_functiondef = [onLocateTimeout,85,13,28]; ]
+    function onLocateTimeout() as Void {
+C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_85_39_91_4_start:
+[ "C:\Users\Cvar1\Downloads\Apps\source\PointerView.mc" 86 8 ]
+        %tmp.1 = null;
+        symbol [ _locateTimer ? 86 8 20 ];
+        putv self :_locateTimer %tmp.1;
+[ "C:\Users\Cvar1\Downloads\Apps\source\PointerView.mc" 87 8 ]
+C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_87_8_90_8_if_stmt:
+C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_87_12_87_32_begin:
+        symbol [ _haveUsableFix %tmp.3 87 13 27 ];
+        %tmp.3 = getv ? :_haveUsableFix;
+        %tmp.4 = not %tmp.3;
+        bf %tmp.4 @C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_87_8_90_8_if_end;
+C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_87_31_87_32_true:
+        symbol [ _usingGps %tmp.6 87 32 41 ];
+        %tmp.6 = getv ? :_usingGps;
+        %tmp.7 = not %tmp.6;
+        push %tmp.7;
+C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_87_31_87_32_end:
+        %tmp.8 = phi [%tmp.4 @C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_87_12_87_32_begin] [%tmp.7 @C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_87_31_87_32_true] [%tmp.8 @C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_87_31_87_32_end];
+        bf %tmp.8 @C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_87_8_90_8_if_end;
+C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_87_8_90_8_if_true:
+C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_87_43_90_8_start:
+[ "C:\Users\Cvar1\Downloads\Apps\source\PointerView.mc" 88 12 ]
+        %tmp.9 = true;
+        symbol [ _usingGps ? 88 12 21 ];
+        putv self :_usingGps %tmp.9;
+[ "C:\Users\Cvar1\Downloads\Apps\source\PointerView.mc" 89 12 ]
+        symbol [ Position %tmp.10 89 12 20 ];
+        %tmp.10 = getm $.Toybox.Position;
+        symbol [ enableLocationEvents %tmp.11 89 21 41 ];
+        %tmp.11 = getv function %tmp.10 :enableLocationEvents;
+        symbol [ Position %tmp.12 89 42 50 ];
+        %tmp.12 = getm $.Toybox.Position;
+        symbol [ LOCATION_CONTINUOUS %tmp.13 89 51 70 ];
+        %tmp.13 = getv %tmp.12 :LOCATION_CONTINUOUS;
+        %tmp.14 = self;
+        symbol [ method %tmp.15 89 72 78 ];
+        %tmp.15 = getv function %tmp.14 :method;
+        %tmp.17 = const :onPosition;
+        symbol [ onPosition %tmp.17 89 80 90 const ];
+        %tmp.18 = invoke %tmp.14 %tmp.15(%tmp.17);
+        invoke %tmp.10 %tmp.11(%tmp.13, %tmp.18);
+C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_87_43_90_8_stop:
+        goto @C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_87_8_90_8_if_end;
+C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_87_8_90_8_if_end:
+C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_85_39_91_4_stop:
+    }
+    [ @file = "C:\Users\Cvar1\Downloads\Apps\source\PointerView.mc"; @line = 93; @symbol_functiondef = [onSensor,93,13,21]; @symbol_param<0> = [info,93,22,26]; @symbol_param<0>_type<0> = [Sensor,93,30,36]; @symbol_param<0>_type<1> = [Info,93,37,41]; ]
+    function onSensor(info as Sensor.Info) as Void {
+C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_93_51_97_4_start:
+[ "C:\Users\Cvar1\Downloads\Apps\source\PointerView.mc" 94 8 ]
+C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_94_8_96_8_if_stmt:
+        %tmp.1 = lgetv %info;
+        symbol [ info %tmp.1 94 12 16 ];
+        symbol [ heading %tmp.2 94 17 24 ];
+        %tmp.2 = getv %tmp.1 :heading;
+        %tmp.3 = null;
+        %tmp.4 = ne %tmp.2 %tmp.3;
+        bf %tmp.4 @C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_94_8_96_8_if_end;
+C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_94_8_96_8_if_true:
+C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_94_34_96_8_start:
+[ "C:\Users\Cvar1\Downloads\Apps\source\PointerView.mc" 95 12 ]
+        %tmp.5 = lgetv %info;
+        symbol [ info %tmp.5 95 26 30 ];
+        symbol [ heading %tmp.6 95 31 38 ];
+        %tmp.6 = getv %tmp.5 :heading;
+        symbol [ _headingRad ? 95 12 23 ];
+        putv self :_headingRad %tmp.6;
+C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_94_34_96_8_stop:
+        goto @C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_94_8_96_8_if_end;
+C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_94_8_96_8_if_end:
+C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_93_51_97_4_stop:
+    }
+    [ @file = "C:\Users\Cvar1\Downloads\Apps\source\PointerView.mc"; @line = 99; @symbol_functiondef = [onTimer,99,13,20]; ]
+    function onTimer() as Void {
+C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_99_31_101_4_start:
+[ "C:\Users\Cvar1\Downloads\Apps\source\PointerView.mc" 100 8 ]
+        symbol [ WatchUi %tmp.1 100 8 15 ];
+        %tmp.1 = getm $.Toybox.WatchUi;
+        symbol [ requestUpdate %tmp.2 100 16 29 ];
+        %tmp.2 = getv function %tmp.1 :requestUpdate;
+        invoke %tmp.1 %tmp.2();
+C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_99_31_101_4_stop:
+    }
+    [ @file = "C:\Users\Cvar1\Downloads\Apps\source\PointerView.mc"; @line = 103; @symbol_functiondef = [onUpdate,103,13,21]; @symbol_param<0> = [dc,103,22,24]; @symbol_param<0>_type<0> = [Graphics,103,28,36]; @symbol_param<0>_type<1> = [Dc,103,37,39]; ]
+    function onUpdate(dc as Graphics.Dc) as Void {
+C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_103_49_169_4_start:
+[ "C:\Users\Cvar1\Downloads\Apps\source\PointerView.mc" 104 8 ]
+        [ "C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_103_49_169_4_start" "C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_103_49_169_4_stop" ]
+        %w.1 = local;
+        symbol [ w %w.1 104 12 13 ];
+        %tmp.1 = lgetv %dc;
+        symbol [ dc %tmp.1 104 16 18 ];
+        symbol [ getWidth %tmp.2 104 19 27 ];
+        %tmp.2 = getv function %tmp.1 :getWidth;
+        %tmp.3 = invoke %tmp.1 %tmp.2();
+        lputv %w.1 %tmp.3;
+        symbol [ w %w.1 104 12 13 ];
+[ "C:\Users\Cvar1\Downloads\Apps\source\PointerView.mc" 105 8 ]
+        [ "C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_103_49_169_4_start" "C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_103_49_169_4_stop" ]
+        %h.2 = local;
+        symbol [ h %h.2 105 12 13 ];
+        %tmp.4 = lgetv %dc;
+        symbol [ dc %tmp.4 105 16 18 ];
+        symbol [ getHeight %tmp.5 105 19 28 ];
+        %tmp.5 = getv function %tmp.4 :getHeight;
+        %tmp.6 = invoke %tmp.4 %tmp.5();
+        lputv %h.2 %tmp.6;
+        symbol [ h %h.2 105 12 13 ];
+[ "C:\Users\Cvar1\Downloads\Apps\source\PointerView.mc" 106 8 ]
+        %tmp.7 = lgetv %dc;
+        symbol [ dc %tmp.7 106 8 10 ];
+        symbol [ setColor %tmp.8 106 11 19 ];
+        %tmp.8 = getv function %tmp.7 :setColor;
+        symbol [ Graphics %tmp.9 106 20 28 ];
+        %tmp.9 = getm $.Toybox.Graphics;
+        symbol [ COLOR_BLACK %tmp.10 106 29 40 ];
+        %tmp.10 = getv %tmp.9 :COLOR_BLACK;
+        symbol [ Graphics %tmp.11 106 42 50 ];
+        %tmp.11 = getm $.Toybox.Graphics;
+        symbol [ COLOR_BLACK %tmp.12 106 51 62 ];
+        %tmp.12 = getv %tmp.11 :COLOR_BLACK;
+        invoke %tmp.7 %tmp.8(%tmp.10, %tmp.12);
+[ "C:\Users\Cvar1\Downloads\Apps\source\PointerView.mc" 107 8 ]
+        %tmp.13 = lgetv %dc;
+        symbol [ dc %tmp.13 107 8 10 ];
+        symbol [ clear %tmp.14 107 11 16 ];
+        %tmp.14 = getv function %tmp.13 :clear;
+        invoke %tmp.13 %tmp.14();
+[ "C:\Users\Cvar1\Downloads\Apps\source\PointerView.mc" 108 8 ]
+        %tmp.15 = lgetv %dc;
+        symbol [ dc %tmp.15 108 8 10 ];
+        symbol [ setColor %tmp.16 108 11 19 ];
+        %tmp.16 = getv function %tmp.15 :setColor;
+        symbol [ Graphics %tmp.17 108 20 28 ];
+        %tmp.17 = getm $.Toybox.Graphics;
+        symbol [ COLOR_WHITE %tmp.18 108 29 40 ];
+        %tmp.18 = getv %tmp.17 :COLOR_WHITE;
+        symbol [ Graphics %tmp.19 108 42 50 ];
+        %tmp.19 = getm $.Toybox.Graphics;
+        symbol [ COLOR_TRANSPARENT %tmp.20 108 51 68 ];
+        %tmp.20 = getv %tmp.19 :COLOR_TRANSPARENT;
+        invoke %tmp.15 %tmp.16(%tmp.18, %tmp.20);
+[ "C:\Users\Cvar1\Downloads\Apps\source\PointerView.mc" 110 8 ]
+        [ "C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_103_49_169_4_start" "C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_103_49_169_4_stop" ]
+        %lat.3 = local;
+        symbol [ lat %lat.3 110 12 15 ];
+        symbol [ _lat %tmp.22 110 18 22 ];
+        %tmp.22 = getv ? :_lat;
+        lputv %lat.3 %tmp.22;
+        symbol [ lat %lat.3 110 12 15 ];
+[ "C:\Users\Cvar1\Downloads\Apps\source\PointerView.mc" 111 8 ]
+        [ "C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_103_49_169_4_start" "C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_103_49_169_4_stop" ]
+        %lon.4 = local;
+        symbol [ lon %lon.4 111 12 15 ];
+        symbol [ _lon %tmp.24 111 18 22 ];
+        %tmp.24 = getv ? :_lon;
+        lputv %lon.4 %tmp.24;
+        symbol [ lon %lon.4 111 12 15 ];
+[ "C:\Users\Cvar1\Downloads\Apps\source\PointerView.mc" 112 8 ]
+        [ "C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_103_49_169_4_start" "C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_103_49_169_4_stop" ]
+        %headingRad.5 = local;
+        symbol [ headingRad %headingRad.5 112 12 22 ];
+        symbol [ _headingRad %tmp.26 112 25 36 ];
+        %tmp.26 = getv ? :_headingRad;
+        lputv %headingRad.5 %tmp.26;
+        symbol [ headingRad %headingRad.5 112 12 22 ];
+[ "C:\Users\Cvar1\Downloads\Apps\source\PointerView.mc" 114 8 ]
+C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_114_8_123_8_if_stmt:
+C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_114_12_114_34_begin:
+        %tmp.27 = lgetv %lat.3;
+        symbol [ lat %tmp.27 114 12 15 ];
+        %tmp.28 = null;
+        %tmp.29 = eq %tmp.27 %tmp.28;
+        bt %tmp.29 @C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_114_8_123_8_if_true;
+C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_114_27_114_34_false:
+        %tmp.30 = lgetv %lon.4;
+        symbol [ lon %tmp.30 114 27 30 ];
+        %tmp.31 = null;
+        %tmp.32 = eq %tmp.30 %tmp.31;
+        push %tmp.32;
+C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_114_27_114_34_end:
+        %tmp.33 = phi [%tmp.29 @C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_114_12_114_34_begin] [%tmp.32 @C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_114_27_114_34_false] [%tmp.33 @C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_114_27_114_34_end];
+        bf %tmp.33 @C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_114_8_123_8_if_end;
+C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_114_8_123_8_if_true:
+C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_114_40_123_8_start:
+[ "C:\Users\Cvar1\Downloads\Apps\source\PointerView.mc" 115 12 ]
+        [ "C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_114_40_123_8_start" "C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_114_40_123_8_stop" ]
+        %locStatus.6 = local;
+        symbol [ locStatus %locStatus.6 115 16 25 ];
+[ "C:\Users\Cvar1\Downloads\Apps\source\PointerView.mc" 116 12 ]
+C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_116_12_120_12_if_stmt:
+        symbol [ _usingGps %tmp.35 116 16 25 ];
+        %tmp.35 = getv ? :_usingGps;
+        bf %tmp.35 @C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_116_12_120_12_if_else_false;
+C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_116_12_120_12_if_true:
+C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_116_27_118_12_start:
+[ "C:\Users\Cvar1\Downloads\Apps\source\PointerView.mc" 117 16 ]
+        %tmp.36 = "Acquiring GPS fix...";
+        lputv %locStatus.6 %tmp.36;
+        symbol [ locStatus %locStatus.6 117 16 25 ];
+C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_116_27_118_12_stop:
+        goto @C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_116_12_120_12_if_end;
+C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_116_12_120_12_if_else_false:
+C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_118_19_120_12_start:
+[ "C:\Users\Cvar1\Downloads\Apps\source\PointerView.mc" 119 16 ]
+        %tmp.37 = "Locating...";
+        lputv %locStatus.6 %tmp.37;
+        symbol [ locStatus %locStatus.6 119 16 25 ];
+C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_118_19_120_12_stop:
+C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_116_12_120_12_if_end:
+[ "C:\Users\Cvar1\Downloads\Apps\source\PointerView.mc" 121 12 ]
+        %tmp.38 = lgetv %dc;
+        symbol [ dc %tmp.38 121 12 14 ];
+        symbol [ drawText %tmp.39 121 15 23 ];
+        %tmp.39 = getv function %tmp.38 :drawText;
+        %tmp.40 = lgetv %w.1;
+        symbol [ w %tmp.40 121 24 25 ];
+        %tmp.41 = 2;
+        %tmp.42 = div %tmp.40 %tmp.41;
+        %tmp.43 = lgetv %h.2;
+        symbol [ h %tmp.43 121 31 32 ];
+        %tmp.44 = 2;
+        %tmp.45 = div %tmp.43 %tmp.44;
+        symbol [ Graphics %tmp.46 121 38 46 ];
+        %tmp.46 = getm $.Toybox.Graphics;
+        symbol [ FONT_SMALL %tmp.47 121 47 57 ];
+        %tmp.47 = getv %tmp.46 :FONT_SMALL;
+        %tmp.48 = lgetv %locStatus.6;
+        symbol [ locStatus %tmp.48 121 59 68 ];
+        symbol [ Graphics %tmp.49 121 70 78 ];
+        %tmp.49 = getm $.Toybox.Graphics;
+        symbol [ TEXT_JUSTIFY_CENTER %tmp.50 121 79 98 ];
+        %tmp.50 = getv %tmp.49 :TEXT_JUSTIFY_CENTER;
+        invoke %tmp.38 %tmp.39(%tmp.42, %tmp.45, %tmp.47, %tmp.48, %tmp.50);
+[ "C:\Users\Cvar1\Downloads\Apps\source\PointerView.mc" 122 12 ]
+        ret ?;
+C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_114_40_123_8_stop:
+        goto @C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_114_8_123_8_if_end;
+C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_114_8_123_8_if_end:
+[ "C:\Users\Cvar1\Downloads\Apps\source\PointerView.mc" 124 8 ]
+C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_124_8_127_8_if_stmt:
+        %tmp.51 = lgetv %headingRad.5;
+        symbol [ headingRad %tmp.51 124 12 22 ];
+        %tmp.52 = null;
+        %tmp.53 = eq %tmp.51 %tmp.52;
+        bf %tmp.53 @C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_124_8_127_8_if_end;
+C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_124_8_127_8_if_true:
+C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_124_32_127_8_start:
+[ "C:\Users\Cvar1\Downloads\Apps\source\PointerView.mc" 125 12 ]
+        %tmp.54 = lgetv %dc;
+        symbol [ dc %tmp.54 125 12 14 ];
+        symbol [ drawText %tmp.55 125 15 23 ];
+        %tmp.55 = getv function %tmp.54 :drawText;
+        %tmp.56 = lgetv %w.1;
+        symbol [ w %tmp.56 125 24 25 ];
+        %tmp.57 = 2;
+        %tmp.58 = div %tmp.56 %tmp.57;
+        %tmp.59 = lgetv %h.2;
+        symbol [ h %tmp.59 125 31 32 ];
+        %tmp.60 = 2;
+        %tmp.61 = div %tmp.59 %tmp.60;
+        symbol [ Graphics %tmp.62 125 38 46 ];
+        %tmp.62 = getm $.Toybox.Graphics;
+        symbol [ FONT_SMALL %tmp.63 125 47 57 ];
+        %tmp.63 = getv %tmp.62 :FONT_SMALL;
+        %tmp.64 = "Waiting for compass...";
+        symbol [ Graphics %tmp.65 125 85 93 ];
+        %tmp.65 = getm $.Toybox.Graphics;
+        symbol [ TEXT_JUSTIFY_CENTER %tmp.66 125 94 113 ];
+        %tmp.66 = getv %tmp.65 :TEXT_JUSTIFY_CENTER;
+        invoke %tmp.54 %tmp.55(%tmp.58, %tmp.61, %tmp.63, %tmp.64, %tmp.66);
+[ "C:\Users\Cvar1\Downloads\Apps\source\PointerView.mc" 126 12 ]
+        ret ?;
+C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_124_32_127_8_stop:
+        goto @C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_124_8_127_8_if_end;
+C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_124_8_127_8_if_end:
+[ "C:\Users\Cvar1\Downloads\Apps\source\PointerView.mc" 129 8 ]
+        [ "C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_103_49_169_4_start" "C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_103_49_169_4_stop" ]
+        %g.7 = local;
+        symbol [ g %g.7 129 12 13 ];
+        symbol [ Gregorian %tmp.67 129 16 25 ];
+        %tmp.67 = getm $.Toybox.Time.Gregorian;
+        symbol [ utcInfo %tmp.68 129 26 33 ];
+        %tmp.68 = getv function %tmp.67 :utcInfo;
+        symbol [ Time %tmp.69 129 34 38 ];
+        %tmp.69 = getm $.Toybox.Time;
+        symbol [ now %tmp.70 129 39 42 ];
+        %tmp.70 = getv function %tmp.69 :now;
+        %tmp.71 = invoke %tmp.69 %tmp.70();
+        symbol [ Time %tmp.72 129 46 50 ];
+        %tmp.72 = getm $.Toybox.Time;
+        symbol [ FORMAT_SHORT %tmp.73 129 51 63 ];
+        %tmp.73 = getv %tmp.72 :FORMAT_SHORT;
+        %tmp.74 = invoke %tmp.67 %tmp.68(%tmp.71, %tmp.73);
+        lputv %g.7 %tmp.74;
+        symbol [ g %g.7 129 12 13 ];
+[ "C:\Users\Cvar1\Downloads\Apps\source\PointerView.mc" 130 8 ]
+        [ "C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_103_49_169_4_start" "C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_103_49_169_4_stop" ]
+        %jd.8 = local;
+        symbol [ jd %jd.8 130 12 14 ];
+        symbol [ SkyMath %tmp.76 130 17 24 ];
+        %tmp.76 = getv ? :SkyMath;
+        symbol [ julianDay %tmp.77 130 25 34 ];
+        %tmp.77 = getv function %tmp.76 :julianDay;
+        %tmp.78 = lgetv %g.7;
+        symbol [ g %tmp.78 130 35 36 ];
+        symbol [ year %tmp.79 130 37 41 ];
+        %tmp.79 = getv %tmp.78 :year;
+        %tmp.80 = lgetv %g.7;
+        symbol [ g %tmp.80 130 43 44 ];
+        symbol [ month %tmp.81 130 45 50 ];
+        %tmp.81 = getv %tmp.80 :month;
+        %tmp.82 = lgetv %g.7;
+        symbol [ g %tmp.82 130 52 53 ];
+        symbol [ day %tmp.83 130 54 57 ];
+        %tmp.83 = getv %tmp.82 :day;
+        %tmp.84 = lgetv %g.7;
+        symbol [ g %tmp.84 130 59 60 ];
+        symbol [ hour %tmp.85 130 61 65 ];
+        %tmp.85 = getv %tmp.84 :hour;
+        %tmp.86 = lgetv %g.7;
+        symbol [ g %tmp.86 130 67 68 ];
+        symbol [ min %tmp.87 130 69 72 ];
+        %tmp.87 = getv %tmp.86 :min;
+        %tmp.88 = lgetv %g.7;
+        symbol [ g %tmp.88 130 74 75 ];
+        symbol [ sec %tmp.89 130 76 79 ];
+        %tmp.89 = getv %tmp.88 :sec;
+        %tmp.90 = invoke %tmp.76 %tmp.77(%tmp.79, %tmp.81, %tmp.83, %tmp.85, %tmp.87, %tmp.89);
+        lputv %jd.8 %tmp.90;
+        symbol [ jd %jd.8 130 12 14 ];
+[ "C:\Users\Cvar1\Downloads\Apps\source\PointerView.mc" 131 8 ]
+        [ "C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_103_49_169_4_start" "C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_103_49_169_4_stop" ]
+        %raDec.9 = local;
+        symbol [ raDec %raDec.9 131 12 17 ];
+        symbol [ SkyCatalog %tmp.92 131 20 30 ];
+        %tmp.92 = getv ? :SkyCatalog;
+        symbol [ getRaDec %tmp.93 131 31 39 ];
+        %tmp.93 = getv function %tmp.92 :getRaDec;
+        symbol [ _obj %tmp.95 131 40 44 ];
+        %tmp.95 = getv ? :_obj;
+        %tmp.96 = lgetv %jd.8;
+        symbol [ jd %tmp.96 131 46 48 ];
+        %tmp.97 = invoke %tmp.92 %tmp.93(%tmp.95, %tmp.96);
+        lputv %raDec.9 %tmp.97;
+        symbol [ raDec %raDec.9 131 12 17 ];
+[ "C:\Users\Cvar1\Downloads\Apps\source\PointerView.mc" 132 8 ]
+        [ "C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_103_49_169_4_start" "C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_103_49_169_4_stop" ]
+        %lstDeg.10 = local;
+        symbol [ lstDeg %lstDeg.10 132 12 18 ];
+        symbol [ SkyMath %tmp.99 132 21 28 ];
+        %tmp.99 = getv ? :SkyMath;
+        symbol [ lst %tmp.100 132 29 32 ];
+        %tmp.100 = getv function %tmp.99 :lst;
+        %tmp.101 = lgetv %jd.8;
+        symbol [ jd %tmp.101 132 33 35 ];
+        %tmp.102 = lgetv %lon.4;
+        symbol [ lon %tmp.102 132 37 40 ];
+        %tmp.103 = invoke %tmp.99 %tmp.100(%tmp.101, %tmp.102);
+        lputv %lstDeg.10 %tmp.103;
+        symbol [ lstDeg %lstDeg.10 132 12 18 ];
+[ "C:\Users\Cvar1\Downloads\Apps\source\PointerView.mc" 133 8 ]
+        [ "C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_103_49_169_4_start" "C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_103_49_169_4_stop" ]
+        %altAz.11 = local;
+        symbol [ altAz %altAz.11 133 12 17 ];
+        symbol [ SkyMath %tmp.105 133 20 27 ];
+        %tmp.105 = getv ? :SkyMath;
+        symbol [ raDecToAltAz %tmp.106 133 28 40 ];
+        %tmp.106 = getv function %tmp.105 :raDecToAltAz;
+        %tmp.107 = lgetv %raDec.9;
+        symbol [ raDec %tmp.107 133 41 46 ];
+        %tmp.108 = 0;
+        %tmp.109 = agetv %tmp.107 %tmp.108;
+        %tmp.110 = lgetv %raDec.9;
+        symbol [ raDec %tmp.110 133 51 56 ];
+        %tmp.111 = 1;
+        %tmp.112 = agetv %tmp.110 %tmp.111;
+        %tmp.113 = lgetv %lat.3;
+        symbol [ lat %tmp.113 133 61 64 ];
+        %tmp.114 = lgetv %lstDeg.10;
+        symbol [ lstDeg %tmp.114 133 66 72 ];
+        %tmp.115 = invoke %tmp.105 %tmp.106(%tmp.109, %tmp.112, %tmp.113, %tmp.114);
+        lputv %altAz.11 %tmp.115;
+        symbol [ altAz %altAz.11 133 12 17 ];
+[ "C:\Users\Cvar1\Downloads\Apps\source\PointerView.mc" 134 8 ]
+        [ "C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_103_49_169_4_start" "C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_103_49_169_4_stop" ]
+        %alt.12 = local;
+        symbol [ alt %alt.12 134 12 15 ];
+        %tmp.116 = lgetv %altAz.11;
+        symbol [ altAz %tmp.116 134 18 23 ];
+        %tmp.117 = 0;
+        %tmp.118 = agetv %tmp.116 %tmp.117;
+        lputv %alt.12 %tmp.118;
+        symbol [ alt %alt.12 134 12 15 ];
+[ "C:\Users\Cvar1\Downloads\Apps\source\PointerView.mc" 135 8 ]
+        [ "C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_103_49_169_4_start" "C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_103_49_169_4_stop" ]
+        %az.13 = local;
+        symbol [ az %az.13 135 12 14 ];
+        %tmp.119 = lgetv %altAz.11;
+        symbol [ altAz %tmp.119 135 17 22 ];
+        %tmp.120 = 1;
+        %tmp.121 = agetv %tmp.119 %tmp.120;
+        lputv %az.13 %tmp.121;
+        symbol [ az %az.13 135 12 14 ];
+[ "C:\Users\Cvar1\Downloads\Apps\source\PointerView.mc" 137 8 ]
+        [ "C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_103_49_169_4_start" "C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_103_49_169_4_stop" ]
+        %headingDeg.14 = local;
+        symbol [ headingDeg %headingDeg.14 137 12 22 ];
+        symbol [ SkyMath %tmp.123 137 25 32 ];
+        %tmp.123 = getv ? :SkyMath;
+        symbol [ toDeg %tmp.124 137 33 38 ];
+        %tmp.124 = getv function %tmp.123 :toDeg;
+        %tmp.125 = lgetv %headingRad.5;
+        symbol [ headingRad %tmp.125 137 39 49 ];
+        %tmp.126 = invoke %tmp.123 %tmp.124(%tmp.125);
+        lputv %headingDeg.14 %tmp.126;
+        symbol [ headingDeg %headingDeg.14 137 12 22 ];
+[ "C:\Users\Cvar1\Downloads\Apps\source\PointerView.mc" 138 8 ]
+        [ "C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_103_49_169_4_start" "C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_103_49_169_4_stop" ]
+        %diff.15 = local;
+        symbol [ diff %diff.15 138 12 16 ];
+        symbol [ SkyMath %tmp.128 138 19 26 ];
+        %tmp.128 = getv ? :SkyMath;
+        symbol [ norm180 %tmp.129 138 27 34 ];
+        %tmp.129 = getv function %tmp.128 :norm180;
+        %tmp.130 = lgetv %az.13;
+        symbol [ az %tmp.130 138 35 37 ];
+        %tmp.131 = lgetv %headingDeg.14;
+        symbol [ headingDeg %tmp.131 138 40 50 ];
+        %tmp.132 = sub %tmp.130 %tmp.131;
+        %tmp.133 = invoke %tmp.128 %tmp.129(%tmp.132);
+        lputv %diff.15 %tmp.133;
+        symbol [ diff %diff.15 138 12 16 ];
+[ "C:\Users\Cvar1\Downloads\Apps\source\PointerView.mc" 140 8 ]
+        [ "C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_103_49_169_4_start" "C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_103_49_169_4_stop" ]
+        %cx.16 = local;
+        symbol [ cx %cx.16 140 12 14 ];
+        %tmp.134 = lgetv %w.1;
+        symbol [ w %tmp.134 140 17 18 ];
+        %tmp.135 = 2;
+        %tmp.136 = div %tmp.134 %tmp.135;
+        lputv %cx.16 %tmp.136;
+        symbol [ cx %cx.16 140 12 14 ];
+[ "C:\Users\Cvar1\Downloads\Apps\source\PointerView.mc" 141 8 ]
+        [ "C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_103_49_169_4_start" "C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_103_49_169_4_stop" ]
+        %cy.17 = local;
+        symbol [ cy %cy.17 141 12 14 ];
+        %tmp.137 = lgetv %h.2;
+        symbol [ h %tmp.137 141 17 18 ];
+        %tmp.138 = 2;
+        %tmp.139 = div %tmp.137 %tmp.138;
+        lputv %cy.17 %tmp.139;
+        symbol [ cy %cy.17 141 12 14 ];
+[ "C:\Users\Cvar1\Downloads\Apps\source\PointerView.mc" 142 8 ]
+        [ "C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_103_49_169_4_start" "C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_103_49_169_4_stop" ]
+        %onTarget.18 = local;
+        symbol [ onTarget %onTarget.18 142 12 20 ];
+        %tmp.140 = lgetv %diff.15;
+        symbol [ diff %tmp.140 142 23 27 ];
+        symbol [ abs %tmp.141 142 28 31 ];
+        %tmp.141 = getv function %tmp.140 :abs;
+        %tmp.142 = invoke %tmp.140 %tmp.141();
+        %tmp.143 = 8.0;
+        %tmp.144 = lt %tmp.142 %tmp.143;
+        lputv %onTarget.18 %tmp.144;
+        symbol [ onTarget %onTarget.18 142 12 20 ];
+[ "C:\Users\Cvar1\Downloads\Apps\source\PointerView.mc" 144 8 ]
+C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_144_8_148_8_if_stmt:
+        %tmp.145 = lgetv %onTarget.18;
+        symbol [ onTarget %tmp.145 144 12 20 ];
+        bf %tmp.145 @C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_144_8_148_8_if_else_false;
+C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_144_8_148_8_if_true:
+C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_144_22_146_8_start:
+[ "C:\Users\Cvar1\Downloads\Apps\source\PointerView.mc" 145 12 ]
+        %tmp.146 = lgetv %dc;
+        symbol [ dc %tmp.146 145 12 14 ];
+        symbol [ setColor %tmp.147 145 15 23 ];
+        %tmp.147 = getv function %tmp.146 :setColor;
+        symbol [ Graphics %tmp.148 145 24 32 ];
+        %tmp.148 = getm $.Toybox.Graphics;
+        symbol [ COLOR_GREEN %tmp.149 145 33 44 ];
+        %tmp.149 = getv %tmp.148 :COLOR_GREEN;
+        symbol [ Graphics %tmp.150 145 46 54 ];
+        %tmp.150 = getm $.Toybox.Graphics;
+        symbol [ COLOR_TRANSPARENT %tmp.151 145 55 72 ];
+        %tmp.151 = getv %tmp.150 :COLOR_TRANSPARENT;
+        invoke %tmp.146 %tmp.147(%tmp.149, %tmp.151);
+C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_144_22_146_8_stop:
+        goto @C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_144_8_148_8_if_end;
+C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_144_8_148_8_if_else_false:
+C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_146_15_148_8_start:
+[ "C:\Users\Cvar1\Downloads\Apps\source\PointerView.mc" 147 12 ]
+        %tmp.152 = lgetv %dc;
+        symbol [ dc %tmp.152 147 12 14 ];
+        symbol [ setColor %tmp.153 147 15 23 ];
+        %tmp.153 = getv function %tmp.152 :setColor;
+        symbol [ Graphics %tmp.154 147 24 32 ];
+        %tmp.154 = getm $.Toybox.Graphics;
+        symbol [ COLOR_WHITE %tmp.155 147 33 44 ];
+        %tmp.155 = getv %tmp.154 :COLOR_WHITE;
+        symbol [ Graphics %tmp.156 147 46 54 ];
+        %tmp.156 = getm $.Toybox.Graphics;
+        symbol [ COLOR_TRANSPARENT %tmp.157 147 55 72 ];
+        %tmp.157 = getv %tmp.156 :COLOR_TRANSPARENT;
+        invoke %tmp.152 %tmp.153(%tmp.155, %tmp.157);
+C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_146_15_148_8_stop:
+C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_144_8_148_8_if_end:
+[ "C:\Users\Cvar1\Downloads\Apps\source\PointerView.mc" 149 8 ]
+        %tmp.158 = self;
+        symbol [ drawArrow %tmp.159 149 8 17 ];
+        %tmp.159 = getv function %tmp.158 :drawArrow;
+        %tmp.160 = lgetv %dc;
+        symbol [ dc %tmp.160 149 18 20 ];
+        %tmp.161 = lgetv %cx.16;
+        symbol [ cx %tmp.161 149 22 24 ];
+        %tmp.162 = lgetv %cy.17;
+        symbol [ cy %tmp.162 149 26 28 ];
+        %tmp.163 = 10;
+        %tmp.164 = sub %tmp.162 %tmp.163;
+        %tmp.165 = lgetv %diff.15;
+        symbol [ diff %tmp.165 149 35 39 ];
+        invoke %tmp.158 %tmp.159(%tmp.160, %tmp.161, %tmp.164, %tmp.165);
+[ "C:\Users\Cvar1\Downloads\Apps\source\PointerView.mc" 151 8 ]
+        %tmp.166 = lgetv %dc;
+        symbol [ dc %tmp.166 151 8 10 ];
+        symbol [ setColor %tmp.167 151 11 19 ];
+        %tmp.167 = getv function %tmp.166 :setColor;
+        symbol [ Graphics %tmp.168 151 20 28 ];
+        %tmp.168 = getm $.Toybox.Graphics;
+        symbol [ COLOR_WHITE %tmp.169 151 29 40 ];
+        %tmp.169 = getv %tmp.168 :COLOR_WHITE;
+        symbol [ Graphics %tmp.170 151 42 50 ];
+        %tmp.170 = getm $.Toybox.Graphics;
+        symbol [ COLOR_TRANSPARENT %tmp.171 151 51 68 ];
+        %tmp.171 = getv %tmp.170 :COLOR_TRANSPARENT;
+        invoke %tmp.166 %tmp.167(%tmp.169, %tmp.171);
+[ "C:\Users\Cvar1\Downloads\Apps\source\PointerView.mc" 152 8 ]
+        %tmp.172 = lgetv %dc;
+        symbol [ dc %tmp.172 152 8 10 ];
+        symbol [ drawText %tmp.173 152 11 19 ];
+        %tmp.173 = getv function %tmp.172 :drawText;
+        %tmp.174 = lgetv %cx.16;
+        symbol [ cx %tmp.174 152 20 22 ];
+        %tmp.175 = 20;
+        symbol [ Graphics %tmp.176 152 28 36 ];
+        %tmp.176 = getm $.Toybox.Graphics;
+        symbol [ FONT_SMALL %tmp.177 152 37 47 ];
+        %tmp.177 = getv %tmp.176 :FONT_SMALL;
+        symbol [ _obj %tmp.179 152 49 53 ];
+        %tmp.179 = getv ? :_obj;
+        %tmp.181 = const :name;
+        symbol [ name %tmp.181 152 55 59 const ];
+        %tmp.182 = agetv %tmp.179 %tmp.181;
+        symbol [ Graphics %tmp.183 152 62 70 ];
+        %tmp.183 = getm $.Toybox.Graphics;
+        symbol [ TEXT_JUSTIFY_CENTER %tmp.184 152 71 90 ];
+        %tmp.184 = getv %tmp.183 :TEXT_JUSTIFY_CENTER;
+        invoke %tmp.172 %tmp.173(%tmp.174, %tmp.175, %tmp.177, %tmp.182, %tmp.184);
+[ "C:\Users\Cvar1\Downloads\Apps\source\PointerView.mc" 154 8 ]
+        [ "C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_103_49_169_4_start" "C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_103_49_169_4_stop" ]
+        %altText.19 = local;
+        symbol [ altText %altText.19 154 12 19 ];
+[ "C:\Users\Cvar1\Downloads\Apps\source\PointerView.mc" 155 8 ]
+C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_155_8_159_8_if_stmt:
+        %tmp.185 = lgetv %alt.12;
+        symbol [ alt %tmp.185 155 12 15 ];
+        %tmp.186 = 0;
+        %tmp.187 = gte %tmp.185 %tmp.186;
+        bf %tmp.187 @C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_155_8_159_8_if_else_false;
+C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_155_8_159_8_if_true:
+C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_155_22_157_8_start:
+[ "C:\Users\Cvar1\Downloads\Apps\source\PointerView.mc" 156 12 ]
+        %tmp.188 = "Alt +";
+        %tmp.189 = lgetv %alt.12;
+        symbol [ alt %tmp.189 156 32 35 ];
+        symbol [ format %tmp.190 156 36 42 ];
+        %tmp.190 = getv function %tmp.189 :format;
+        %tmp.191 = "%.0f";
+        %tmp.192 = invoke %tmp.189 %tmp.190(%tmp.191);
+        %tmp.193 = add %tmp.188 %tmp.192;
+        %tmp.194 = " (above horizon)";
+        %tmp.195 = add %tmp.193 %tmp.194;
+        lputv %altText.19 %tmp.195;
+        symbol [ altText %altText.19 156 12 19 ];
+C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_155_22_157_8_stop:
+        goto @C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_155_8_159_8_if_end;
+C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_155_8_159_8_if_else_false:
+C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_157_15_159_8_start:
+[ "C:\Users\Cvar1\Downloads\Apps\source\PointerView.mc" 158 12 ]
+        %tmp.196 = "Alt ";
+        %tmp.197 = lgetv %alt.12;
+        symbol [ alt %tmp.197 158 31 34 ];
+        symbol [ format %tmp.198 158 35 41 ];
+        %tmp.198 = getv function %tmp.197 :format;
+        %tmp.199 = "%.0f";
+        %tmp.200 = invoke %tmp.197 %tmp.198(%tmp.199);
+        %tmp.201 = add %tmp.196 %tmp.200;
+        %tmp.202 = " (below horizon)";
+        %tmp.203 = add %tmp.201 %tmp.202;
+        lputv %altText.19 %tmp.203;
+        symbol [ altText %altText.19 158 12 19 ];
+C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_157_15_159_8_stop:
+C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_155_8_159_8_if_end:
+[ "C:\Users\Cvar1\Downloads\Apps\source\PointerView.mc" 160 8 ]
+        %tmp.204 = lgetv %dc;
+        symbol [ dc %tmp.204 160 8 10 ];
+        symbol [ drawText %tmp.205 160 11 19 ];
+        %tmp.205 = getv function %tmp.204 :drawText;
+        %tmp.206 = lgetv %cx.16;
+        symbol [ cx %tmp.206 160 20 22 ];
+        %tmp.207 = lgetv %h.2;
+        symbol [ h %tmp.207 160 24 25 ];
+        %tmp.208 = 40;
+        %tmp.209 = sub %tmp.207 %tmp.208;
+        symbol [ Graphics %tmp.210 160 32 40 ];
+        %tmp.210 = getm $.Toybox.Graphics;
+        symbol [ FONT_XTINY %tmp.211 160 41 51 ];
+        %tmp.211 = getv %tmp.210 :FONT_XTINY;
+        %tmp.212 = lgetv %altText.19;
+        symbol [ altText %tmp.212 160 53 60 ];
+        symbol [ Graphics %tmp.213 160 62 70 ];
+        %tmp.213 = getm $.Toybox.Graphics;
+        symbol [ TEXT_JUSTIFY_CENTER %tmp.214 160 71 90 ];
+        %tmp.214 = getv %tmp.213 :TEXT_JUSTIFY_CENTER;
+        invoke %tmp.204 %tmp.205(%tmp.206, %tmp.209, %tmp.211, %tmp.212, %tmp.214);
+[ "C:\Users\Cvar1\Downloads\Apps\source\PointerView.mc" 162 8 ]
+        [ "C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_103_49_169_4_start" "C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_103_49_169_4_stop" ]
+        %dirLabel.20 = local;
+        symbol [ dirLabel %dirLabel.20 162 12 20 ];
+[ "C:\Users\Cvar1\Downloads\Apps\source\PointerView.mc" 163 8 ]
+C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_163_8_167_8_if_stmt:
+        %tmp.215 = lgetv %diff.15;
+        symbol [ diff %tmp.215 163 12 16 ];
+        %tmp.216 = 0;
+        %tmp.217 = gte %tmp.215 %tmp.216;
+        bf %tmp.217 @C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_163_8_167_8_if_else_false;
+C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_163_8_167_8_if_true:
+C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_163_23_165_8_start:
+[ "C:\Users\Cvar1\Downloads\Apps\source\PointerView.mc" 164 12 ]
+        %tmp.218 = " right";
+        lputv %dirLabel.20 %tmp.218;
+        symbol [ dirLabel %dirLabel.20 164 12 20 ];
+C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_163_23_165_8_stop:
+        goto @C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_163_8_167_8_if_end;
+C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_163_8_167_8_if_else_false:
+C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_165_15_167_8_start:
+[ "C:\Users\Cvar1\Downloads\Apps\source\PointerView.mc" 166 12 ]
+        %tmp.219 = " left";
+        lputv %dirLabel.20 %tmp.219;
+        symbol [ dirLabel %dirLabel.20 166 12 20 ];
+C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_165_15_167_8_stop:
+C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_163_8_167_8_if_end:
+[ "C:\Users\Cvar1\Downloads\Apps\source\PointerView.mc" 168 8 ]
+        %tmp.220 = lgetv %dc;
+        symbol [ dc %tmp.220 168 8 10 ];
+        symbol [ drawText %tmp.221 168 11 19 ];
+        %tmp.221 = getv function %tmp.220 :drawText;
+        %tmp.222 = lgetv %cx.16;
+        symbol [ cx %tmp.222 168 20 22 ];
+        %tmp.223 = lgetv %h.2;
+        symbol [ h %tmp.223 168 24 25 ];
+        %tmp.224 = 22;
+        %tmp.225 = sub %tmp.223 %tmp.224;
+        symbol [ Graphics %tmp.226 168 32 40 ];
+        %tmp.226 = getm $.Toybox.Graphics;
+        symbol [ FONT_XTINY %tmp.227 168 41 51 ];
+        %tmp.227 = getv %tmp.226 :FONT_XTINY;
+        %tmp.228 = "Turn ";
+        %tmp.229 = lgetv %diff.15;
+        symbol [ diff %tmp.229 168 63 67 ];
+        symbol [ abs %tmp.230 168 68 71 ];
+        %tmp.230 = getv function %tmp.229 :abs;
+        %tmp.231 = invoke %tmp.229 %tmp.230();
+        symbol [ format %tmp.232 168 74 80 ];
+        %tmp.232 = getv function %tmp.231 :format;
+        %tmp.233 = "%.0f";
+        %tmp.234 = invoke %tmp.231 %tmp.232(%tmp.233);
+        %tmp.235 = add %tmp.228 %tmp.234;
+        %tmp.236 = lgetv %dirLabel.20;
+        symbol [ dirLabel %tmp.236 168 91 99 ];
+        %tmp.237 = add %tmp.235 %tmp.236;
+        symbol [ Graphics %tmp.238 168 101 109 ];
+        %tmp.238 = getm $.Toybox.Graphics;
+        symbol [ TEXT_JUSTIFY_CENTER %tmp.239 168 110 129 ];
+        %tmp.239 = getv %tmp.238 :TEXT_JUSTIFY_CENTER;
+        invoke %tmp.220 %tmp.221(%tmp.222, %tmp.225, %tmp.227, %tmp.237, %tmp.239);
+C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_103_49_169_4_stop:
+    }
+    [ @file = "C:\Users\Cvar1\Downloads\Apps\source\PointerView.mc"; @line = 172; @symbol_functiondef = [drawArrow,172,13,22]; @symbol_param<0> = [dc,172,23,25]; @symbol_param<0>_type<0> = [Graphics,172,29,37]; @symbol_param<0>_type<1> = [Dc,172,38,40]; @symbol_param<1> = [cx,172,42,44]; @symbol_param<1>_type<0> = [Lang,172,48,52]; @symbol_param<1>_type<1> = [Numeric,172,53,60]; @symbol_param<2> = [cy,172,62,64]; @symbol_param<2>_type<0> = [Lang,172,68,72]; @symbol_param<2>_type<1> = [Numeric,172,73,80]; @symbol_param<3> = [angleDeg,172,82,90]; @symbol_param<3>_type<0> = [Lang,172,94,98]; @symbol_param<3>_type<1> = [Float,172,99,104]; ]
+    function drawArrow(dc as Graphics.Dc, cx as Lang.Numeric, cy as Lang.Numeric, angleDeg as Lang.Float) as Void {
+C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_172_114_188_4_start:
+[ "C:\Users\Cvar1\Downloads\Apps\source\PointerView.mc" 173 8 ]
+        [ "C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_172_114_188_4_start" "C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_172_114_188_4_stop" ]
+        %rad.1 = local;
+        symbol [ rad %rad.1 173 12 15 ];
+        symbol [ SkyMath %tmp.2 173 18 25 ];
+        %tmp.2 = getv ? :SkyMath;
+        symbol [ toRad %tmp.3 173 26 31 ];
+        %tmp.3 = getv function %tmp.2 :toRad;
+        %tmp.4 = lgetv %angleDeg;
+        symbol [ angleDeg %tmp.4 173 32 40 ];
+        %tmp.5 = invoke %tmp.2 %tmp.3(%tmp.4);
+        lputv %rad.1 %tmp.5;
+        symbol [ rad %rad.1 173 12 15 ];
+[ "C:\Users\Cvar1\Downloads\Apps\source\PointerView.mc" 174 8 ]
+        [ "C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_172_114_188_4_start" "C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_172_114_188_4_stop" ]
+        %cosA.2 = local;
+        symbol [ cosA %cosA.2 174 12 16 ];
+        symbol [ Math %tmp.6 174 19 23 ];
+        %tmp.6 = getm $.Toybox.Math;
+        symbol [ cos %tmp.7 174 24 27 ];
+        %tmp.7 = getv function %tmp.6 :cos;
+        %tmp.8 = lgetv %rad.1;
+        symbol [ rad %tmp.8 174 28 31 ];
+        %tmp.9 = invoke %tmp.6 %tmp.7(%tmp.8);
+        lputv %cosA.2 %tmp.9;
+        symbol [ cosA %cosA.2 174 12 16 ];
+[ "C:\Users\Cvar1\Downloads\Apps\source\PointerView.mc" 175 8 ]
+        [ "C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_172_114_188_4_start" "C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_172_114_188_4_stop" ]
+        %sinA.3 = local;
+        symbol [ sinA %sinA.3 175 12 16 ];
+        symbol [ Math %tmp.10 175 19 23 ];
+        %tmp.10 = getm $.Toybox.Math;
+        symbol [ sin %tmp.11 175 24 27 ];
+        %tmp.11 = getv function %tmp.10 :sin;
+        %tmp.12 = lgetv %rad.1;
+        symbol [ rad %tmp.12 175 28 31 ];
+        %tmp.13 = invoke %tmp.10 %tmp.11(%tmp.12);
+        lputv %sinA.3 %tmp.13;
+        symbol [ sinA %sinA.3 175 12 16 ];
+[ "C:\Users\Cvar1\Downloads\Apps\source\PointerView.mc" 176 8 ]
+        [ "C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_172_114_188_4_start" "C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_172_114_188_4_stop" ]
+        %pts.4 = local;
+        symbol [ pts %pts.4 176 12 15 ];
+        %tmp.14 = newa 4;
+        %tmp.15 = newa 2;
+        %tmp.16 = 0;
+        %tmp.17 = dup %tmp.15;
+        %tmp.18 = aputv %tmp.17 0 %tmp.16;
+        %tmp.19 = -55;
+        %tmp.20 = dup %tmp.18;
+        %tmp.21 = aputv %tmp.20 1 %tmp.19;
+        %tmp.22 = dup %tmp.14;
+        %tmp.23 = aputv %tmp.22 0 %tmp.21;
+        %tmp.24 = newa 2;
+        %tmp.25 = 18;
+        %tmp.26 = dup %tmp.24;
+        %tmp.27 = aputv %tmp.26 0 %tmp.25;
+        %tmp.28 = 20;
+        %tmp.29 = dup %tmp.27;
+        %tmp.30 = aputv %tmp.29 1 %tmp.28;
+        %tmp.31 = dup %tmp.23;
+        %tmp.32 = aputv %tmp.31 1 %tmp.30;
+        %tmp.33 = newa 2;
+        %tmp.34 = 0;
+        %tmp.35 = dup %tmp.33;
+        %tmp.36 = aputv %tmp.35 0 %tmp.34;
+        %tmp.37 = 5;
+        %tmp.38 = dup %tmp.36;
+        %tmp.39 = aputv %tmp.38 1 %tmp.37;
+        %tmp.40 = dup %tmp.32;
+        %tmp.41 = aputv %tmp.40 2 %tmp.39;
+        %tmp.42 = newa 2;
+        %tmp.43 = -18;
+        %tmp.44 = dup %tmp.42;
+        %tmp.45 = aputv %tmp.44 0 %tmp.43;
+        %tmp.46 = 20;
+        %tmp.47 = dup %tmp.45;
+        %tmp.48 = aputv %tmp.47 1 %tmp.46;
+        %tmp.49 = dup %tmp.41;
+        %tmp.50 = aputv %tmp.49 3 %tmp.48;
+        lputv %pts.4 %tmp.50;
+        symbol [ pts %pts.4 176 12 15 ];
+[ "C:\Users\Cvar1\Downloads\Apps\source\PointerView.mc" 177 8 ]
+        [ "C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_172_114_188_4_start" "C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_172_114_188_4_stop" ]
+        %poly.5 = local;
+        symbol [ poly %poly.5 177 12 16 ];
+        %tmp.52 = 4;
+        %tmp.51 = newa %tmp.52;
+        lputv %poly.5 %tmp.51;
+        symbol [ poly %poly.5 177 12 16 ];
+[ "C:\Users\Cvar1\Downloads\Apps\source\PointerView.mc" 178 8 ]
+        [ "C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_172_114_188_4_start" "C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_172_114_188_4_stop" ]
+        %i.6 = local;
+        symbol [ i %i.6 178 12 13 ];
+        %tmp.53 = 0;
+        lputv %i.6 %tmp.53;
+        symbol [ i %i.6 178 12 13 ];
+[ "C:\Users\Cvar1\Downloads\Apps\source\PointerView.mc" 179 8 ]
+        while @C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_179_8_186_8_while_test @C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_179_8_186_8_while_end;
+C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_179_8_186_8_while_test:
+        %tmp.54 = lgetv %i.6;
+        symbol [ i %tmp.54 179 15 16 ];
+        %tmp.55 = 4;
+        %tmp.56 = lt %tmp.54 %tmp.55;
+        bf %tmp.56 @C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_179_8_186_8_while_end;
+C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_179_8_186_8_while_begin:
+C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_179_22_186_8_start:
+[ "C:\Users\Cvar1\Downloads\Apps\source\PointerView.mc" 180 12 ]
+        [ "C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_179_22_186_8_start" "C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_179_22_186_8_stop" ]
+        %px.7 = local;
+        symbol [ px %px.7 180 16 18 ];
+        %tmp.57 = lgetv %pts.4;
+        symbol [ pts %tmp.57 180 21 24 ];
+        %tmp.58 = lgetv %i.6;
+        symbol [ i %tmp.58 180 25 26 ];
+        %tmp.59 = agetv %tmp.57 %tmp.58;
+        %tmp.60 = 0;
+        %tmp.61 = agetv %tmp.59 %tmp.60;
+        lputv %px.7 %tmp.61;
+        symbol [ px %px.7 180 16 18 ];
+[ "C:\Users\Cvar1\Downloads\Apps\source\PointerView.mc" 181 12 ]
+        [ "C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_179_22_186_8_start" "C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_179_22_186_8_stop" ]
+        %py.8 = local;
+        symbol [ py %py.8 181 16 18 ];
+        %tmp.62 = lgetv %pts.4;
+        symbol [ pts %tmp.62 181 21 24 ];
+        %tmp.63 = lgetv %i.6;
+        symbol [ i %tmp.63 181 25 26 ];
+        %tmp.64 = agetv %tmp.62 %tmp.63;
+        %tmp.65 = 1;
+        %tmp.66 = agetv %tmp.64 %tmp.65;
+        lputv %py.8 %tmp.66;
+        symbol [ py %py.8 181 16 18 ];
+[ "C:\Users\Cvar1\Downloads\Apps\source\PointerView.mc" 182 12 ]
+        [ "C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_179_22_186_8_start" "C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_179_22_186_8_stop" ]
+        %rx.9 = local;
+        symbol [ rx %rx.9 182 16 18 ];
+        %tmp.67 = lgetv %px.7;
+        symbol [ px %tmp.67 182 21 23 ];
+        %tmp.68 = lgetv %cosA.2;
+        symbol [ cosA %tmp.68 182 26 30 ];
+        %tmp.69 = mul %tmp.67 %tmp.68;
+        %tmp.70 = lgetv %py.8;
+        symbol [ py %tmp.70 182 33 35 ];
+        %tmp.71 = lgetv %sinA.3;
+        symbol [ sinA %tmp.71 182 38 42 ];
+        %tmp.72 = mul %tmp.70 %tmp.71;
+        %tmp.73 = sub %tmp.69 %tmp.72;
+        lputv %rx.9 %tmp.73;
+        symbol [ rx %rx.9 182 16 18 ];
+[ "C:\Users\Cvar1\Downloads\Apps\source\PointerView.mc" 183 12 ]
+        [ "C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_179_22_186_8_start" "C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_179_22_186_8_stop" ]
+        %ry.10 = local;
+        symbol [ ry %ry.10 183 16 18 ];
+        %tmp.74 = lgetv %px.7;
+        symbol [ px %tmp.74 183 21 23 ];
+        %tmp.75 = lgetv %sinA.3;
+        symbol [ sinA %tmp.75 183 26 30 ];
+        %tmp.76 = mul %tmp.74 %tmp.75;
+        %tmp.77 = lgetv %py.8;
+        symbol [ py %tmp.77 183 33 35 ];
+        %tmp.78 = lgetv %cosA.2;
+        symbol [ cosA %tmp.78 183 38 42 ];
+        %tmp.79 = mul %tmp.77 %tmp.78;
+        %tmp.80 = add %tmp.76 %tmp.79;
+        lputv %ry.10 %tmp.80;
+        symbol [ ry %ry.10 183 16 18 ];
+[ "C:\Users\Cvar1\Downloads\Apps\source\PointerView.mc" 184 12 ]
+        %tmp.81 = lgetv %poly.5;
+        symbol [ poly %tmp.81 184 12 16 ];
+        %tmp.82 = newa 2;
+        %tmp.83 = lgetv %cx;
+        symbol [ cx %tmp.83 184 23 25 ];
+        %tmp.84 = lgetv %rx.9;
+        symbol [ rx %tmp.84 184 28 30 ];
+        %tmp.85 = add %tmp.83 %tmp.84;
+        %tmp.86 = dup %tmp.82;
+        %tmp.87 = aputv %tmp.86 0 %tmp.85;
+        %tmp.88 = lgetv %cy;
+        symbol [ cy %tmp.88 184 32 34 ];
+        %tmp.89 = lgetv %ry.10;
+        symbol [ ry %tmp.89 184 37 39 ];
+        %tmp.90 = add %tmp.88 %tmp.89;
+        %tmp.91 = dup %tmp.87;
+        %tmp.92 = aputv %tmp.91 1 %tmp.90;
+        %tmp.93 = lgetv %i.6;
+        symbol [ i %tmp.93 184 17 18 ];
+        aputv %tmp.81 %tmp.93 %tmp.92;
+[ "C:\Users\Cvar1\Downloads\Apps\source\PointerView.mc" 185 12 ]
+        %tmp.94 = lgetv %i.6;
+        symbol [ i %tmp.94 185 12 13 ];
+        %tmp.95 = 1;
+        %tmp.96 = add %tmp.94 %tmp.95;
+        lputv %i.6 %tmp.96;
+        symbol [ i %i.6 185 12 13 ];
+C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_179_22_186_8_stop:
+        goto @C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_179_8_186_8_while_test;
+C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_179_8_186_8_while_end:
+[ "C:\Users\Cvar1\Downloads\Apps\source\PointerView.mc" 187 8 ]
+        %tmp.97 = lgetv %dc;
+        symbol [ dc %tmp.97 187 8 10 ];
+        symbol [ fillPolygon %tmp.98 187 11 22 ];
+        %tmp.98 = getv function %tmp.97 :fillPolygon;
+        %tmp.99 = lgetv %poly.5;
+        symbol [ poly %tmp.99 187 23 27 ];
+        invoke %tmp.97 %tmp.98(%tmp.99);
+C__Users_Cvar1_Downloads_Apps_source_PointerView_mc_172_114_188_4_stop:
+    }
+}
+[ @file = "C:\Users\Cvar1\Downloads\Apps\source\PointerView.mc"; @line = 1; ]
+<init> {
+}

@@ -1,0 +1,20 @@
+# Monkey C / Connect IQ Build Artifacts
+/build/
+/bin/
+/gen/
+*.prg
+*.iq
+*.debug.xml
+
+# Critical Security / Developer Keys
+*.der
+*.key
+developer_key
+
+# IDE and Editor Files
+.settings/
+.vscode/
+.idea/
+*.swp
+*.swo
+

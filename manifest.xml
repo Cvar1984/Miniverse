@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<iq:manifest version="3" xmlns:iq="http://www.garmin.com/xml/connectiq">
+    <iq:application entry="CrossoverAmoledApp" id="9b5a5d0f-8d1f-4d1a-8e87-5d66d6d43e10" launcherIcon="@Drawables.LauncherIcon" minSdkVersion="6.0.2" name="@Strings.AppName" type="watch-app">
+        <iq:products>
+            <iq:product id="instinctcrossoveramoled"/>
+        </iq:products>
+        <iq:languages>
+            <iq:language>eng</iq:language>
+        </iq:languages>
+        <iq:permissions>
+            <iq:uses-permission id="Positioning"/>
+            <iq:uses-permission id="Sensor"/>
+        </iq:permissions>
+        <iq:barrels/>
+    </iq:application>
+</iq:manifest>
