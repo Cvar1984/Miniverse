@@ -30,6 +30,12 @@ class PointerView extends WatchUi.View {
     const DECLINATION_SMOOTHING = 0.05;
     const DECLINATION_MAX_TILT = 25.0;
 
+    // Near-level samples folded into the declination average before it is taken as
+    // settled. At 0.05 a sample this is well past converged, and it is what lets
+    // the horizon frame be held still: once settled it stops moving, and only a
+    // fresh position re-opens it.
+    const DECLINATION_SETTLE = 100;
+
     const LOCK_DEGREES = 8.0;
 
     // Whole-catalogue mode works out where everything is at most this often rather
@@ -102,6 +108,14 @@ class PointerView extends WatchUi.View {
     // Not before this second is the display asked to stay awake again.
     hidden var _wakeAt as Lang.Number;
 
+    // Near-level samples folded in so far, and the sidereal time the equatorial grid
+    // is pinned to while it is being held still. Both are re-opened by a new fix.
+    hidden var _declinationSamples as Lang.Number;
+    hidden var _gridLst as Lang.Double?;
+
+    // When the position was last asked for, for the refresh interval.
+    hidden var _locationAt as Lang.Number;
+
     function initialize(obj as Lang.Dictionary?) {
         View.initialize();
         _obj = obj;
@@ -117,6 +131,9 @@ class PointerView extends WatchUi.View {
         _sky = null;
         _skyAt = 0;
         _wakeAt = 0;
+        _declinationSamples = 0;
+        _gridLst = null;
+        _locationAt = 0;
     }
 
     function onShow() as Void {
@@ -135,6 +152,10 @@ class PointerView extends WatchUi.View {
 
         _locateTimer = new Timer.Timer();
         _locateTimer.start(method(:onLocateTimeout), 4000, false);
+
+        // The refresh interval runs from here, so the first one lands an interval
+        // after the screen opened rather than straight away.
+        _locationAt = Time.now().value();
     }
 
     // Some devices leave the accelerometer powered down until a data listener asks
@@ -185,8 +206,18 @@ class PointerView extends WatchUi.View {
         var deg = info.position.toDegrees();
         _lat = deg[0].toFloat();
         _lon = deg[1].toFloat();
-        // Stood somewhere else now, so the cached sky no longer answers for here.
+        // Stood somewhere else now, so nothing worked out for the old place still
+        // answers: the catalogue positions, and the sidereal time the held-still
+        // equatorial grid is pinned to.
         _sky = null;
+        _gridLst = null;
+
+        // A new position is the only thing that makes the settled declination wrong,
+        // so it is the only thing that re-opens the average - and only if the horizon
+        // frame has been asked to follow the position at all.
+        if (Settings.dynamicAzimuth()) {
+            _declinationSamples = 0;
+        }
 
         var acc = info.accuracy;
         if (acc != null && acc >= Position.QUALITY_USABLE) {
@@ -237,6 +268,7 @@ class PointerView extends WatchUi.View {
             applyMag(info.mag);
         }
         keepAwake();
+        refreshLocation();
         WatchUi.requestUpdate();
     }
 
@@ -259,6 +291,25 @@ class PointerView extends WatchUi.View {
             // asking for and come back for it.
             _wakeAt = now + WAKE_COOLDOWN_SEC;
         }
+    }
+
+    // Asks for the position again once the interval has run out. One shot rather
+    // than a continuous feed: a fix every few minutes is what was asked for, and
+    // leaving the GPS streaming between them would cost far more than it is worth.
+    //
+    // Skipped while the continuous feed is already running, which only happens when
+    // the first fix never arrived and there is nothing to re-arm.
+    function refreshLocation() as Void {
+        var minutes = Settings.locationMinutes();
+        if (minutes <= 0 || _usingGps) {
+            return;
+        }
+        var now = Time.now().value();
+        if (now - _locationAt < minutes * 60) {
+            return;
+        }
+        _locationAt = now;
+        Position.enableLocationEvents(Position.LOCATION_ONE_SHOT, method(:onPosition));
     }
 
     function applyHeading(headingDeg as Lang.Float) as Void {
@@ -307,9 +358,15 @@ class PointerView extends WatchUi.View {
             if (magneticAz != null) {
                 var systemHeading = _headingDeg;
                 var elev = DeviceAim.aimElevation(accel);
-                if (systemHeading != null && elev != null && elev.abs() < DECLINATION_MAX_TILT) {
+                // Averaged only until it has settled. Left running it would keep
+                // nudging true north for as long as the screen was up, and the
+                // horizon grid would creep with it; a fresh position is the one
+                // thing that makes the old value wrong, and that re-opens it.
+                if (systemHeading != null && elev != null && elev.abs() < DECLINATION_MAX_TILT
+                        && _declinationSamples < DECLINATION_SETTLE) {
                     var target = SkyMath.norm180(systemHeading - magneticAz);
                     _declination += DECLINATION_SMOOTHING * (target - _declination);
+                    _declinationSamples += 1;
                 }
                 return SkyMath.norm360(magneticAz + _declination);
             }
@@ -408,7 +465,20 @@ class PointerView extends WatchUi.View {
         var horizonStep = Settings.horizonStep();
         var equatorialStep = Settings.equatorialStep();
         HorizonGrid.draw(dc, frame, view, horizonStep);
-        EquatorialGrid.draw(dc, frame, view, equatorialStep, lat, lstDeg);
+
+        // Sidereal time is the only thing in the equatorial grid that moves, so
+        // pinning it to one reading is what holds that grid still. Held by default:
+        // true to the sky is a grid that never stops creeping, and a reference is
+        // worth more when it stays where it was put. The pin is dropped by a new
+        // position, which is what makes the old reading wrong.
+        var gridLst = lstDeg;
+        if (!Settings.dynamicEquatorial()) {
+            if (_gridLst == null) {
+                _gridLst = lstDeg;
+            }
+            gridLst = _gridLst;
+        }
+        EquatorialGrid.draw(dc, frame, view, equatorialStep, lat, gridLst);
 
         // Whole-catalogue mode. There is no object being aimed at, so there is
         // nothing to be told to turn towards: all it can usefully say is where the

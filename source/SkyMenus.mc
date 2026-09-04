@@ -23,11 +23,15 @@ module SkyMenus {
     }
 
     // Each item carries its current value as the sub-label, and selecting it steps
-    // that value on - see SettingsMenuDelegate.
+    // that value on - see SettingsMenuDelegate. The two spacings come first because
+    // they are what is actually on the screen; what is allowed to move follows.
     function buildSettingsMenu() {
         var menu = new WatchUi.Menu2({:title => "Settings"});
         menu.addItem(new WatchUi.MenuItem("Horizon Grid", Settings.gridLabel(Settings.horizonStep()), "horizon", {}));
         menu.addItem(new WatchUi.MenuItem("Equatorial Grid", Settings.gridLabel(Settings.equatorialStep()), "equatorial", {}));
+        menu.addItem(new WatchUi.MenuItem("Equatorial Motion", Settings.equatorialMotionLabel(), "dynEquatorial", {}));
+        menu.addItem(new WatchUi.MenuItem("Azimuth Motion", Settings.azimuthMotionLabel(), "dynAzimuth", {}));
+        menu.addItem(new WatchUi.MenuItem("Update Location", Settings.locationLabel(), "location", {}));
         return menu;
     }
 }
