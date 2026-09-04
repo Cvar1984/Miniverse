@@ -20,7 +20,7 @@ module HorizonGrid {
     const AZ_SAMPLE = 20;       // plotted point spacing round a circle of equal altitude
     const ALT_SAMPLE = 20;      // plotted point spacing along a vertical circle
 
-    // view is [cx, cy, halfX, halfY, focal], the same screen mapping the object
+    // view is [cx, cy, focal], the same screen mapping the object
     // dot uses, so the grid and the object always agree. Points behind the watch
     // come back null from the projection and simply break the line there, rather
     // than folding back across the view.

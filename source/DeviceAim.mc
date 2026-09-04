@@ -176,8 +176,8 @@ module DeviceAim {
     }
 
     // Where a sky direction lands on screen, or null when it is not out in front
-    // of the watch's back. view is [cx, cy, halfX, halfY, focal], where focal is
-    // the pixels-per-radian scale that sets how wide a piece of sky the screen
+    // of the watch's back. view is [cx, cy, focal], where focal is the
+    // pixels-per-radian scale that sets how wide a piece of sky the screen
     // covers - the perspective divide by "forward" is what makes the sky line up
     // the way a camera would rather than merely pointing in the right direction.
     function screenPoint(frame as Lang.Array<Lang.Float>, tE as Lang.Float, tN as Lang.Float, tU as Lang.Float, view as Lang.Array<Lang.Numeric>) as Lang.Array<Lang.Number>? {
@@ -186,7 +186,7 @@ module DeviceAim {
         if (forward < MIN_FORWARD) {
             return null;
         }
-        var focal = view[4];
+        var focal = view[2];
         return [
             (view[0] + focal * offset[0] / forward).toNumber(),
             (view[1] - focal * offset[1] / forward).toNumber()
