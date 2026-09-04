@@ -14,36 +14,44 @@ using Toybox.Lang as Lang;
 // Each plotted point costs a handful of trig calls, so the sampling constants
 // below are the knob to turn if this ever costs too much frame time.
 module HorizonGrid {
-    // The sky turns 360 degrees in 24 hours, so 15 degrees is one hour of it.
-    // Both sets of lines are spaced that far apart, which makes every cell of the
-    // grid an hour wide and matches the reticle ticks exactly - PointerView draws
-    // those at the same 15 degrees, so the ticks measure the grid rather than just
-    // sitting over it.
-    const ALT_LINE_STEP = 15;   // circles of equal altitude this far apart
-    const ALT_LIMIT = 60;       // highest and lowest one drawn
-    const AZ_LINE_STEP = 15;    // vertical circles this far apart, so 24 of them
+    const ALT_LIMIT = 60;       // highest and lowest circle of equal altitude drawn
     const AZ_SAMPLE = 20;       // plotted point spacing round a circle of equal altitude
     const ALT_SAMPLE = 20;      // plotted point spacing along a vertical circle
 
-    // view is [cx, cy, focal], the same screen mapping the object
-    // dot uses, so the grid and the object always agree. Points behind the watch
-    // come back null from the projection and simply break the line there, rather
-    // than folding back across the view.
-    function draw(dc as Graphics.Dc, frame as Lang.Array<Lang.Float>, view as Lang.Array<Lang.Numeric>) as Void {
-        var alt = -ALT_LIMIT;
-        while (alt <= ALT_LIMIT) {
-            dc.setColor(altitudeColor(alt), Graphics.COLOR_TRANSPARENT);
-            drawAltitudeCircle(dc, frame, alt, view);
-            alt += ALT_LINE_STEP;
+    // view is [cx, cy, focal], the same screen mapping the object dot uses, so the
+    // grid and the object always agree. Points behind the watch come back null from
+    // the projection and simply break the line there, rather than folding back
+    // across the view.
+    //
+    // step is the spacing between lines in degrees, from the settings menu. The sky
+    // turns 360 degrees in 24 hours, so the default 15 makes every cell an hour
+    // wide. Zero draws no lines at all.
+    function draw(dc as Graphics.Dc, frame as Lang.Array<Lang.Float>, view as Lang.Array<Lang.Numeric>, step as Lang.Number) as Void {
+        if (step > 0) {
+            // Counted outwards from the horizon rather than up from the bottom, so
+            // the horizon itself is always one of the lines whatever the spacing is
+            // set to. It is the one worth guaranteeing.
+            var alt = 0;
+            while (alt <= ALT_LIMIT) {
+                dc.setColor(altitudeColor(alt), Graphics.COLOR_TRANSPARENT);
+                drawAltitudeCircle(dc, frame, alt, view);
+                if (alt != 0) {
+                    dc.setColor(altitudeColor(-alt), Graphics.COLOR_TRANSPARENT);
+                    drawAltitudeCircle(dc, frame, -alt, view);
+                }
+                alt += step;
+            }
+
+            var az = 0;
+            while (az < 360) {
+                dc.setColor(Graphics.COLOR_DK_BLUE, Graphics.COLOR_TRANSPARENT);
+                drawVerticalCircle(dc, frame, az, view);
+                az += step;
+            }
         }
 
-        var az = 0;
-        while (az < 360) {
-            dc.setColor(Graphics.COLOR_DK_BLUE, Graphics.COLOR_TRANSPARENT);
-            drawVerticalCircle(dc, frame, az, view);
-            az += AZ_LINE_STEP;
-        }
-
+        // Drawn even with the grid switched off. Which way you are facing is the
+        // most directly useful thing on the screen, and it is not grid furniture.
         drawCardinals(dc, frame, view);
     }
 
