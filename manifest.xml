@@ -1,8 +1,34 @@
 <?xml version="1.0"?>
 <iq:manifest version="3" xmlns:iq="http://www.garmin.com/xml/connectiq">
-    <iq:application entry="CrossoverAmoledApp" id="9b5a5d0f-8d1f-4d1a-8e87-5d66d6d43e10" launcherIcon="@Drawables.LauncherIcon" minSdkVersion="6.0.2" name="@Strings.AppName" type="watch-app">
+    <iq:application entry="MiniverseApp" id="9b5a5d0f-8d1f-4d1a-8e87-5d66d6d43e10" launcherIcon="@Drawables.LauncherIcon" minSdkVersion="6.0.2" name="@Strings.AppName" type="watch-app">
         <iq:products>
+            <iq:product id="enduro3"/>
+            <iq:product id="fenix843mm"/>
+            <iq:product id="fenix847mm"/>
+            <iq:product id="fenix8pro47mm"/>
+            <iq:product id="fenix8solar47mm"/>
+            <iq:product id="fenix8solar51mm"/>
+            <iq:product id="fenix943mm"/>
+            <iq:product id="fenix947mm"/>
+            <iq:product id="fenix9pro43mm"/>
+            <iq:product id="fenix9pro47mm"/>
+            <iq:product id="fenix9pro51mm"/>
+            <iq:product id="fenix9prosolar47mm"/>
+            <iq:product id="fenix9prosolar51mm"/>
+            <iq:product id="fenixe"/>
+            <iq:product id="fr57042mm"/>
+            <iq:product id="fr57047mm"/>
+            <iq:product id="fr970"/>
+            <iq:product id="instinct3amoled45mm"/>
+            <iq:product id="instinct3amoled50mm"/>
+            <iq:product id="instinct3solar45mm"/>
             <iq:product id="instinctcrossoveramoled"/>
+            <iq:product id="instincte40mm"/>
+            <iq:product id="instincte45mm"/>
+            <iq:product id="venu441mm"/>
+            <iq:product id="venu445mm"/>
+            <iq:product id="venux1"/>
+            <iq:product id="vivoactive6"/>
         </iq:products>
         <iq:languages>
             <iq:language>eng</iq:language>
