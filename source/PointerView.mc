@@ -486,10 +486,11 @@ class PointerView extends WatchUi.View {
         if (_obj == null) {
             drawAllObjects(dc, view, frame, lat, jd, lstDeg, sunOffset, zenith);
             drawScale(dc, view, horizonStep, equatorialStep);
-            dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_TRANSPARENT);
-            dc.drawText(cx, dataRow(dc, h, 1), DATA_FONT,
-                "Alt " + signedDegrees(aimElev) + "  Az " + headingDeg.format("%.0f"),
-                Graphics.TEXT_JUSTIFY_CENTER);
+            // Room left for a second row it does not use, which lifts it clear of
+            // the very bottom of the glass - the narrowest part of a round screen,
+            // and no reason to sit in it with only one line to place.
+            drawAimPair(dc, dataRow(dc, h, 2), headingDeg.format("%.0f"),
+                signedDegrees(aimElev));
             return;
         }
 
@@ -511,11 +512,14 @@ class PointerView extends WatchUi.View {
         dc.drawText(cx, nameRow(h), NAME_FONT, _obj[:name], Graphics.TEXT_JUSTIFY_CENTER);
         drawScale(dc, view, horizonStep, equatorialStep);
 
-        // Object against where the watch is actually aimed, on both axes. Each pair
-        // should converge as you settle onto the object, which makes a sensor axis
-        // that runs the wrong way obvious instead of just puzzling.
+        // Object against where the watch is actually aimed, a row each, so the two
+        // pairs read straight down their columns instead of having to be picked out
+        // of a sentence. They should converge as you settle onto the object, which
+        // makes a sensor axis that runs the wrong way obvious rather than puzzling.
         var row = dataRow(dc, h, DATA_ROWS);
         var step = dc.getFontHeight(DATA_FONT);
+        var cols = columns(dc, cy, row + 3 * step);
+        drawHeads(dc, cols, row);
 
         var altColor;
         if (alt >= 0) {
@@ -523,17 +527,12 @@ class PointerView extends WatchUi.View {
         } else {
             altColor = Graphics.COLOR_RED;
         }
-        var elevLine = "Alt obj " + signedDegrees(alt) + "  aim " + signedDegrees(aimElev);
-        dc.setColor(altColor, Graphics.COLOR_TRANSPARENT);
-        dc.drawText(cx, row, DATA_FONT, elevLine, Graphics.TEXT_JUSTIFY_CENTER);
-
-        dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_TRANSPARENT);
-        dc.drawText(cx, row + step, DATA_FONT,
-            "Az obj " + az.format("%.0f") + "  aim " + headingDeg.format("%.0f"),
-            Graphics.TEXT_JUSTIFY_CENTER);
+        drawPair(dc, cols, row, "Obj", az.format("%.0f"), signedDegrees(alt), altColor);
+        drawPair(dc, cols, row + step, "Aim", headingDeg.format("%.0f"),
+            signedDegrees(aimElev), Graphics.COLOR_WHITE);
 
         if (onTarget) {
-            dc.drawText(cx, row + 2 * step, DATA_FONT, "On target", Graphics.TEXT_JUSTIFY_CENTER);
+            drawNote(dc, row + 2 * step, "On target");
             return;
         }
 
@@ -541,12 +540,16 @@ class PointerView extends WatchUi.View {
         // axes, so rolling the wrist leaves it alone: it says how to swing your
         // arm, which does not depend on how the watch is turned in your hand.
         //
+        // These two are the differences down the columns above - turn closes the
+        // azimuth gap and tilt the altitude one - so they run on under the same
+        // left edge rather than being centred against it.
+        //
         // Aimed within a couple of degrees of straight up or down there is no
         // sensible "turn left" to give, since every direction is sideways from
         // there. The picture above still holds, so only these two lines drop out.
         var basis = DeviceAim.aimBasis(aimElev, headingDeg);
         if (basis == null) {
-            dc.drawText(cx, row + 2 * step, DATA_FONT, "Aimed straight up/down", Graphics.TEXT_JUSTIFY_CENTER);
+            drawNote(dc, row + 2 * step, "Straight up/down");
             return;
         }
 
@@ -566,8 +569,70 @@ class PointerView extends WatchUi.View {
         } else {
             vLabel = " down";
         }
-        dc.drawText(cx, row + 2 * step, DATA_FONT, "Turn " + hAngle.abs().format("%.0f") + hLabel, Graphics.TEXT_JUSTIFY_CENTER);
-        dc.drawText(cx, row + 3 * step, DATA_FONT, "Tilt " + vAngle.abs().format("%.0f") + vLabel, Graphics.TEXT_JUSTIFY_CENTER);
+        drawNote(dc, row + 2 * step, "Turn " + hAngle.abs().format("%.0f") + hLabel);
+        drawNote(dc, row + 3 * step, "Tilt " + vAngle.abs().format("%.0f") + vLabel);
+    }
+
+    // Where the three columns of the readout table sit: [label, azimuth, altitude].
+    // The label is left-aligned on the first and the two numbers right-aligned on
+    // the others, so digits line up under each other instead of drifting with how
+    // many of them there are.
+    //
+    // Sized to the narrowest row the table occupies rather than to the widest. The
+    // columns have to line up all the way down, and on a round screen the bottom
+    // row has the least glass under it, so that is the one with the casting vote.
+    function columns(dc as Graphics.Dc, cy as Lang.Number, bottomRow as Lang.Number) as Lang.Array<Lang.Number> {
+        var cx = dc.getWidth() / 2;
+        var half = screenHalfWidth(dc, cy, bottomRow + dc.getFontHeight(DATA_FONT) / 2);
+        return [cx - half, cx + (3 * half) / 10, cx + half];
+    }
+
+    // Column heads, dim and small and sat just above the first row. The numbers
+    // below them are bare, and which column is which is the whole question they
+    // would otherwise raise.
+    function drawHeads(dc as Graphics.Dc, cols as Lang.Array<Lang.Number>, row as Lang.Number) as Void {
+        var y = row - dc.getFontHeight(LABEL_FONT);
+        dc.setColor(Graphics.COLOR_DK_GRAY, Graphics.COLOR_TRANSPARENT);
+        dc.drawText(cols[1], y, LABEL_FONT, "Az", Graphics.TEXT_JUSTIFY_RIGHT);
+        dc.drawText(cols[2], y, LABEL_FONT, "Alt", Graphics.TEXT_JUSTIFY_RIGHT);
+    }
+
+    // Where the watch is pointing, with no object to set it against. There is no
+    // label column and so nothing to range on: the pair is simply centred, each
+    // number under its own head, which sits it in the middle of the row where a
+    // round screen is widest.
+    function drawAimPair(dc as Graphics.Dc, y as Lang.Number, azText as Lang.String, altText as Lang.String) as Void {
+        var cx = dc.getWidth() / 2;
+        var gap = dc.getWidth() / 9;
+        var headY = y - dc.getFontHeight(LABEL_FONT);
+
+        dc.setColor(Graphics.COLOR_DK_GRAY, Graphics.COLOR_TRANSPARENT);
+        dc.drawText(cx - gap, headY, LABEL_FONT, "Az", Graphics.TEXT_JUSTIFY_CENTER);
+        dc.drawText(cx + gap, headY, LABEL_FONT, "Alt", Graphics.TEXT_JUSTIFY_CENTER);
+
+        dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_TRANSPARENT);
+        dc.drawText(cx - gap, y, DATA_FONT, azText, Graphics.TEXT_JUSTIFY_CENTER);
+        dc.drawText(cx + gap, y, DATA_FONT, altText, Graphics.TEXT_JUSTIFY_CENTER);
+    }
+
+    // One row of the table: a label and its two numbers. Altitude carries its own
+    // colour, since an object below the horizon is the one value here worth
+    // colouring on its own rather than reddening the whole line.
+    function drawPair(dc as Graphics.Dc, cols as Lang.Array<Lang.Number>, y as Lang.Number, label as Lang.String, azText as Lang.String, altText as Lang.String, altColor as Lang.Number) as Void {
+        dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_TRANSPARENT);
+        dc.drawText(cols[0], y, DATA_FONT, label, Graphics.TEXT_JUSTIFY_LEFT);
+        dc.drawText(cols[1], y, DATA_FONT, azText, Graphics.TEXT_JUSTIFY_RIGHT);
+        dc.setColor(altColor, Graphics.COLOR_TRANSPARENT);
+        dc.drawText(cols[2], y, DATA_FONT, altText, Graphics.TEXT_JUSTIFY_RIGHT);
+    }
+
+    // A row that runs across the columns rather than filling them, and is centred
+    // rather than ranged against them: it is a sentence, not a column of figures,
+    // so nothing has to line up under it - and on a round screen the middle of the
+    // row is where the room is.
+    function drawNote(dc as Graphics.Dc, y as Lang.Number, text as Lang.String) as Void {
+        dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_TRANSPARENT);
+        dc.drawText(dc.getWidth() / 2, y, DATA_FONT, text, Graphics.TEXT_JUSTIFY_CENTER);
     }
 
     // A waiting message has the whole screen to itself, so it is centred both ways
