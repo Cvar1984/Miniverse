@@ -45,23 +45,67 @@ turn/tilt guidance underneath does **not** — it is measured against gravity,
 because it describes how to swing your arm, which has nothing to do with how the
 watch is rotated in your grip.
 
-The whole chain, once per frame at 10 Hz:
+Two independent chains meet at the projection, and the whole thing runs once per
+frame at 10 Hz:
 
+```mermaid
+flowchart TD
+    subgraph SKY["Where the object is"]
+        direction TB
+        CLK["Clock, UTC"] --> JD["Julian Day<br/>64-bit"]
+        JD --> LST["Local sidereal time<br/>GMST plus longitude"]
+        JD --> SER["Series and elements<br/>Sun, Moon, planets"]
+        CAT["Star catalogue<br/>J2000"] --> RADEC
+        SER --> RADEC["Right ascension<br/>and declination"]
+        LST --> ALTAZ["Altitude and azimuth"]
+        RADEC --> ALTAZ
+        LAT["Latitude, from GPS"] --> ALTAZ
+        ALTAZ --> CORR["Parallax then refraction"]
+        CORR --> ENU["Unit vector<br/>east, north, up"]
+    end
+
+    subgraph WATCH["Where the watch is pointing"]
+        direction TB
+        ACC["Accelerometer"] --> GRAV["Gravity, normalised<br/>and negated"]
+        MAG["Magnetometer"] --> NORTH["Magnetic north<br/>vertical part removed"]
+        GRAV --> NORTH
+        GRAV --> FRAME["Device frame<br/>world axes in watch coordinates"]
+        NORTH --> FRAME
+    end
+
+    ENU --> OFF["Rotate into watch axes<br/>right, up, forward"]
+    FRAME --> OFF
+    OFF --> Q{"forward greater<br/>than 0.1?"}
+    Q -->|no| DROP["Behind the watch.<br/>Marker pinned to the rim,<br/>grid line broken"]
+    Q -->|yes| PROJ["Perspective divide"]
+    PROJ --> XY["Screen x, y"]
+
+    style SKY fill:#0d1117,stroke:#30363d
+    style WATCH fill:#0d1117,stroke:#30363d
 ```
-       clock ──► Julian Day ──► sidereal time ─┐
-                                               ├──► RA/Dec ──► alt/az ──► ENU unit vector
-   catalogue / orbital elements ───────────────┘                              │
-                                                                              ▼
-  accelerometer ──► gravity ──┐                                     rotate into watch axes
-                              ├──► device frame (east, north, up) ──►         │
-  magnetometer ──► field ─────┘                                               ▼
-                                                                    perspective divide
-                                                                              │
-                                                                              ▼
-                                                                         screen x, y
-```
+
+Both sensor readings are smoothed as **vectors** before any of this, never as
+angles — see [Smoothing](#smoothing).
 
 ## Screens
+
+```mermaid
+flowchart LR
+    ROOT["Locate Sky Object"]
+    ROOT --> ALL["Show All"]
+    ROOT --> SUN["Sun"]
+    ROOT --> MOON["Moon"]
+    ROOT --> PLIST["Planets list"]
+    ROOT --> SLIST["Stars list"]
+    PLIST --> AIM
+    SLIST --> AIM
+    SUN --> AIM["Sky screen"]
+    MOON --> AIM
+    ALL --> AIM
+    AIM -->|hold up / menu| SET["Settings"]
+    SET -->|back| AIM
+    AIM -->|back| ROOT
+```
 
 ### Aiming at one object
 
@@ -73,9 +117,9 @@ readout pairs the object against the aim on the same axis — `Alt obj +30  aim 
 deliberate: a sensor axis wired the wrong way makes the pair diverge as you close
 in, which is obvious, instead of just being puzzling.
 
-Within 8° of the object the marker takes a green ring and the guidance is replaced
-by **On target**. Below the horizon it takes a red one — the object is real and
-correctly placed, it is just underneath you.
+Within $8^\circ$ of the object the marker takes a green ring and the guidance is
+replaced by **On target**. Below the horizon it takes a red one — the object is real
+and correctly placed, it is just underneath you.
 
 When the object is off the edge of the view it pins to the rim with a chevron
 pointing further the way to move, inset far enough that the marker and its chevron
@@ -96,16 +140,16 @@ pinned to the rim in this mode — with the whole sky on show, markers would pil
 around the edge — so an object that is not in front of the watch is simply not
 drawn.
 
-Above: both grids on at 60°, the blue horizon grid crossing the red equatorial one,
-with `N` at the north point.
+Above: both grids on at $60^\circ$, the blue horizon grid crossing the red
+equatorial one, with `N` at the north point.
 
 ### The grids
 
 ![Horizon grid at 10 degrees, near the zenith](Screenshoot/G94J1216.png)
 
-Aimed near the zenith with the horizon grid at 10°, where the vertical circles all
-converge on the point overhead. The dense end of the range: 36 vertical circles and
-13 circles of equal altitude.
+Aimed near the zenith with the horizon grid at $10^\circ$, where the vertical
+circles all converge on the point overhead. The dense end of the range: 36 vertical
+circles and 13 circles of equal altitude.
 
 ## Settings
 
@@ -125,8 +169,9 @@ behind the menu showing it.
 | Azimuth Motion | Held still · Follows position | Held still |
 | Update Location | One fix only · every 5 / 15 / 30 / 60 min | One fix only |
 
-Spacings that come to a whole number of hours say so — the sky turns 360° in 24
-hours, so 15° is one hour of it and the grid divides the sky into hour-wide cells.
+Spacings that come to a whole number of hours say so — the sky turns $360^\circ$ in
+24 hours, so $15^\circ$ is one hour of it and the grid divides the sky into
+hour-wide cells.
 
 Everything starts off and held still. The sky is what the screen is for; a grid over
 it is a reference you ask for rather than one you have to dismiss, and a reference
@@ -152,46 +197,77 @@ almanac file, no phone.
 
 ### Julian Day
 
-`SkyMath.julianDay` — the standard Gregorian algorithm. For `y`, `m` with January
-and February counted as months 13 and 14 of the previous year:
+`SkyMath.julianDay` — the standard Gregorian algorithm. For year $y$ and month $m$,
+with January and February counted as months 13 and 14 of the previous year:
 
+```math
+a = \left\lfloor \frac{y}{100} \right\rfloor
+\qquad
+b = 2 - a + \left\lfloor \frac{a}{4} \right\rfloor
 ```
-a  = floor(y / 100)
-b  = 2 - a + floor(a / 4)
-JD = floor(365.25 · (y + 4716)) + floor(30.6001 · (m + 1)) + d + b - 1524.5
-     + (hh + mm/60 + ss/3600) / 24
+
+```math
+JD = \big\lfloor 365.25\,(y + 4716) \big\rfloor
+   + \big\lfloor 30.6001\,(m + 1) \big\rfloor
+   + d + b - 1524.5
+   + \frac{h + \dfrac{\mathit{min}}{60} + \dfrac{s}{3600}}{24}
 ```
 
-**This one must be 64-bit.** A Julian Day this century runs to about 2 460 000, and
-a 32-bit float carries roughly seven significant digits — enough for the date and
-nothing whatever for the time of day, which rounds to the nearest six hours.
+**This one must be 64-bit.** A Julian Day this century runs to about $2.46 \times
+10^{6}$, and a 32-bit float carries roughly seven significant digits — enough for
+the date and nothing whatever for the time of day, which rounds to the nearest six
+hours.
 
-Measured against the sky: an observation at 04:06 wants JD 2461286.37917; a float
-holds 2461286.5, and those 2.9 hours moved Saturn from 61° up in the south-west down
-to 19°. Whole evenings collapse onto one stored value, so a position sits frozen and
-then jumps. The leading `.toDouble()` is what forces the running total wide — the
-terms before it are exact whole numbers a float still holds safely.
+Measured against the sky: an observation at 04:06 wants $JD = 2461286.37917$; a
+float holds $2461286.5$, and those 2.9 hours moved Saturn from $61^\circ$ up in the
+south-west down to $19^\circ$. Whole evenings collapse onto one stored value, so a
+position sits frozen and then jumps. The leading `.toDouble()` is what forces the
+running total wide — the terms before it are exact whole numbers a float still holds
+safely.
 
 ### Sidereal time
 
-Greenwich Mean Sidereal Time, in degrees, with `D` the days since J2000 and
-`T = D / 36525`:
+Greenwich Mean Sidereal Time in degrees, with $D$ the days since J2000 and
+$T = D / 36525$:
 
-```
-GMST = 280.46061837 + 360.98564736629·D + 0.000387933·T² − T³/38710000
-LST  = GMST + longitude          (east-positive)
+```math
+\mathrm{GMST} = 280.46061837
+  + 360.98564736629\,D
+  + 0.000387933\,T^{2}
+  - \frac{T^{3}}{38710000}
 ```
 
-Also 64-bit, and for the same reason: `D` is multiplied by 361 before being wrapped
+```math
+\mathrm{LST} = \mathrm{GMST} + \lambda_{\text{obs}}
+\qquad (\lambda_{\text{obs}} \text{ east-positive})
+```
+
+Also 64-bit, and for the same reason: $D$ is multiplied by 361 before being wrapped
 back into a circle, passing through three and a half million degrees on the way.
 
-The `.98564736629` is the whole point — the sky turns *slightly more* than 360° per
-solar day, which is why a star rises about four minutes earlier each night.
+The $0.98564736629$ is the whole point — the sky turns *slightly more* than
+$360^\circ$ per solar day, which is why a star rises about four minutes earlier each
+night.
 
 ## 2. Where the object is
 
-Every object resolves to a geocentric right ascension and declination at a given
-Julian Day. Four different routes get there.
+Every object resolves to a geocentric right ascension $\alpha$ and declination
+$\delta$ at a given Julian Day. Four different routes get there:
+
+```mermaid
+flowchart TD
+    OBJ["Object from the catalogue"] --> T{"type"}
+    T -->|star| S["Read J2000 RA and Dec<br/>straight from the table"]
+    T -->|sun| SU["Meeus abbreviated<br/>mean longitude, anomaly,<br/>equation of the centre"]
+    T -->|moon| MO["Meeus series<br/>13 longitude terms<br/>10 latitude terms"]
+    T -->|planet| PL["Keplerian elements<br/>Newton solve for E"]
+    PL --> HG["Heliocentric to geocentric<br/>add the Sun vector"]
+    SU --> EQ["Ecliptic to equatorial<br/>rotate by the obliquity"]
+    MO --> EQ
+    HG --> EQ
+    EQ --> OUT["RA and Dec"]
+    S --> OUT
+```
 
 ### Stars — `StarCatalog`
 
@@ -203,56 +279,76 @@ precession are ignored; both are far below what a wrist magnetometer can resolve
 Meeus, abbreviated. Mean longitude, mean anomaly, equation of the centre, then the
 apparent longitude corrected for aberration and nutation:
 
-```
-L₀ = 280.46646 + 36000.76983·T + 0.0003032·T²
-M  = 357.52911 + 35999.05029·T − 0.0001537·T²
-C  = (1.914602 − 0.004817·T − 0.000014·T²)·sin M
-   + (0.019993 − 0.000101·T)·sin 2M
-   + 0.000289·sin 3M
-Ω  = 125.04 − 1934.136·T
-λ  = L₀ + C − 0.00569 − 0.00478·sin Ω
-ε  = ε₀ + 0.00256·cos Ω
+```math
+\begin{aligned}
+L_0 &= 280.46646 + 36000.76983\,T + 0.0003032\,T^{2} \\[2pt]
+M   &= 357.52911 + 35999.05029\,T - 0.0001537\,T^{2} \\[2pt]
+C   &= \left(1.914602 - 0.004817\,T - 0.000014\,T^{2}\right)\sin M \\
+    &\quad + \left(0.019993 - 0.000101\,T\right)\sin 2M
+          + 0.000289 \sin 3M \\[2pt]
+\Omega &= 125.04 - 1934.136\,T \\[2pt]
+\lambda &= L_0 + C - 0.00569 - 0.00478 \sin\Omega \\[2pt]
+\varepsilon &= \varepsilon_0 + 0.00256 \cos\Omega
+\end{aligned}
 ```
 
 ### Moon — `SolarLunar.moonPosition`
 
 The hard one, and the reason there is a series rather than a formula. Built from the
-four fundamental arguments — mean elongation `D`, solar anomaly `M`, lunar anomaly
-`M′` and argument of latitude `F` — with a 13-term longitude series and a 10-term
+four fundamental arguments — mean elongation $D$, solar anomaly $M$, lunar anomaly
+$M'$ and argument of latitude $F$ — with a 13-term longitude series and a 10-term
 latitude series. The largest terms:
 
-```
-Δλ = 6.288774·sin M′ + 1.274027·sin(2D − M′) + 0.658314·sin 2D + …
-Δβ = 5.128122·sin F  + 0.280602·sin(M′ + F)  + 0.277693·sin(M′ − F) + …
+```math
+\begin{aligned}
+\Delta\lambda &= 6.288774 \sin M'
+   + 1.274027 \sin(2D - M')
+   + 0.658314 \sin 2D + \cdots \\[2pt]
+\Delta\beta &= 5.128122 \sin F
+   + 0.280602 \sin(M' + F)
+   + 0.277693 \sin(M' - F) + \cdots
+\end{aligned}
 ```
 
-`6.29·sin M′` is the elliptical orbit; `1.27·sin(2D − M′)` is evection, the Sun
-stretching the orbit; `0.66·sin 2D` is variation. `5.13·sin F` is simply the 5.1°
-tilt of the Moon's orbit against the ecliptic.
+$6.29 \sin M'$ is the elliptical orbit; $1.27 \sin(2D - M')$ is evection, the Sun
+stretching the orbit; $0.66 \sin 2D$ is variation. $5.13 \sin F$ is simply the
+$5.1^\circ$ tilt of the Moon's orbit against the ecliptic.
 
 ### Planets — `Planets`
 
 Mercury through Saturn from approximate Keplerian elements, in the style of Paul
 Schlyter's *How to compute planetary positions*. Each planet's elements — ascending
-node `N`, inclination `i`, argument of perihelion `w`, semi-major axis `a`,
-eccentricity `e`, mean anomaly `M` — are linear in the day number.
+node $N$, inclination $i$, argument of perihelion $w$, semi-major axis $a$,
+eccentricity $e$, mean anomaly $M$ — are linear in the day number.
 
-Kepler's equation `M = E − e·sin E` has no closed form, so it is solved by Newton
-iteration from a first guess, to 10⁻⁶ degrees or eight passes:
+Kepler's equation has no closed form:
 
+```math
+M = E - e \sin E
 ```
-E₀ = M + (180/π)·e·sin M·(1 + e·cos M)
-Eₙ₊₁ = Eₙ + (M − (Eₙ − (180/π)·e·sin Eₙ)) / (1 − e·cos Eₙ)
+
+so it is solved by Newton iteration from a first guess, to $10^{-6}$ degrees or
+eight passes:
+
+```math
+E_0 = M + \frac{180}{\pi}\,e \sin M \,\left(1 + e \cos M\right)
+```
+
+```math
+E_{n+1} = E_n + \frac{M - \left(E_n - \dfrac{180}{\pi} e \sin E_n\right)}
+                     {1 - e \cos E_n}
 ```
 
 Then true anomaly and radius from the eccentric anomaly, rotated out of the orbital
 plane into heliocentric ecliptic coordinates, and the Sun's own geocentric vector
 added to shift the origin from the Sun to the Earth:
 
-```
-x_g = x_helio + x_sun
-y_g = y_helio + y_sun
-z_g = z_helio
+```math
+x_g = x_h + x_\odot
+\qquad
+y_g = y_h + y_\odot
+\qquad
+z_g = z_h
 ```
 
 That last addition is the parallax of the whole Earth's orbit, and it is what makes
@@ -261,32 +357,50 @@ Mars swing backwards through the sky a few weeks a year.
 ### Ecliptic to equatorial
 
 All three computed bodies come out in ecliptic coordinates and are rotated by the
-obliquity `ε = 23.439291 − 0.0130042·T − …`:
+obliquity $\varepsilon = 23.439291 - 0.0130042\,T - \cdots$:
 
+```math
+\sin\delta = \sin\beta \cos\varepsilon
+           + \cos\beta \sin\varepsilon \sin\lambda
 ```
-sin δ = sin β·cos ε + cos β·sin ε·sin λ
-tan α = (sin λ·cos ε − tan β·sin ε) / cos λ
+
+```math
+\tan\alpha = \frac{\sin\lambda \cos\varepsilon - \tan\beta \sin\varepsilon}
+                  {\cos\lambda}
 ```
 
 ## 3. Turning that into a direction in the sky
 
-`SkyMath.raDecToAltAz`. With hour angle `H = LST − α`, latitude `φ`:
+`SkyMath.raDecToAltAz`. With hour angle $H = \mathrm{LST} - \alpha$ and observer
+latitude $\varphi$:
 
-```
-sin(alt) = sin δ·sin φ + cos δ·cos φ·cos H
-cos(A)   = (sin δ − sin φ·sin alt) / (cos φ·cos alt)
-az       = 360° − A   if sin H > 0,  else A
+```math
+\sin h = \sin\delta \sin\varphi + \cos\delta \cos\varphi \cos H
 ```
 
-Azimuth from north, clockwise through east. The `sin H` branch is what resolves the
-ambiguity `acos` leaves — east or west of the meridian.
+```math
+\cos A = \frac{\sin\delta - \sin\varphi \sin h}{\cos\varphi \cos h}
+```
+
+```math
+A_{\text{az}} =
+\begin{cases}
+360^\circ - A, & \sin H > 0 \\
+A, & \text{otherwise}
+\end{cases}
+```
+
+Azimuth from north, clockwise through east. The $\sin H$ branch is what resolves the
+ambiguity $\arccos$ leaves — east or west of the meridian.
 
 Then to a world East-North-Up unit vector:
 
-```
-E = cos(alt)·sin(az)
-N = cos(alt)·cos(az)
-U = sin(alt)
+```math
+\mathbf{t} = \big(\,
+  \cos h \sin A_{\text{az}},\;
+  \cos h \cos A_{\text{az}},\;
+  \sin h
+\,\big)
 ```
 
 ## 4. Corrections
@@ -298,33 +412,37 @@ Both act along the vertical circle, so azimuth is untouched.
 Everything above answers for the **centre of the Earth**. You are 6378 km off that
 centre. For the Moon that matters:
 
-```
-alt′ = alt − π·cos(alt)
-```
-
-where `π` is the horizontal parallax from Meeus' series:
-
-```
-π = 0.9508 + 0.0518·cos M′ + 0.0095·cos(2D − M′) + 0.0078·cos 2D + 0.0028·cos 2M′
+```math
+h' = h - \pi_{\!h} \cos h
 ```
 
-That runs to about **0.95°** — nearly two full-Moon widths — which is why the Moon
-is the only body corrected. The Sun comes to 0.0024°, the planets at closest
-approach to 0.009°, and the stars to nothing. Earth's polar flattening would move
-the answer by ~12 arcseconds and is ignored.
+where $\pi_{\!h}$ is the horizontal parallax from Meeus' series:
+
+```math
+\pi_{\!h} = 0.9508
+  + 0.0518 \cos M'
+  + 0.0095 \cos(2D - M')
+  + 0.0078 \cos 2D
+  + 0.0028 \cos 2M'
+```
+
+That runs to about $0.95^\circ$ — nearly two full-Moon widths — which is why the
+Moon is the only body corrected. The Sun comes to $0.0024^\circ$, the planets at
+closest approach to $0.009^\circ$, and the stars to nothing. Earth's polar
+flattening would move the answer by about 12 arcseconds and is ignored.
 
 ### Refraction
 
-Bennett's formula, in arcminutes:
+Bennett's formula, giving arcminutes for an altitude $h$ in degrees:
 
-```
-R = 1 / tan(h + 7.31/(h + 4.4))
+```math
+R = \frac{1}{\tan\!\left(h + \dfrac{7.31}{h + 4.4}\right)}
 ```
 
-About **0.57° at the horizon**, 0.09° at ten degrees up, and negligible overhead —
-so it matters for exactly the objects that are hardest to find anyway, the ones just
-clearing the skyline. It is what makes the Sun visibly still up when it has
-geometrically already set.
+About $0.57^\circ$ at the horizon, $0.09^\circ$ at ten degrees up, and negligible
+overhead — so it matters for exactly the objects that are hardest to find anyway,
+the ones just clearing the skyline. It is what makes the Sun visibly still up when
+it has geometrically already set.
 
 ## 5. Where the watch is pointing
 
@@ -333,44 +451,61 @@ once a second, which is far too slow and too stale to aim with while moving.
 
 ### Smoothing
 
-Exponential smoothing at 0.2 per sample, applied to the **raw sensor vectors**, not
-to angles derived from them. This is what Stellarium's `SensorsMgr` does and for the
-same reason: magnetometer noise is what makes a sky view jitter, and it settles far
-better averaged as vectors. Stellarium runs 0.01–0.1 per frame at display rate and
-smooths harder the tighter the field of view; 0.2 at 10 Hz is the equivalent for an
-8° lock.
+Exponential smoothing applied to the **raw sensor vectors**, not to angles derived
+from them:
 
-Heading is smoothed the short way round the circle, so 359° → 1° does not swing
-backwards through 358.
+```math
+\mathbf{v}_n = \mathbf{v}_{n-1} + \alpha\left(\mathbf{s}_n - \mathbf{v}_{n-1}\right),
+\qquad \alpha = 0.2
+```
+
+This is what Stellarium's `SensorsMgr` does and for the same reason: magnetometer
+noise is what makes a sky view jitter, and it settles far better averaged as
+vectors. Stellarium runs $\alpha = 0.01$ to $0.1$ per frame at display rate and
+smooths harder the tighter the field of view; $0.2$ at 10 Hz is the equivalent for
+an $8^\circ$ lock.
+
+Heading is smoothed the short way round the circle, so $359^\circ \to 1^\circ$ does
+not swing backwards through $358^\circ$.
 
 ### Gravity
 
-```
-up = −accel / |accel|
+```math
+\hat{\mathbf{u}} = -\,\frac{\mathbf{a}}{\lVert \mathbf{a} \rVert}
 ```
 
 The sign is a hardware fact, not a choice: this device reports the gravity direction
 rather than specific force. Each such convention lives in a named constant with a
 check you can run on the pointer screen — aim the back at the horizon and the aim
-elevation should read about 0; tip it skyward and it should climb.
+elevation should read about $0^\circ$; tip it skyward and it should climb.
 
 ### Tilt-compensated magnetic azimuth
 
-The system's compass heading is a **flat** reading and goes wrong the moment you tilt
-the watch up at the sky, which is the only thing you ever do with this app. So the
-azimuth is worked out from the raw magnetometer instead.
+The system's compass heading is a **flat** reading and goes wrong the moment you
+tilt the watch up at the sky, which is the only thing you ever do with this app. So
+the azimuth is worked out from the raw magnetometer instead.
 
-Flatten both the field and the aim axis onto the plane at right angles to gravity:
+Flatten both the field $\mathbf{m}$ and the back axis $\mathbf{b}$ onto the plane at
+right angles to gravity:
 
+```math
+\hat{\mathbf{n}} = \frac{\mathbf{m} - (\mathbf{m}\cdot\hat{\mathbf{u}})\,\hat{\mathbf{u}}}
+                        {\lVert \cdots \rVert}
+\qquad
+\hat{\mathbf{p}} = \frac{\mathbf{b} - (\mathbf{b}\cdot\hat{\mathbf{u}})\,\hat{\mathbf{u}}}
+                        {\lVert \cdots \rVert}
 ```
-n = m − (m·u)u          magnetic north along the ground
-p = b − (b·u)u          the back axis, flattened
-az = atan2((p × n)·u, p·n)
+
+```math
+A_{\text{mag}} = \mathrm{atan2}\!\big(
+  (\hat{\mathbf{p}} \times \hat{\mathbf{n}})\cdot\hat{\mathbf{u}},\;
+  \hat{\mathbf{p}} \cdot \hat{\mathbf{n}}
+\big)
 ```
 
-Removing the vertical component of the field is the whole trick — what is left points
-north however the watch is tilted. Stellarium does the same, de-rotating the raw
-field by the device's own roll and pitch rather than trusting a system heading.
+Removing the vertical component of the field is the whole trick — what is left
+points north however the watch is tilted. Stellarium does the same, de-rotating the
+raw field by the device's own roll and pitch rather than trusting a system heading.
 
 ### Magnetic declination
 
@@ -378,59 +513,72 @@ The system heading is worth exactly one thing: while the watch happens to be nea
 level it is both trustworthy *and* corrected to true north. The gap between it and
 the computed magnetic azimuth is therefore the local declination:
 
-```
-declination ← declination + 0.05·(systemHeading − magneticAz)
+```math
+\delta_{\text{mag}} \leftarrow \delta_{\text{mag}}
+  + 0.05\left(\theta_{\text{system}} - A_{\text{mag}}\right)
 ```
 
-banked slowly, only while `|elevation| < 25°`, and then applied at any tilt.
-Averaging stops after 100 near-level samples — well past converged — so the
-reference stops creeping. A fresh position re-opens it, if Azimuth Motion is on.
+banked slowly, only while $\lvert \epsilon \rvert < 25^\circ$, and then applied at
+any tilt. Averaging stops after 100 near-level samples — well past converged — so
+the reference stops creeping. A fresh position re-opens it, if Azimuth Motion is on.
 
 ### The device frame
 
-`DeviceAim.deviceFrame` returns the world's axes written in the watch's coordinates:
+`DeviceAim.deviceFrame` returns the world's axes written in the watch's coordinates,
+with $\sigma_H = \pm 1$ for handedness:
 
-```
-east  = handedness · (north × up)
-north = n
-up    = u
-```
-
-Multiplying a sky direction's world components by these lands it in the watch's own
-frame. `viewOffset` does that and flips the forward axis, because the aim is out
-through the back:
-
-```
-right   =  t·east_watch
-up      =  t·north_watch
-forward = −t·up_watch          (BACK_SIGN)
+```math
+\hat{\mathbf{e}} = \sigma_H\,(\hat{\mathbf{n}} \times \hat{\mathbf{u}})
+\qquad
+\hat{\mathbf{n}},\ \hat{\mathbf{u}} \text{ as above}
 ```
 
-All three are direction cosines, ready for a perspective divide. Keeping the back
-sign separate from the handedness sign matters: tangling them flips the sideways and
-forward components together, the flip cancels in the sideways divide, and the result
-can only ever invert up and down — which looks like the object following the watch
-instead of sliding against it.
+`viewOffset` then takes a world direction $\mathbf{t} = t_E\hat{\mathbf{e}} +
+t_N\hat{\mathbf{n}} + t_U\hat{\mathbf{u}}$ and reads off its components along the
+watch's own axes — $\hat{\mathbf{x}}$ at 3 o'clock, $\hat{\mathbf{y}}$ at 12
+o'clock, $\hat{\mathbf{z}}$ out through the screen:
+
+```math
+\begin{aligned}
+\mathit{right}   &= \mathbf{t} \cdot \hat{\mathbf{x}} \\[2pt]
+\mathit{up}      &= \mathbf{t} \cdot \hat{\mathbf{y}} \\[2pt]
+\mathit{forward} &= -\,\mathbf{t} \cdot \hat{\mathbf{z}}
+\end{aligned}
+```
+
+Forward is the one that turns round, because the aim is out through the **back**.
+All three are direction cosines, ready for a perspective divide.
+
+Keeping that back sign separate from the handedness sign matters: tangling them
+flips the sideways and forward components together, the flip cancels in the sideways
+divide, and the result can only ever invert up and down — which looks like the
+object following the watch instead of sliding against it.
 
 ## 6. Putting the sky on the screen
 
-A pinhole camera. With `f` the focal length in pixels:
+A pinhole camera, with $f$ the focal length in pixels:
 
-```
-x = cx + f · right / forward
-y = cy − f · up    / forward
-f = cx / tan(45°) = cx
+```math
+x = c_x + f\,\frac{\mathit{right}}{\mathit{forward}}
+\qquad
+y = c_y - f\,\frac{\mathit{up}}{\mathit{forward}}
 ```
 
-so the screen spans **90° of sky** across its width, and the same down its height on
-a square display. The perspective divide is what makes the sky line up the way a
+```math
+f = \frac{c_x}{\tan 45^\circ} = c_x
+\quad\Longrightarrow\quad
+\mathrm{FOV} = 2\arctan\!\left(\frac{c_x}{f}\right) = 90^\circ
+```
+
+so the screen spans $90^\circ$ of sky across its width, and the same down its height
+on a square display. The perspective divide is what makes the sky line up the way a
 camera would, rather than merely pointing in the right general direction: at the
-edges of a 90° field the difference between the two is large.
+edges of a $90^\circ$ field the difference between the two is large.
 
-Anything with `forward < 0.1` — more than about 84° off the aim — is level with the
-back of the watch or behind it, where a perspective projection has nothing to say. It
-is dropped, which breaks grid lines cleanly instead of folding them back across the
-view.
+Anything with $\mathit{forward} < 0.1$ — more than about $84^\circ$ off the aim — is
+level with the back of the watch or behind it, where a perspective projection has
+nothing to say. It is dropped, which breaks grid lines cleanly instead of folding
+them back across the view.
 
 Nothing is clipped and no band is reserved. The sky is laid down across the whole
 display and the text is drawn on top of it afterwards.
@@ -445,20 +593,38 @@ having both.
 | **Horizon** (`HorizonGrid`) — circles of equal altitude, vertical circles between zenith and nadir | the ground and the compass | you move the watch |
 | **Equatorial** (`EquatorialGrid`) — circles of equal declination, hour circles between the celestial poles | the stars | you move the watch, **and** as time passes |
 
-The horizon grid takes no clock and no position: `(az, alt)` maps straight to a
-direction. Rest the watch flat on a table and it looks at the nadir, with the
+```mermaid
+flowchart LR
+    subgraph H["Horizon grid"]
+        direction LR
+        HA["az, alt"] --> HB["ENU vector"]
+    end
+    subgraph E["Equatorial grid"]
+        direction LR
+        EA["RA, Dec"] --> EB["raDecToAltAz"]
+        LATLST["latitude and<br/>sidereal time"] --> EB
+        EB --> EC["ENU vector"]
+    end
+    HB --> P["Rotate into watch axes,<br/>perspective divide"]
+    EC --> P
+    P --> SCR["Screen"]
+```
+
+The horizon grid takes no clock and no position: $(A_{\text{az}}, h)$ maps straight
+to a direction. Rest the watch flat on a table and it looks at the nadir, with the
 vertical circles converging in the middle of the screen.
 
-The equatorial grid runs every point through `raDecToAltAz(ra, dec, lat, LST)`.
-Sidereal time is the only thing in that chain that moves, so **pinning LST to one
-reading is what holds the grid still** — which is the default. Let loose, it turns at
-15° per hour, one full revolution per sidereal day, pivoting about the celestial
-poles at altitude = your latitude. Turn both on and you can watch the red grid slide
-past the stationary blue one.
+The equatorial grid runs every point through
+$\text{raDecToAltAz}(\alpha, \delta, \varphi, \mathrm{LST})$. Sidereal time is the
+only thing in that chain that moves, so **pinning LST to one reading is what holds
+the grid still** — which is the default. Let loose, it turns at $15^\circ$ per hour,
+one full revolution per sidereal day, pivoting about the celestial poles at altitude
+$= \varphi$. Turn both on and you can watch the red grid slide past the stationary
+blue one.
 
-Both count outwards from their zero line — the horizon, the celestial equator — rather
-than up from the bottom, so that line is always drawn whatever the spacing is set to.
-It is the one worth guaranteeing.
+Both count outwards from their zero line — the horizon, the celestial equator —
+rather than up from the bottom, so that line is always drawn whatever the spacing is
+set to. It is the one worth guaranteeing.
 
 Cardinal letters are drawn even with the horizon grid off. Which way you are facing
 is the most directly useful thing on the screen, and it is not grid furniture.
@@ -466,61 +632,80 @@ is the most directly useful thing on the screen, and it is not grid furniture.
 ## 8. Turn-and-tilt guidance
 
 Measured against gravity rather than the watch's own axes, so rolling your wrist
-leaves it alone. `aimBasis` builds a frame from the aim direction plus a horizontal
-"right" and a perpendicular "up":
+leaves it alone. `aimBasis` builds a frame from the aim direction — heading $\theta$,
+elevation $\epsilon$ — plus a horizontal "right" and a perpendicular "up":
 
-```
-d     = (cos ε·sin θ, cos ε·cos θ, sin ε)      aim
-right = d × up = (d_N, −d_E, 0) / cos ε
-up    = right × d
+```math
+\mathbf{d} = \big(
+  \cos\epsilon \sin\theta,\;
+  \cos\epsilon \cos\theta,\;
+  \sin\epsilon
+\big)
 ```
 
-and `project` puts the object into it:
-
+```math
+\hat{\mathbf{r}} = \frac{\mathbf{d} \times \hat{\mathbf{z}}}{\cos\epsilon}
+                 = \frac{(d_N,\; -d_E,\; 0)}{\cos\epsilon}
+\qquad
+\hat{\mathbf{u}}_a = \hat{\mathbf{r}} \times \mathbf{d}
 ```
-turn = atan2(alongRight, alongAim)
-tilt = atan2(alongUp, √(alongAim² + alongRight²))
+
+and `project` puts the object direction $\mathbf{t}$ into it:
+
+```math
+\mathit{turn} = \mathrm{atan2}\!\big(
+  \mathbf{t}\cdot\hat{\mathbf{r}},\;
+  \mathbf{t}\cdot\mathbf{d}
+\big)
+```
+
+```math
+\mathit{tilt} = \mathrm{atan2}\!\left(
+  \mathbf{t}\cdot\hat{\mathbf{u}}_a,\;
+  \sqrt{(\mathbf{t}\cdot\mathbf{d})^{2} + (\mathbf{t}\cdot\hat{\mathbf{r}})^{2}}
+\right)
 ```
 
 Tilt is measured off the aim's own **horizontal plane**, not straight off the aim
-axis. Both amount to the same thing near the object, but this stays well defined when
-it is far to one side — where "aim" and "up" both fall to zero and dividing one by the
-other is meaningless.
+axis. Both amount to the same thing near the object, but this stays well defined
+when it is far to one side — where "aim" and "up" both fall to zero and dividing one
+by the other is meaningless.
 
 Aimed within a couple of degrees of straight up or down there is no sensible "turn
-left" to give, since every direction is sideways from there. Those two lines drop out;
-the picture still holds.
+left" to give, since every direction is sideways from there. Those two lines drop
+out; the picture still holds.
 
 ## 9. Drawing the objects
 
-`ObjectArt`. Stellarium wraps photographic surface maps onto spheres on the GPU. None
-of that survives the trip down to a disc 32 pixels across, and the maps are
-equirectangular — made to be projected, not pasted. So what is drawn is the handful of
-features still recognisable as *shapes* at this size.
+`ObjectArt`. Stellarium wraps photographic surface maps onto spheres on the GPU.
+None of that survives the trip down to a disc 32 pixels across, and the maps are
+equirectangular — made to be projected, not pasted. So what is drawn is the handful
+of features still recognisable as *shapes* at this size.
 
 ### Moon phase
 
-The real one, from the same geometry Stellarium uses. Both directions are unit
-vectors, so their dot product is the cosine of the elongation and the lit fraction
-falls straight out:
+The real one, from the same geometry Stellarium uses. With $\mathbf{m}$ the
+direction to the Moon and $\mathbf{s}$ the direction to the Sun, both unit vectors,
+their dot product is the cosine of the elongation and the lit fraction falls
+straight out:
 
-```
-k = (1 − m·s) / 2
+```math
+k = \frac{1 - \mathbf{m}\cdot\mathbf{s}}{2}
 ```
 
 What the drawing wants is the terminator ellipse's semi-axis as a fraction of the
-disc, `c = 2k − 1`, which reduces to simply:
+disc radius, $c = 2k - 1$, which reduces to simply:
 
-```
-c = −(m·s)
+```math
+c = -\left(\mathbf{m}\cdot\mathbf{s}\right)
 ```
 
-running from −1 at new, through 0 at half, to +1 at full. The bright limb faces the
-Sun, so the whole figure is oriented by the tangent direction from the Moon towards
-it:
+running from $-1$ at new, through $0$ at half, to $+1$ at full. The bright limb
+faces the Sun, so the whole figure is oriented by the tangent direction from the
+Moon towards it:
 
-```
-t = s − (s·m)m
+```math
+\mathbf{t} = \mathbf{s} - (\mathbf{s}\cdot\mathbf{m})\,\mathbf{m}
 ```
 
 taken from the geometry rather than off the screen, which is why it stays right as
@@ -528,8 +713,16 @@ your wrist rolls.
 
 It is drawn as a dark disc, then the bright hemisphere, then the terminator ellipse
 in whichever colour that side ended up — **two convex half-ellipses rather than one
-lune**, because a crescent is concave and how a device fills a concave polygon is not
-something to rely on.
+lune**, because a crescent is concave and how a device fills a concave polygon is
+not something to rely on.
+
+```mermaid
+flowchart LR
+    A["Dark disc<br/>full radius"] --> B["Bright hemisphere<br/>half-ellipse, semi-axis r"]
+    B --> C{"c greater than<br/>or equal to 0?"}
+    C -->|"yes, gibbous"| D["Half-ellipse, semi-axis -c·r<br/>painted light"]
+    C -->|"no, crescent"| E["Half-ellipse, semi-axis -c·r<br/>painted dark"]
+```
 
 ### The rest
 
@@ -538,11 +731,13 @@ something to rely on.
 - **Saturn** — rings, drawn before the disc so the planet sits in front of them.
 - **Jupiter** — two belts either side of the equator, which is as much as any small
   telescope shows.
-- **Stars** — magnitude-scaled radius, `r = clamp(5 − magnitude, 2, 7)`, so brighter
+- **Stars** — magnitude-scaled radius
+  $r = \mathrm{clamp}\left(5 - \mathit{mag},\, 2,\, 7\right)$, so brighter
   stars draw larger the way they look.
 
-Rings and belts lie along the local horizontal, derived from where the zenith falls in
-the watch axes, so they roll with the sky rather than staying pinned to the screen.
+Rings and belts lie along the local horizontal, derived from where the zenith falls
+in the watch axes, so they roll with the sky rather than staying pinned to the
+screen.
 
 ## Source map
 
@@ -571,15 +766,17 @@ the watch axes, so they roll with the sky rather than staying pinned to the scre
 `onUpdate` runs at 10 Hz and every plotted grid point costs a handful of trig calls,
 so the two things that dominate are grid density and catalogue size.
 
-- **Grids.** A grid at spacing `s` draws `360/s` vertical circles and `2·(60/s)+1`
-  circles of equal altitude, each sampled every 20°. At 15° that is about 410 plotted
-  points per grid per frame; at 10° about 610. Both grids on at 10° is roughly 1200.
+- **Grids.** A grid at spacing $s$ draws $360/s$ vertical circles and
+  $2\lfloor 60/s \rfloor + 1$ circles of equal altitude, each sampled every
+  $20^\circ$. At $s = 15^\circ$ that is about 410 plotted points per grid per frame;
+  at $10^\circ$ about 610. Both grids on at $10^\circ$ is roughly 1200.
   `AZ_SAMPLE` and `ALT_SAMPLE` are the knob if that ever costs too much.
 - **Show All** works out where all 35 objects are at most every 5 seconds and holds
-  the result. The sky turns 15° an hour, so 5 seconds moves it 0.02° — well under a
-  pixel — while running the Sun, Moon and planets through their own orbital maths ten
-  times a second would cost far more than drawing them does. Only the projection is
-  redone per frame. The cache is dropped when your position changes.
+  the result. The sky turns $15^\circ$ an hour, so 5 seconds moves it $0.02^\circ$ —
+  well under a pixel — while running the Sun, Moon and planets through their own
+  orbital maths ten times a second would cost far more than drawing them does. Only
+  the projection is redone per frame. The cache is dropped when your position
+  changes.
 - **Position** is event-driven, not per-frame. A cached fix is used immediately; if
   nothing usable arrives within 4 seconds the GPS is driven actively.
 
@@ -614,17 +811,17 @@ actually reaches on each row.
 ## Accuracy
 
 The limit is the magnetometer, not the astronomy. A wrist compass resolves a few
-degrees at best, and every approximation here is chosen to sit comfortably underneath
-that:
+degrees at best, and every approximation here is chosen to sit comfortably
+underneath that:
 
 | Source | Error |
 |---|---|
-| Sun position | < 0.01° |
-| Moon position | ~0.02° |
+| Sun position | $< 0.01^\circ$ |
+| Moon position | $\approx 0.02^\circ$ |
 | Planets | arcminutes |
 | Stars (no proper motion or precession) | arcminutes |
-| Refraction (Bennett) | < 0.02° above 5° altitude |
-| Earth's flattening, ignored | ~12 arcseconds |
+| Refraction (Bennett) | $< 0.02^\circ$ above $5^\circ$ altitude |
+| Earth's flattening, ignored | $\approx 12''$ |
 | **Wrist magnetometer** | **a few degrees** |
 
 ## Licence
