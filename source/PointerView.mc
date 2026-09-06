@@ -690,23 +690,30 @@ class PointerView extends WatchUi.View {
             dotY = (cy - push * up / span).toNumber();
         }
 
-        // Pin to the edge of the screen, remembering which way it went so the
-        // chevron can point after it.
-        var hDir = 0;
-        var vDir = 0;
+        // Which way the object lies, taken before any pinning. This is what the
+        // chevron points along, and it has to be read here: once the marker has
+        // been dragged onto an edge it sits in the direction of that edge rather
+        // than the direction of the object, and an object far off to the right but
+        // barely above centre would end up with a chevron pointing up the diagonal.
+        var awayX = dotX - cx;
+        var awayY = dotY - cy;
+
+        // Pin to the edge of the screen, remembering that it went somewhere so the
+        // chevron knows to appear at all.
+        var pinned = false;
         if (dotX < edgeLeft) {
             dotX = edgeLeft;
-            hDir = -1;
+            pinned = true;
         } else if (dotX > edgeRight) {
             dotX = edgeRight;
-            hDir = 1;
+            pinned = true;
         }
         if (dotY < edgeTop) {
             dotY = edgeTop;
-            vDir = -1;
+            pinned = true;
         } else if (dotY > edgeBottom) {
             dotY = edgeBottom;
-            vDir = 1;
+            pinned = true;
         }
 
         // The corners those edges meet at are off a round display, so a marker
@@ -719,6 +726,7 @@ class PointerView extends WatchUi.View {
         if (reach > limit) {
             dotX = (cx + limit * dx / reach).toNumber();
             dotY = (cy + limit * dy / reach).toNumber();
+            pinned = true;
         }
 
         if (onTarget) {
@@ -733,11 +741,15 @@ class PointerView extends WatchUi.View {
             dc.drawCircle(dotX, dotY, ObjectArt.radius(_obj) + 3);
         }
 
-        if (hDir != 0) {
-            drawChevron(dc, dotX, dotY, hDir, 0);
-        }
-        if (vDir != 0) {
-            drawChevron(dc, dotX, dotY, 0, vDir);
+        // One chevron, along the line the object actually lies on. It used to be one
+        // per axis, which meant an object off a corner overran both and drew two of
+        // them at right angles to each other - pointing at everywhere except where
+        // the object was.
+        if (pinned) {
+            var away = Math.sqrt(awayX * awayX + awayY * awayY);
+            if (away > 0.000001) {
+                drawChevron(dc, dotX, dotY, awayX / away, awayY / away);
+            }
         }
     }
 
@@ -869,25 +881,29 @@ class PointerView extends WatchUi.View {
         return angle;
     }
 
-    // Small triangle at the edge of the sky strip pointing further the way to move.
-    // Exactly one of dirX/dirY should be non-zero.
-    function drawChevron(dc as Graphics.Dc, x as Lang.Numeric, y as Lang.Numeric, dirX as Lang.Number, dirY as Lang.Number) as Void {
+    // Small triangle beyond the pinned marker, pointing further the way to move.
+    //
+    // dirX/dirY is a unit vector and may point anywhere, not just along an axis:
+    // the tip goes twice the chevron's size out along it and the base sits one size
+    // out, squared off across it. Built this way round because the object is off in
+    // some particular direction, and there is no reason to round that to the nearest
+    // quarter turn.
+    function drawChevron(dc as Graphics.Dc, x as Lang.Numeric, y as Lang.Numeric, dirX as Lang.Float, dirY as Lang.Float) as Void {
         var size = CHEVRON_SIZE;
-        var tipX = x + dirX * (2 * size);
-        var tipY = y + dirY * (2 * size);
+        var tipX = x + 2 * size * dirX;
+        var tipY = y + 2 * size * dirY;
+        var baseX = x + size * dirX;
+        var baseY = y + size * dirY;
+
+        // Across the direction, for the two back corners.
+        var acrossX = size * -dirY;
+        var acrossY = size * dirX;
+
         dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_TRANSPARENT);
-        if (dirX != 0) {
-            dc.fillPolygon([
-                [tipX, tipY],
-                [tipX - dirX * size, tipY - size],
-                [tipX - dirX * size, tipY + size]
-            ]);
-        } else {
-            dc.fillPolygon([
-                [tipX, tipY],
-                [tipX - size, tipY - dirY * size],
-                [tipX + size, tipY - dirY * size]
-            ]);
-        }
+        dc.fillPolygon([
+            [tipX.toNumber(), tipY.toNumber()],
+            [(baseX - acrossX).toNumber(), (baseY - acrossY).toNumber()],
+            [(baseX + acrossX).toNumber(), (baseY + acrossY).toNumber()]
+        ]);
     }
 }
