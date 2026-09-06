@@ -8,6 +8,7 @@ using Toybox.Time as Time;
 using Toybox.Time.Gregorian as Gregorian;
 using Toybox.Math as Math;
 using Toybox.Attention as Attention;
+using Toybox.System as System;
 
 // Live pointer screen: aim the watch's 12 o'clock edge at the selected object.
 // The object is placed in the watch's own frame (see DeviceAim), so the error
@@ -116,6 +117,9 @@ class PointerView extends WatchUi.View {
     // When the position was last asked for, for the refresh interval.
     hidden var _locationAt as Lang.Number;
 
+    // Whether the glass is round. Settled on first use and kept - see isRound.
+    hidden var _round as Lang.Boolean?;
+
     function initialize(obj as Lang.Dictionary?) {
         View.initialize();
         _obj = obj;
@@ -134,6 +138,7 @@ class PointerView extends WatchUi.View {
         _declinationSamples = 0;
         _gridLst = null;
         _locationAt = 0;
+        _round = null;
     }
 
     function onShow() as Void {
@@ -433,7 +438,8 @@ class PointerView extends WatchUi.View {
             return;
         }
         var aimElev = DeviceAim.aimElevation(accel);
-        var frame = DeviceAim.deviceFrame(accel, mag);
+        // Built after aimHeading, which is what banks the declination this needs.
+        var frame = DeviceAim.deviceFrame(accel, mag, _declination);
         if (aimElev == null || frame == null) {
             drawStatus(dc, cx, cy, "Waiting for sensors...");
             return;
@@ -658,14 +664,6 @@ class PointerView extends WatchUi.View {
         var cy = view[1];
         var focal = view[2];
 
-        // Pinning stops short of the rim by the chevron's reach, so a pinned marker
-        // and the chevron hanging off it are both drawn whole instead of running off
-        // the glass exactly when they are the only thing left to steer by.
-        var edgeLeft = MARKER_REACH;
-        var edgeTop = MARKER_REACH;
-        var edgeRight = dc.getWidth() - MARKER_REACH;
-        var edgeBottom = dc.getHeight() - MARKER_REACH;
-
         // The perspective divide is what makes the object land where a camera
         // would put it rather than merely in the right general direction.
         var right = offset[0];
@@ -682,51 +680,44 @@ class PointerView extends WatchUi.View {
             // nothing to say. Push it right out along the way it lies instead, so
             // the edge marker still points the way to swing.
             var span = Math.sqrt(right * right + up * up);
-            if (span < 0.000001) {
-                span = 1.0;
-            }
             var push = 4 * dc.getWidth();
-            dotX = (cx + push * right / span).toNumber();
-            dotY = (cy - push * up / span).toNumber();
+            if (span < 0.000001) {
+                // Dead behind the watch, where no way round is more the way to
+                // turn than any other. Sent straight up rather than divided by
+                // almost nothing, which would collapse the push to nothing and
+                // leave the marker sitting in the middle of the screen as though
+                // the watch were already on it.
+                dotX = cx;
+                dotY = cy - push;
+            } else {
+                dotX = (cx + push * right / span).toNumber();
+                dotY = (cy - push * up / span).toNumber();
+            }
         }
 
-        // Which way the object lies, taken before any pinning. This is what the
-        // chevron points along, and it has to be read here: once the marker has
-        // been dragged onto an edge it sits in the direction of that edge rather
-        // than the direction of the object, and an object far off to the right but
-        // barely above centre would end up with a chevron pointing up the diagonal.
+        // Which way the object lies, and how far out the projection put it. Both
+        // are read before any pinning, because the direction the object lies in is
+        // what the marker and its chevron are both placed along: once the marker
+        // has been pulled in to the rim it sits where the pinning left it rather
+        // than where the object is.
         var awayX = dotX - cx;
         var awayY = dotY - cy;
+        var away = Math.sqrt(awayX * awayX + awayY * awayY);
 
-        // Pin to the edge of the screen, remembering that it went somewhere so the
-        // chevron knows to appear at all.
-        var pinned = false;
-        if (dotX < edgeLeft) {
-            dotX = edgeLeft;
-            pinned = true;
-        } else if (dotX > edgeRight) {
-            dotX = edgeRight;
-            pinned = true;
-        }
-        if (dotY < edgeTop) {
-            dotY = edgeTop;
-            pinned = true;
-        } else if (dotY > edgeBottom) {
-            dotY = edgeBottom;
-            pinned = true;
-        }
-
-        // The corners those edges meet at are off a round display, so a marker
-        // pinned into one would sit behind the bezel. Pull it back along the line
-        // from the centre, which leaves it pointing the same way as it went out.
-        var limit = cx - MARKER_REACH;
-        var dx = dotX - cx;
-        var dy = dotY - cy;
-        var reach = Math.sqrt(dx * dx + dy * dy);
-        if (reach > limit) {
-            dotX = (cx + limit * dx / reach).toNumber();
-            dotY = (cy + limit * dy / reach).toNumber();
-            pinned = true;
+        // Pin to the rim, along that same line. The display is round, so one
+        // radial limit does the whole job - and it has to be radial: clamping the
+        // two axes separately would drag an object lying off to the right and
+        // barely above centre out to a corner, and leave the marker parked on the
+        // diagonal a quarter turn from where the object actually is.
+        //
+        // The rim is stopped short of by the chevron's reach, so a pinned marker
+        // and the chevron hanging off it are both drawn whole instead of running
+        // off the glass exactly when they are the only thing left to steer by.
+        var limit = markerLimit(dc, awayX, awayY, away);
+        var pinned = away > limit;
+        if (pinned) {
+            dotX = (cx + limit * awayX / away).toNumber();
+            dotY = (cy + limit * awayY / away).toNumber();
         }
 
         if (onTarget) {
@@ -741,15 +732,16 @@ class PointerView extends WatchUi.View {
             dc.drawCircle(dotX, dotY, ObjectArt.radius(_obj) + 3);
         }
 
-        // One chevron, along the line the object actually lies on. It used to be one
-        // per axis, which meant an object off a corner overran both and drew two of
+        // One chevron, along the line the object actually lies on - the same line
+        // the marker was pinned along, so the two agree. It used to be one per
+        // axis, which meant an object off a corner overran both and drew two of
         // them at right angles to each other - pointing at everywhere except where
         // the object was.
+        //
+        // Pinned means away came out past limit, which is most of the screen's
+        // radius, so there is no dividing by nothing to guard against here.
         if (pinned) {
-            var away = Math.sqrt(awayX * awayX + awayY * awayY);
-            if (away > 0.000001) {
-                drawChevron(dc, dotX, dotY, awayX / away, awayY / away);
-            }
+            drawChevron(dc, dotX, dotY, awayX / away, awayY / away);
         }
     }
 
@@ -857,11 +849,59 @@ class PointerView extends WatchUi.View {
     // line, so a label can sit as far out as there is screen for it.
     function screenHalfWidth(dc as Graphics.Dc, cy as Lang.Numeric, y as Lang.Numeric) as Lang.Number {
         var r = dc.getWidth() / 2;
+        if (!isRound()) {
+            // Flat sided, so every row is as wide as every other. The bevels on an
+            // Instinct's octagon are inside the margin.
+            //
+            // The chord below would be actively wrong here and not merely mean: on
+            // a 448 by 486 display the bottom readout row sits further from the
+            // middle than the screen is half wide, so it would come back zero and
+            // collapse all three text columns onto the centre line.
+            return r - EDGE_MARGIN;
+        }
         var dy = (y - cy).abs();
         if (dy >= r) {
             return 0;
         }
         return Math.sqrt(r * r - dy * dy).toNumber() - EDGE_MARGIN;
+    }
+
+    // Round displays get the chord, everything else gets its corners. Read once and
+    // kept, because it cannot change while the app is running.
+    function isRound() as Lang.Boolean {
+        var known = _round;
+        if (known == null) {
+            var shape = System.getDeviceSettings().screenShape;
+            known = (shape == System.SCREEN_SHAPE_ROUND) || (shape == System.SCREEN_SHAPE_SEMI_ROUND);
+            _round = known;
+        }
+        return known;
+    }
+
+    // How far out a marker may be pinned along the direction it lies in.
+    //
+    // A radius on a round display. On a flat-sided one it is the distance along
+    // that same line to the edge of the box, so a rectangular screen uses its
+    // corners instead of the circle drawn inside them - on a 448 by 486 panel a
+    // circle would have thrown away a third of the height. The direction is
+    // preserved either way, which is the part that matters: the marker and the
+    // chevron have to agree on where the object is.
+    function markerLimit(dc as Graphics.Dc, awayX as Lang.Numeric, awayY as Lang.Numeric, away as Lang.Float) as Lang.Float {
+        var halfW = dc.getWidth() / 2 - MARKER_REACH;
+        if (isRound()) {
+            return halfW.toFloat();
+        }
+        var halfH = dc.getHeight() / 2 - MARKER_REACH;
+
+        // Scale along the line until it meets whichever side it reaches first.
+        var limit = halfW * away / awayX.abs();
+        if (awayY.abs() > 0.000001) {
+            var vertical = halfH * away / awayY.abs();
+            if (awayX.abs() < 0.000001 || vertical < limit) {
+                limit = vertical;
+            }
+        }
+        return limit;
     }
 
     function signedDegrees(deg as Lang.Float) as Lang.String {
@@ -888,7 +928,7 @@ class PointerView extends WatchUi.View {
     // out, squared off across it. Built this way round because the object is off in
     // some particular direction, and there is no reason to round that to the nearest
     // quarter turn.
-    function drawChevron(dc as Graphics.Dc, x as Lang.Numeric, y as Lang.Numeric, dirX as Lang.Float, dirY as Lang.Float) as Void {
+    function drawChevron(dc as Graphics.Dc, x as Lang.Numeric, y as Lang.Numeric, dirX as Lang.Numeric, dirY as Lang.Numeric) as Void {
         var size = CHEVRON_SIZE;
         var tipX = x + 2 * size * dirX;
         var tipY = y + 2 * size * dirY;

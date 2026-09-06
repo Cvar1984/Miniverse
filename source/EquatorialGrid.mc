@@ -127,8 +127,7 @@ module EquatorialGrid {
     // the watch. Refraction is not applied: it is a fraction of a degree at the
     // horizon and nothing higher up, which is under the width of these lines.
     function screenPoint(frame as Lang.Array<Lang.Float>, raDeg as Lang.Numeric, decDeg as Lang.Numeric, view as Lang.Array<Lang.Numeric>, lat as Lang.Float, lstDeg as Lang.Double) as Lang.Array<Lang.Number>? {
-        var altAz = SkyMath.raDecToAltAz(raDeg, decDeg, lat, lstDeg);
-        var enu = SkyMath.horizontalToEnu(altAz[1], altAz[0]);
+        var enu = SkyMath.raDecToEnu(raDeg, decDeg, lat, lstDeg);
         return DeviceAim.screenPoint(frame, enu[0], enu[1], enu[2], view);
     }
 }

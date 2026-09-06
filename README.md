@@ -22,7 +22,7 @@ with no network, no phone, and no chart to orient yourself against first.
   - [4. Corrections](#4-corrections)
   - [5. Where the watch is pointing](#5-where-the-watch-is-pointing)
   - [6. Putting the sky on the screen](#6-putting-the-sky-on-the-screen)
-  - [7. The two grids](#7-the-two-grids)
+  - [7. The sky overlays](#7-the-sky-overlays)
   - [8. Turn-and-tilt guidance](#8-turn-and-tilt-guidance)
   - [9. Drawing the objects](#9-drawing-the-objects)
 - [Source map](#source-map)
@@ -142,6 +142,10 @@ drawn.
 
 Above: both grids on at $60^\circ$, the blue horizon grid crossing the red
 equatorial one, with `N` at the north point.
+
+Objects are listed alphabetically in the Planets and Stars menus. The catalogue
+keeps its own order — stars by brightness, planets by distance out from the Sun —
+and a star id is its position in it, so only the menu presentation is sorted.
 
 ### The grids
 
@@ -404,6 +408,19 @@ Then to a world East-North-Up unit vector:
 \,\big)
 ```
 
+Grids do not go through those two steps. `SkyMath.raDecToEnu` writes the same
+rotation out in one, which drops an arcsine, an arccosine and a quadrant test for
+about a quarter of the trig — the answer is identical to within floating-point
+noise, and a grid plots four hundred of these a frame:
+
+```math
+\begin{aligned}
+E &= -\cos\delta \sin H \\
+N &= \sin\delta \cos\varphi - \cos\delta \cos H \sin\varphi \\
+U &= \cos\delta \cos H \cos\varphi + \sin\delta \sin\varphi
+\end{aligned}
+```
+
 ## 4. Corrections
 
 Both act along the vertical circle, so azimuth is untouched.
@@ -534,6 +551,25 @@ with $\sigma_H = \pm 1$ for handedness:
 \hat{\mathbf{n}},\ \hat{\mathbf{u}} \text{ as above}
 ```
 
+and is then swung round to true north by the banked declination
+$\delta_{\text{mag}}$, which is what keeps the picture and the readouts in the same
+frame. Every object on this screen came out of RA/Dec and sidereal time, so it is
+true-referenced by construction; the magnetometer is not. Declination is measured
+east-positive, so magnetic north sits that far east of true and true north is the
+same angle back the other way:
+
+```math
+\hat{\mathbf{n}}_{\text{true}}
+  = \hat{\mathbf{n}}\cos\delta_{\text{mag}} - \hat{\mathbf{e}}\sin\delta_{\text{mag}}
+\qquad
+\hat{\mathbf{e}}_{\text{true}}
+  = \hat{\mathbf{e}}\cos\delta_{\text{mag}} + \hat{\mathbf{n}}\sin\delta_{\text{mag}}
+```
+
+Correcting only the heading readout, as this once did, left the entire drawn sky
+turned by the local declination against the numbers printed beneath it — a few
+degrees in most places, twenty in parts of Canada, against an $8^\circ$ lock.
+
 `viewOffset` then takes a world direction $\mathbf{t} = t_E\hat{\mathbf{e}} +
 t_N\hat{\mathbf{n}} + t_U\hat{\mathbf{u}}$ and reads off its components along the
 watch's own axes — $\hat{\mathbf{x}}$ at 3 o'clock, $\hat{\mathbf{y}}$ at 12
@@ -584,15 +620,17 @@ them back across the view.
 Nothing is clipped and no band is reserved. The sky is laid down across the whole
 display and the text is drawn on top of it afterwards.
 
-## 7. The two grids
+## 7. The sky overlays
 
-They answer different questions, and the difference between them is the point of
-having both.
+Three things can be drawn over the sky, each switched on separately. The two grids
+answer different questions, and the difference between them is the point of having
+both; the constellations are not a grid at all.
 
 | | anchored to | moves when |
 |---|---|---|
 | **Horizon** (`HorizonGrid`) — circles of equal altitude, vertical circles between zenith and nadir | the ground and the compass | you move the watch |
 | **Equatorial** (`EquatorialGrid`) — circles of equal declination, hour circles between the celestial poles | the stars | you move the watch, **and** as time passes |
+| **Constellations** (`Constellations`) — eight stick figures joining their stars | the stars | you move the watch, **and** as time passes |
 
 ```mermaid
 flowchart LR
@@ -629,6 +667,27 @@ set to. It is the one worth guaranteeing.
 
 Cardinal letters are drawn even with the horizon grid off. Which way you are facing
 is the most directly useful thing on the screen, and it is not grid furniture.
+
+### Constellations
+
+Orion, Ursa Major, Ursa Minor, Cassiopeia, Cygnus, Crux, Scorpius and Leo, drawn as
+line joining their stars.
+
+The vertices live in `Constellations` rather than in `StarCatalog`, because most of
+them are not stars anyone would aim at. A figure needs its faint stars to read -
+Orion without Mintaka and Saiph is three dots, the Plough without Dubhe and Merak is
+nothing at all - and adding fifty of those to the catalogue would bury the 28 bright
+ones in the Stars menu and scatter faint dots across Show All. They are line
+endpoints, not objects, so they are held as plain coordinates: each figure is one
+unbroken run of RA/Dec pairs, and a constellation that does not trace in a single
+stroke simply takes more than one run. Orion takes four.
+
+Two things separate them from the equatorial grid they share a frame with. They are
+always drawn from the **live** sidereal time, never the reading the grid may be
+pinned to, because they have to stay under the stars they join. And they are the one
+overlay that applies refraction, for the same reason: the stars are placed through
+`apparentAltitude`, so a belt drawn without it sits a couple of pixels below its own
+three stars as the constellation rises.
 
 ## 8. Turn-and-tilt guidance
 

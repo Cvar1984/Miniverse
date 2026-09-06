@@ -142,7 +142,7 @@ module DeviceAim {
     // [eE,eN,eU, nE,nN,nU, uE,uN,uU] - east, north and up. Multiplying a sky
     // direction's world components by these lands it in the watch's frame, which
     // is what the viewfinder needs. Null if the sensors cannot place it.
-    function deviceFrame(accel as Lang.Array<Lang.Numeric>, mag as Lang.Array<Lang.Numeric>) as Lang.Array<Lang.Float>? {
+    function deviceFrame(accel as Lang.Array<Lang.Numeric>, mag as Lang.Array<Lang.Numeric>, declinationDeg as Lang.Float) as Lang.Array<Lang.Float>? {
         var u = upVector(accel);
         if (u == null) {
             return null;
@@ -152,11 +152,38 @@ module DeviceAim {
             return null;
         }
         // East = north x up, mirrored back if the watch's axes are left-handed.
+        var eE = HANDEDNESS * (n[1] * u[2] - n[2] * u[1]);
+        var eN = HANDEDNESS * (n[2] * u[0] - n[0] * u[2]);
+        var eU = HANDEDNESS * (n[0] * u[1] - n[1] * u[0]);
+
+        // Swung round to TRUE north, which is the whole point of taking the
+        // declination as an argument.
+        //
+        // The magnetometer gives magnetic north; every object placed on this screen
+        // came out of RA/Dec and sidereal time, which are true by construction. Left
+        // magnetic, the frame turned the entire drawn sky by the local declination
+        // against the numbers printed underneath it - a few degrees in most places,
+        // twenty in parts of Canada, against an eight degree lock. Correcting the
+        // heading readout alone was never enough: the picture is built from this.
+        //
+        // Declination is measured east-positive, so magnetic north sits that far
+        // east of true and true north is the same angle back the other way.
+        var cosD = SkyMath.dcos(declinationDeg);
+        var sinD = SkyMath.dsin(declinationDeg);
+        var tN = [
+            n[0] * cosD - eE * sinD,
+            n[1] * cosD - eN * sinD,
+            n[2] * cosD - eU * sinD
+        ];
+        var tE = [
+            eE * cosD + n[0] * sinD,
+            eN * cosD + n[1] * sinD,
+            eU * cosD + n[2] * sinD
+        ];
+
         return [
-            HANDEDNESS * (n[1] * u[2] - n[2] * u[1]),
-            HANDEDNESS * (n[2] * u[0] - n[0] * u[2]),
-            HANDEDNESS * (n[0] * u[1] - n[1] * u[0]),
-            n[0], n[1], n[2],
+            tE[0], tE[1], tE[2],
+            tN[0], tN[1], tN[2],
             u[0], u[1], u[2]
         ];
     }
