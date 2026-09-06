@@ -23,6 +23,9 @@ class SettingsMenuDelegate extends WatchUi.Menu2InputDelegate {
         } else if (id.equals("equatorial")) {
             Settings.cycleEquatorial();
             item.setSubLabel(Settings.gridLabel(Settings.equatorialStep()));
+        } else if (id.equals("constellations")) {
+            Settings.cycleConstellations();
+            item.setSubLabel(Settings.constellationLabel());
         } else if (id.equals("dynEquatorial")) {
             Settings.cycleDynamicEquatorial();
             item.setSubLabel(Settings.equatorialMotionLabel());

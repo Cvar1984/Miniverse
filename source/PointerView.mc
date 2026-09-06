@@ -480,6 +480,14 @@ class PointerView extends WatchUi.View {
         }
         EquatorialGrid.draw(dc, frame, view, equatorialStep, lat, gridLst);
 
+        // Over the grids so the figures read on top of them, under the objects so
+        // the stars themselves sit on top of the lines that join them. Drawn from
+        // the live sidereal time, never the pinned one: these have to stay under
+        // their stars, and the stars are placed from the current time.
+        if (Settings.constellations()) {
+            Constellations.draw(dc, frame, view, lat, lstDeg);
+        }
+
         // Whole-catalogue mode. There is no object being aimed at, so there is
         // nothing to be told to turn towards: all it can usefully say is where the
         // watch is currently pointing.

@@ -165,6 +165,7 @@ behind the menu showing it.
 |---|---|---|
 | Horizon Grid | Off · 60 · 45 · 30 · 15 · 10 degrees | Off |
 | Equatorial Grid | Off · 60 · 45 · 30 · 15 · 10 degrees | Off |
+| Constellations | Off · On | Off |
 | Equatorial Motion | Held still · Turns with sky | Held still |
 | Azimuth Motion | Held still · Follows position | Held still |
 | Update Location | One fix only · every 5 / 15 / 30 / 60 min | One fix only |
@@ -750,6 +751,7 @@ screen.
 | `SkyMath.mc` | Time, coordinate conversion, refraction, parallax |
 | `HorizonGrid.mc` | Alt/az grid and cardinal letters |
 | `EquatorialGrid.mc` | RA/Dec grid |
+| `Constellations.mc` | Eight stick figures, drawn from their own vertices |
 | `Planets.mc` | Keplerian planetary positions |
 | `SolarLunar.mc` | Sun and Moon series, obliquity, parallax |
 | `SkyCatalog.mc` | The object registry and RA/Dec dispatch |

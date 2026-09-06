@@ -16,6 +16,7 @@ module Settings {
     // override the off-by-default below for anyone who had run an earlier build.
     const HORIZON_KEY = "horizonGrid";
     const EQUATORIAL_KEY = "eqGridStep";
+    const CONSTELLATION_KEY = "constellations";
     const DYNAMIC_EQUATORIAL_KEY = "dynEquatorial";
     const DYNAMIC_AZIMUTH_KEY = "dynAzimuth";
     const LOCATION_KEY = "locationMinutes";
@@ -28,6 +29,7 @@ module Settings {
     // press away on the menu button.
     const DEFAULT_HORIZON = 0;
     const DEFAULT_EQUATORIAL = 0;
+    const DEFAULT_CONSTELLATIONS = false;
 
     // Held still by default. The equatorial grid turns with the sky when it is let
     // to, which is true to the sky but means a reference that never stops creeping.
@@ -82,6 +84,22 @@ module Settings {
 
     function locationMinutes() {
         return value(LOCATION_KEY, DEFAULT_LOCATION_MINUTES);
+    }
+
+    // Whether the constellation stick figures are drawn.
+    function constellations() {
+        return value(CONSTELLATION_KEY, DEFAULT_CONSTELLATIONS);
+    }
+
+    function cycleConstellations() {
+        cycle(CONSTELLATION_KEY, toggleChoices(), DEFAULT_CONSTELLATIONS);
+    }
+
+    function constellationLabel() {
+        if (constellations()) {
+            return "On";
+        }
+        return "Off";
     }
 
     function cycleHorizon() {
