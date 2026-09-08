@@ -184,7 +184,22 @@ module SkyMath {
     // Azimuth is measured from North, clockwise through East.
     function raDecToAltAz(raDeg, decDeg, latDeg, lstDeg) {
         var h = norm180(lstDeg - raDeg);
-        var altRad = Math.asin(dsin(decDeg) * dsin(latDeg) + dcos(decDeg) * dcos(latDeg) * dcos(h));
+
+        // Clamped before the arcsine, the way dasin and dacos already are. An
+        // object passing close to overhead makes this sum come to a shade over 1
+        // in floating point - sin(dec)sin(lat) + cos(dec)cos(lat) is exactly 1 when
+        // the two angles match and the hour angle is zero - and asin outside its
+        // domain is not a number, which then poisons the altitude, the azimuth and
+        // everything drawn from either.
+        var sinAlt = dsin(decDeg) * dsin(latDeg) + dcos(decDeg) * dcos(latDeg) * dcos(h);
+        if (sinAlt > 1.0) {
+            sinAlt = 1.0;
+        }
+        if (sinAlt < -1.0) {
+            sinAlt = -1.0;
+        }
+
+        var altRad = Math.asin(sinAlt);
         var alt = toDeg(altRad);
         var cosAlt = Math.cos(altRad);
         var az;
