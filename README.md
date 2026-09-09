@@ -8,7 +8,7 @@ the middle of the screen and you are looking straight at it.
 It is the idea behind a phone astronomy app held up with its camera, on a wrist,
 with no network, no phone, and no chart to orient yourself against first.
 
-![Root menu](Screenshoot/G94J3307.png)
+[<img src="Screenshoot/Connect IQ Badge-White.png" alt="version 1" height="88"/>](https://apps.garmin.com/apps/df12198c-9085-4f10-b705-09cd53e36253)
 
 ## Contents
 
