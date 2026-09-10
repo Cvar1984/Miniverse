@@ -17,24 +17,9 @@ class SettingsMenuDelegate extends WatchUi.Menu2InputDelegate {
         if (id == null) {
             return;
         }
-        if (id.equals("horizon")) {
-            Settings.cycleHorizon();
-            item.setSubLabel(Settings.gridLabel(Settings.horizonStep()));
-        } else if (id.equals("equatorial")) {
-            Settings.cycleEquatorial();
-            item.setSubLabel(Settings.gridLabel(Settings.equatorialStep()));
-        } else if (id.equals("constellations")) {
-            Settings.cycleConstellations();
-            item.setSubLabel(Settings.constellationLabel());
-        } else if (id.equals("dynEquatorial")) {
-            Settings.cycleDynamicEquatorial();
-            item.setSubLabel(Settings.equatorialMotionLabel());
-        } else if (id.equals("dynAzimuth")) {
-            Settings.cycleDynamicAzimuth();
-            item.setSubLabel(Settings.azimuthMotionLabel());
-        } else if (id.equals("location")) {
-            Settings.cycleLocation();
-            item.setSubLabel(Settings.locationLabel());
+        Settings.cycle(id);
+        item.setSubLabel(Settings.label(id));
+        if (id.equals("location")) {
             relabelAzimuth();
         }
         WatchUi.requestUpdate();
@@ -49,7 +34,7 @@ class SettingsMenuDelegate extends WatchUi.Menu2InputDelegate {
             if (index >= 0) {
                 var azimuth = menu.getItem(index);
                 if (azimuth != null) {
-                    azimuth.setSubLabel(Settings.azimuthMotionLabel());
+                    azimuth.setSubLabel(Settings.label("dynAzimuth"));
                 }
             }
         }

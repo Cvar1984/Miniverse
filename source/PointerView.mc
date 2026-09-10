@@ -10,20 +10,20 @@ using Toybox.Math as Math;
 using Toybox.Attention as Attention;
 using Toybox.System as System;
 
-// Live pointer screen: aim the watch's 12 o'clock edge at the selected object.
-// The object is placed in the watch's own frame (see DeviceAim), so the error
-// shown is the real angular offset rather than separate azimuth/altitude numbers.
+// Live pointer screen, for one selected object or for the whole catalogue. The
+// back of the watch is the aim, and objects are placed in the watch's own frame
+// (see DeviceAim).
 class PointerView extends WatchUi.View {
     // Sensors are polled rather than waited on: the push callbacks only fire once
     // per second, which is far too slow and too stale to aim with while moving.
     const SAMPLE_MS = 100;
 
     // Exponential smoothing per sample, applied to the raw sensor vectors rather
-    // than to angles derived from them - the same thing Stellarium's SensorsMgr
-    // does, and for the same reason: magnetometer noise is what makes a sky view
-    // jitter, and it settles far better when averaged as vectors. Stellarium runs
-    // 0.01 to 0.1 per frame at display rate and smooths harder the tighter the
-    // field of view; this is the equivalent for a 10 Hz sample and an 8 degree lock.
+    // than to angles derived from them. Stellarium's SensorsMgr does the same, for
+    // the same reason: magnetometer noise is what makes a sky view jitter, and it
+    // settles far better when averaged as vectors. Stellarium runs 0.01 to 0.1 per
+    // frame at display rate and smooths harder the tighter the field of view; this
+    // is the equivalent for a 10 Hz sample and an 8 degree lock.
     const SMOOTHING = 0.2;
 
     // Declination changes with where you stand, not with how you hold the watch,
@@ -41,9 +41,9 @@ class PointerView extends WatchUi.View {
 
     // Whole-catalogue mode works out where everything is at most this often rather
     // than every frame. The sky turns 15 degrees an hour, so a few seconds moves it
-    // a small fraction of a pixel, while running all 35 objects - Sun, Moon and
-    // planets through their own orbital maths included - ten times a second would
-    // cost far more than drawing them does.
+    // a small fraction of a pixel, while working out all 35 objects ten times a
+    // second, orbital maths for the Sun, Moon and planets included, would cost far
+    // more than drawing them does.
     const SKY_REFRESH_SEC = 5;
 
     // Holds the display awake while this screen is up. You are looking at the sky
@@ -55,19 +55,18 @@ class PointerView extends WatchUi.View {
     const WAKE_INTERVAL_SEC = 3;
 
     // An AMOLED panel has burn in protection, and the system throws rather than
-    // hold the display on for ever - about a minute at a stretch. When it does, it
-    // wants the panel rested, so stop asking for this long instead of throwing on
-    // every tick from there on.
+    // hold the display on for more than about a minute at a stretch. When it does,
+    // it wants the panel rested, so stop asking for this long instead of throwing
+    // on every tick from there on.
     const WAKE_COOLDOWN_SEC = 10;
 
-    // Half the field of view mapped across the display. The picture is the whole
-    // screen - nothing is carved out of it for the text - so the width of the glass
-    // and this angle between them are all there is to how much sky fits.
+    // Half the field of view mapped across the display. The picture fills the whole
+    // screen, with nothing carved out for the text, so the width of the glass and
+    // this angle alone set how much sky fits.
     const FOV_HALF = 45.0;
 
-    // The name and the readouts are drawn straight onto the sky, the way the tick
-    // note always has been, so they are sized to stay legible over grid lines
-    // rather than to fit into a band of their own.
+    // The name and the readouts are drawn straight onto the sky, so they are sized
+    // to stay legible over grid lines rather than to fit a band of their own.
     const NAME_FONT = Graphics.FONT_MEDIUM;
     const DATA_FONT = Graphics.FONT_TINY;
     const LABEL_FONT = Graphics.FONT_XTINY;
@@ -117,7 +116,7 @@ class PointerView extends WatchUi.View {
     // When the position was last asked for, for the refresh interval.
     hidden var _locationAt as Lang.Number;
 
-    // Whether the glass is round. Settled on first use and kept - see isRound.
+    // Whether the glass is round. Settled on first use and kept (see isRound).
     hidden var _round as Lang.Boolean?;
 
     function initialize(obj as Lang.Dictionary?) {
@@ -218,9 +217,9 @@ class PointerView extends WatchUi.View {
         _gridLst = null;
 
         // A new position is the only thing that makes the settled declination wrong,
-        // so it is the only thing that re-opens the average - and only if the horizon
-        // frame has been asked to follow the position at all.
-        if (Settings.dynamicAzimuth()) {
+        // so it is the only thing that re-opens the average, and only when the
+        // horizon frame is set to follow the position.
+        if (Settings.get("dynAzimuth")) {
             _declinationSamples = 0;
         }
 
@@ -234,8 +233,8 @@ class PointerView extends WatchUi.View {
         }
     }
 
-    // Fires a few seconds after onShow if no usable cached/quick fix arrived -
-    // falls back to actively driving the onboard GPS chip.
+    // Fires a few seconds after onShow if no usable cached or quick fix arrived,
+    // and falls back to actively driving the onboard GPS chip.
     function onLocateTimeout() as Void {
         _locateTimer = null;
         if (!_haveUsableFix && !_usingGps) {
@@ -246,7 +245,7 @@ class PointerView extends WatchUi.View {
 
     function onSensor(info as Sensor.Info) as Void {
         if (info.heading != null) {
-            applyHeading(SkyMath.toDeg(info.heading));
+            applyHeading(Math.toDegrees(info.heading));
         }
     }
 
@@ -264,7 +263,7 @@ class PointerView extends WatchUi.View {
     function onTimer() as Void {
         var info = Sensor.getInfo();
         if (info has :heading && info.heading != null) {
-            applyHeading(SkyMath.toDeg(info.heading));
+            applyHeading(Math.toDegrees(info.heading));
         }
         if (info has :accel && info.accel != null) {
             applyAccel(info.accel);
@@ -299,13 +298,13 @@ class PointerView extends WatchUi.View {
     }
 
     // Asks for the position again once the interval has run out. One shot rather
-    // than a continuous feed: a fix every few minutes is what was asked for, and
-    // leaving the GPS streaming between them would cost far more than it is worth.
+    // than a continuous feed: the setting asks for a fix every few minutes, and
+    // leaving the GPS streaming between them would cost far more battery.
     //
     // Skipped while the continuous feed is already running, which only happens when
     // the first fix never arrived and there is nothing to re-arm.
     function refreshLocation() as Void {
-        var minutes = Settings.locationMinutes();
+        var minutes = Settings.get("location");
         if (minutes <= 0 || _usingGps) {
             return;
         }
@@ -346,15 +345,15 @@ class PointerView extends WatchUi.View {
         ];
     }
 
-    // Where the 12 o'clock axis points, in degrees from true north, or null while
-    // no usable reading has arrived.
+    // Where the back of the watch points, in degrees from true north, or null
+    // while no usable reading has arrived.
     //
     // The magnetometer is worked out here rather than taken from Sensor.Info's
     // heading, because that heading is a flat compass reading and goes wrong the
-    // moment the watch tilts up at the sky. The system heading is still worth one
-    // thing though: while the watch happens to be near level it is trustworthy
-    // AND corrected to true north, so the gap between the two is the local
-    // magnetic declination, which is banked and then applied at any tilt.
+    // moment the watch tilts up at the sky. The system heading is still useful
+    // while the watch is near level: it is reliable there and already corrected
+    // to true north, so the gap between the two is the local magnetic
+    // declination, which is banked and then applied at any tilt.
     function aimHeading() as Lang.Float? {
         var accel = _accel;
         var mag = _mag;
@@ -381,12 +380,11 @@ class PointerView extends WatchUi.View {
     }
 
     // The screen mapping the sky is drawn with: [cx, cy, focal], where focal is
-    // the pixels-per-radian scale - see DeviceAim.screenPoint.
+    // the pixels-per-radian scale (see DeviceAim.screenPoint).
     //
     // No box is carved out of the display for the text. The name and the readouts
-    // are drawn onto the sky, the way the tick note always was, so the picture runs
-    // to all four edges instead of sitting in a letterbox with black bands above
-    // and below it.
+    // are drawn onto the sky, so the picture runs to all four edges instead of
+    // sitting in a letterbox with black bands above and below it.
     function layout(dc as Graphics.Dc) as Lang.Array<Lang.Numeric> {
         var cx = dc.getWidth() / 2;
         return [cx, dc.getHeight() / 2, cx / SkyMath.dtan(FOV_HALF)];
@@ -447,8 +445,8 @@ class PointerView extends WatchUi.View {
 
         // The picture is built in the watch's own frame: it is what you would see
         // looking out through the back, so it rolls with the wrist. Grids and object
-        // share one mapping, so they always agree. None of it needs the watch to be
-        // held any particular way - rest it flat and it looks straight down at the
+        // share one mapping, so they always agree. None of it needs the watch held
+        // any particular way: rest it flat and it looks straight down at the
         // nadir, with the vertical circles meeting in the middle of the screen.
         //
         // Nothing is clipped and nothing is reserved: the sky is laid down across
@@ -468,17 +466,17 @@ class PointerView extends WatchUi.View {
         var zenith = DeviceAim.viewOffset(frame, 0.0, 0.0, 1.0);
 
         var view = layout(dc);
-        var horizonStep = Settings.horizonStep();
-        var equatorialStep = Settings.equatorialStep();
+        var horizonStep = Settings.get("horizon");
+        var equatorialStep = Settings.get("equatorial");
         HorizonGrid.draw(dc, frame, view, horizonStep);
 
         // Sidereal time is the only thing in the equatorial grid that moves, so
-        // pinning it to one reading is what holds that grid still. Held by default:
-        // true to the sky is a grid that never stops creeping, and a reference is
-        // worth more when it stays where it was put. The pin is dropped by a new
-        // position, which is what makes the old reading wrong.
+        // pinning it to one reading holds that grid still. It is held by default,
+        // because a grid that follows the sky keeps creeping and a still reference
+        // is easier to read against. A new position drops the pin, since it makes
+        // the old reading wrong.
         var gridLst = lstDeg;
-        if (!Settings.dynamicEquatorial()) {
+        if (!Settings.get("dynEquatorial")) {
             if (_gridLst == null) {
                 _gridLst = lstDeg;
             }
@@ -490,7 +488,7 @@ class PointerView extends WatchUi.View {
         // the stars themselves sit on top of the lines that join them. Drawn from
         // the live sidereal time, never the pinned one: these have to stay under
         // their stars, and the stars are placed from the current time.
-        if (Settings.constellations()) {
+        if (Settings.get("constellations")) {
             Constellations.draw(dc, frame, view, lat, lstDeg);
         }
 
@@ -500,9 +498,9 @@ class PointerView extends WatchUi.View {
         if (_obj == null) {
             drawAllObjects(dc, view, frame, lat, jd, lstDeg, sunOffset, zenith);
             drawScale(dc, view, horizonStep, equatorialStep);
-            // Room left for a second row it does not use, which lifts it clear of
-            // the very bottom of the glass - the narrowest part of a round screen,
-            // and no reason to sit in it with only one line to place.
+            // Room is left for a second row it does not use, which lifts it clear
+            // of the very bottom of the glass. That is the narrowest part of a round
+            // screen, and one line has no need to sit there.
             drawAimPair(dc, dataRow(dc, h, 2), headingDeg.format("%.0f"),
                 signedDegrees(aimElev));
             return;
@@ -526,7 +524,7 @@ class PointerView extends WatchUi.View {
         dc.drawText(cx, nameRow(h), NAME_FONT, _obj[:name], Graphics.TEXT_JUSTIFY_CENTER);
         drawScale(dc, view, horizonStep, equatorialStep);
 
-        // Object against where the watch is actually aimed, a row each, so the two
+        // Object against where the watch is aimed, a row each, so the two
         // pairs read straight down their columns instead of having to be picked out
         // of a sentence. They should converge as you settle onto the object, which
         // makes a sensor axis that runs the wrong way obvious rather than puzzling.
@@ -554,9 +552,8 @@ class PointerView extends WatchUi.View {
         // axes, so rolling the wrist leaves it alone: it says how to swing your
         // arm, which does not depend on how the watch is turned in your hand.
         //
-        // These two are the differences down the columns above - turn closes the
-        // azimuth gap and tilt the altitude one - so they run on under the same
-        // left edge rather than being centred against it.
+        // These two are the differences down the columns above: turn closes the
+        // azimuth gap and tilt the altitude one.
         //
         // Aimed within a couple of degrees of straight up or down there is no
         // sensible "turn left" to give, since every direction is sideways from
@@ -602,8 +599,8 @@ class PointerView extends WatchUi.View {
     }
 
     // Column heads, dim and small and sat just above the first row. The numbers
-    // below them are bare, and which column is which is the whole question they
-    // would otherwise raise.
+    // below them are bare, so without the heads there is no telling which column
+    // is which.
     function drawHeads(dc as Graphics.Dc, cols as Lang.Array<Lang.Number>, row as Lang.Number) as Void {
         var y = row - dc.getFontHeight(LABEL_FONT);
         dc.setColor(Graphics.COLOR_DK_GRAY, Graphics.COLOR_TRANSPARENT);
@@ -612,7 +609,7 @@ class PointerView extends WatchUi.View {
     }
 
     // Where the watch is pointing, with no object to set it against. There is no
-    // label column and so nothing to range on: the pair is simply centred, each
+    // label column and so nothing to range on: the pair is centred, each
     // number under its own head, which sits it in the middle of the row where a
     // round screen is widest.
     function drawAimPair(dc as Graphics.Dc, y as Lang.Number, azText as Lang.String, altText as Lang.String) as Void {
@@ -640,10 +637,9 @@ class PointerView extends WatchUi.View {
         dc.drawText(cols[2], y, DATA_FONT, altText, Graphics.TEXT_JUSTIFY_RIGHT);
     }
 
-    // A row that runs across the columns rather than filling them, and is centred
-    // rather than ranged against them: it is a sentence, not a column of figures,
-    // so nothing has to line up under it - and on a round screen the middle of the
-    // row is where the room is.
+    // A row that runs across the columns and is centred on the screen. It holds a
+    // sentence rather than figures, so nothing has to line up under it, and on a
+    // round screen the middle of the row has the most room.
     function drawNote(dc as Graphics.Dc, y as Lang.Number, text as Lang.String) as Void {
         dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_TRANSPARENT);
         dc.drawText(dc.getWidth() / 2, y, DATA_FONT, text, Graphics.TEXT_JUSTIFY_CENTER);
@@ -664,8 +660,8 @@ class PointerView extends WatchUi.View {
         var cy = view[1];
         var focal = view[2];
 
-        // The perspective divide is what makes the object land where a camera
-        // would put it rather than merely in the right general direction.
+        // The perspective divide puts the object where a camera would, not only in
+        // the right general direction.
         var right = offset[0];
         var up = offset[1];
         var forward = offset[2];
@@ -704,15 +700,14 @@ class PointerView extends WatchUi.View {
         var awayY = dotY - cy;
         var away = Math.sqrt(awayX * awayX + awayY * awayY);
 
-        // Pin to the rim, along that same line. The display is round, so one
-        // radial limit does the whole job - and it has to be radial: clamping the
-        // two axes separately would drag an object lying off to the right and
-        // barely above centre out to a corner, and leave the marker parked on the
-        // diagonal a quarter turn from where the object actually is.
+        // Pin to the edge, along that same line. The limit has to follow the line:
+        // clamping the two axes separately would drag an object lying off to the
+        // right and barely above centre out to a corner, and leave the marker
+        // parked on the diagonal instead of out to the right.
         //
-        // The rim is stopped short of by the chevron's reach, so a pinned marker
-        // and the chevron hanging off it are both drawn whole instead of running
-        // off the glass exactly when they are the only thing left to steer by.
+        // The limit stops short of the edge by the chevron's reach, so a pinned
+        // marker and its chevron are both drawn whole. At that point they are the
+        // only thing left to steer by.
         var limit = markerLimit(dc, awayX, awayY, away);
         var pinned = away > limit;
         if (pinned) {
@@ -732,11 +727,10 @@ class PointerView extends WatchUi.View {
             dc.drawCircle(dotX, dotY, ObjectArt.radius(_obj) + 3);
         }
 
-        // One chevron, along the line the object actually lies on - the same line
-        // the marker was pinned along, so the two agree. It used to be one per
-        // axis, which meant an object off a corner overran both and drew two of
-        // them at right angles to each other - pointing at everywhere except where
-        // the object was.
+        // One chevron, along the line the object lies on. That is the same line
+        // the marker was pinned along, so the two agree. A chevron per axis would
+        // draw two at right angles for an object off a corner, and neither would
+        // point at it.
         //
         // Pinned means away came out past limit, which is most of the screen's
         // radius, so there is no dividing by nothing to guard against here.
@@ -749,10 +743,9 @@ class PointerView extends WatchUi.View {
     // the top right where the sky is emptiest. Each line names its frame, since two
     // grids at different spacings would otherwise be a bare number apiece.
     //
-    // Nothing at all is drawn at the middle of the screen. Where the watch points
-    // is the centre of the display whether it is marked or not, and the reticle
-    // that used to sit there - a cross, and a run of ticks out along both axes -
-    // only crowded the object at exactly the moment you had aimed at it.
+    // Nothing is drawn at the middle of the screen. Where the watch points is the
+    // centre of the display whether it is marked or not, and a reticle there would
+    // crowd the object just as you aim at it.
     function drawScale(dc as Graphics.Dc, view as Lang.Array<Lang.Numeric>, horizonStep as Lang.Number, equatorialStep as Lang.Number) as Void {
         var y = nameRow(dc.getHeight()) + dc.getFontHeight(NAME_FONT) + GAP;
         dc.setColor(Graphics.COLOR_DK_GRAY, Graphics.COLOR_TRANSPARENT);
@@ -776,7 +769,7 @@ class PointerView extends WatchUi.View {
     // Every object in the catalogue at once, drawn as a plain sky map: no marker is
     // pinned to the rim and no chevron points off it, because with the whole sky on
     // show there is nothing in particular to be steered towards. An object that is
-    // not out in front of the watch is simply left out.
+    // not out in front of the watch is left out.
     //
     // Below the horizon they are darkened rather than greyed out, so they still
     // read as underfoot without losing the colour and the face that identify them.
@@ -792,8 +785,8 @@ class PointerView extends WatchUi.View {
         while (i < sky.size()) {
             var entry = sky[i];
             var enu = entry[1];
-            // The offset is wanted as well as the screen point - it is what orients
-            // the phase and the rings - so the projection is done here rather than
+            // The offset is needed as well as the screen point, because it orients
+            // the phase and the rings, so the projection is done here rather than
             // through DeviceAim.screenPoint, which would work it out twice.
             var offset = DeviceAim.viewOffset(frame, enu[0], enu[1], enu[2]);
             var forward = offset[2];
@@ -804,10 +797,10 @@ class PointerView extends WatchUi.View {
                     var obj = entry[0];
                     var base = ObjectArt.color(obj);
                     if (entry[2] < 0) {
-                        // Underfoot. Darkened rather than replaced with a flat grey:
-                        // one grey for everything threw away the colour and the face
-                        // that say which object it is, which left the Sun a plain
-                        // disc and the planets indistinguishable from dim stars.
+                        // Underfoot. Darkened rather than replaced with a flat grey,
+                        // which would lose the colour and the face that identify
+                        // the object: the Sun would be a plain disc and the planets
+                        // would look like dim stars.
                         base = ObjectArt.shade(base, 1, 3);
                     }
                     ObjectArt.draw(dc, px, py, obj, base, offset, sunOffset, zenith);
@@ -853,7 +846,7 @@ class PointerView extends WatchUi.View {
             // Flat sided, so every row is as wide as every other. The bevels on an
             // Instinct's octagon are inside the margin.
             //
-            // The chord below would be actively wrong here and not merely mean: on
+            // The chord below would be wrong here, not just conservative: on
             // a 448 by 486 display the bottom readout row sits further from the
             // middle than the screen is half wide, so it would come back zero and
             // collapse all three text columns onto the centre line.
@@ -882,10 +875,9 @@ class PointerView extends WatchUi.View {
     //
     // A radius on a round display. On a flat-sided one it is the distance along
     // that same line to the edge of the box, so a rectangular screen uses its
-    // corners instead of the circle drawn inside them - on a 448 by 486 panel a
-    // circle would have thrown away a third of the height. The direction is
-    // preserved either way, which is the part that matters: the marker and the
-    // chevron have to agree on where the object is.
+    // corners instead of the circle drawn inside them. On a 448 by 486 panel a
+    // circle would throw away a third of the height. The direction is preserved
+    // either way, so the marker and the chevron agree on where the object is.
     function markerLimit(dc as Graphics.Dc, awayX as Lang.Numeric, awayY as Lang.Numeric, away as Lang.Float) as Lang.Float {
         var halfW = dc.getWidth() / 2 - MARKER_REACH;
         if (isRound()) {
@@ -909,16 +901,6 @@ class PointerView extends WatchUi.View {
             return "+" + deg.format("%.0f");
         }
         return deg.format("%.0f");
-    }
-
-    function clampAngle(angle as Lang.Float, limit as Lang.Float) as Lang.Float {
-        if (angle > limit) {
-            return limit;
-        }
-        if (angle < -limit) {
-            return -limit;
-        }
-        return angle;
     }
 
     // Small triangle beyond the pinned marker, pointing further the way to move.

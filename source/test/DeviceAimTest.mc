@@ -4,10 +4,9 @@ using Toybox.Math as Math;
 // DeviceAim: gravity, the tilt-compensated compass, the frame they build, and the
 // projection onto the screen.
 //
-// This is where the app's sign conventions live, and they have been wrong before -
-// tangling the back-of-case sign with the handedness sign inverted both screen
-// axes at once and made the object follow the watch instead of sliding against it.
-// The orthonormality and round-trip checks below are what would have caught that.
+// This is where the app's sign conventions live. A wrong back-of-case sign turns
+// both screen axes over at once and makes the object follow the watch instead of
+// sliding against it; the orthonormality and round-trip checks below catch that.
 
 // ---------------------------------------------------------------- gravity
 
@@ -52,7 +51,7 @@ function aimElevationReadsTheBackOfTheCase(logger) {
 (:test)
 function deviceFrameIsOrthonormal(logger) {
     // East, north and up must stay a right-angled set of unit vectors however the
-    // watch is held, or every direction drawn through it is quietly skewed.
+    // watch is held, or every direction drawn through it comes out skewed.
     var accels = [[0, 0, -1000], [0, -1000, 0], [700, 0, -700], [-500, 500, -700]];
     var mags = [[300, 0, 0], [0, 400, 100], [120, -260, 80]];
 
@@ -86,10 +85,10 @@ function deviceFrameIsOrthonormal(logger) {
 (:test)
 function declinationTurnsTheFrameByExactlyThatMuch(logger) {
     // The true-north correction. Passing a declination has to swing north round by
-    // that angle and nothing else - and it has to stay orthonormal doing it.
+    // that angle and nothing else, and the frame has to stay orthonormal doing it.
     //
-    // Leaving this out is what once rotated the whole drawn sky away from the
-    // numbers printed underneath it.
+    // Without it the whole drawn sky rotates away from the numbers printed
+    // underneath it.
     var accel = [200, -300, -900];
     var mag = [150, 220, -60];
 
@@ -128,8 +127,8 @@ function zeroDeclinationChangesNothing(logger) {
 
 (:test)
 function northVectorHasNoVerticalPartLeft(logger) {
-    // Removing the field's vertical component is the whole trick behind the
-    // tilt-compensated compass: what is left points north however the watch tilts.
+    // Removing the field's vertical component is how the tilt-compensated compass
+    // works: what is left points north however the watch tilts.
     var up = DeviceAim.upVector([300, -200, -900]);
     var north = DeviceAim.northVector([180, 240, -90], up[0], up[1], up[2]);
     Test.assertMessage(north != null, "should produce a north");

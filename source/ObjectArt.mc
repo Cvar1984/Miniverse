@@ -5,14 +5,14 @@ using Toybox.Math as Math;
 // How each object is drawn: its colour, its size, and the little that can be shown
 // of its face at the size a watch has room for.
 //
-// Stellarium wraps photographic surface maps onto spheres on the GPU. None of that
-// survives the trip down to a disc 32 pixels across, and the maps are equirectangular
-// - made to be projected, not pasted - so nothing here is a texture image. What is
-// worth drawing at this size is the handful of features that are still recognisable
-// as shapes: the Sun's corona, the Moon's phase, Saturn's rings, Jupiter's belts.
+// Stellarium wraps photographic surface maps onto spheres on the GPU. That detail
+// is lost on a disc 32 pixels across, and the maps are equirectangular, so they
+// would need projecting before they could be drawn. Nothing here is a texture
+// image. At this size only a handful of features are still recognisable as shapes:
+// the Sun's corona, the Moon's phase, Saturn's rings, Jupiter's belts.
 //
-// The phase is the real one, worked out the way Stellarium does: from the angle
-// between the object and the Sun as seen from here.
+// The phase is computed the way Stellarium does it: from the angle between the
+// object and the Sun as seen from here.
 module ObjectArt {
     // Points sampled along each half-ellipse. Twelve is smooth at these radii and
     // is a polygon the device fills in one go.
@@ -48,8 +48,8 @@ module ObjectArt {
 
     // Disc radius: fixed per body for the Sun, Moon and planets, magnitude-scaled
     // for stars, where brighter stars draw larger the way they look. The planets
-    // differ a little from each other now that there is something drawn on them -
-    // belts and rings need a couple of pixels to land in.
+    // differ a little in size, because belts and rings need a couple of pixels to
+    // land in.
     function radius(obj as Lang.Dictionary) as Lang.Number {
         var type = obj[:type];
         if (type == :sun) {
@@ -90,7 +90,7 @@ module ObjectArt {
 
     // Draws the object centred at (x, y).
     //
-    // base is the colour to build from - the caller dims it for anything under the
+    // base is the colour to build from. The caller dims it for anything under the
     // horizon, and every shade here comes off it, so a dimmed object stays dimmed
     // all the way through. offset, sunOffset and zenith are directions in the
     // watch's own axes, as DeviceAim.viewOffset gives them: the object, the Sun,
@@ -115,8 +115,8 @@ module ObjectArt {
     }
 
     // Corona outside the disc, and a disc that brightens towards the middle. Limb
-    // darkening is the one thing about the Sun's face that is obvious to the naked
-    // eye through cloud, and it is the difference between this and a yellow dot.
+    // darkening is the one feature of the Sun's face visible to the naked eye
+    // through cloud, and it keeps the disc from reading as a flat yellow dot.
     function drawSun(dc as Graphics.Dc, x as Lang.Number, y as Lang.Number, base as Lang.Number, r as Lang.Number) as Void {
         dc.setColor(shade(base, 1, 4), Graphics.COLOR_TRANSPARENT);
         dc.drawCircle(x, y, r + 6);
@@ -129,12 +129,12 @@ module ObjectArt {
         dc.fillCircle(x, y, r - 7);
     }
 
-    // The Moon as it actually is tonight.
+    // The Moon at its current phase.
     //
     // Both directions are unit vectors, so their dot product is the cosine of the
     // elongation, and the lit fraction follows from it directly: k = (1 - m.s) / 2.
-    // What the drawing wants is c = 2k - 1, which is simply -(m.s) - it runs from
-    // -1 at new, through 0 at half, to +1 at full, and it is the width of the
+    // What the drawing wants is c = 2k - 1, which is -(m.s). It runs from -1 at
+    // new, through 0 at half, to +1 at full, and it is the width of the
     // terminator ellipse as a fraction of the disc.
     //
     // The bright limb faces the Sun, so the whole thing is oriented by the tangent
@@ -156,7 +156,7 @@ module ObjectArt {
         var len = Math.sqrt(bx * bx + by * by);
         if (len < 0.000001) {
             // Sun dead behind or dead in front of the Moon, where there is no bright
-            // limb to point at - and the phase is full or new, so it does not matter.
+            // limb to point at. The phase is then full or new, so it does not matter.
             bx = 1.0;
             by = 0.0;
         } else {
@@ -174,8 +174,8 @@ module ObjectArt {
         fillHalfEllipse(dc, x, y, bx, by, r, r);
 
         // The terminator bulges past the middle into the dark side when gibbous and
-        // bites into the bright side when a crescent. Same ellipse either way - only
-        // which colour it is painted in changes, and its width is c.
+        // bites into the bright side when a crescent. Same ellipse either way: only
+        // the colour it is painted in changes, and its width is c.
         if (c >= 0) {
             dc.setColor(base, Graphics.COLOR_TRANSPARENT);
         } else {
@@ -187,7 +187,7 @@ module ObjectArt {
     // Saturn gets its rings and Jupiter its belts, both lying along the object's own
     // equator. That is taken as square to the local vertical, worked out from where
     // the zenith is in the watch's axes, so the rings roll with the sky rather than
-    // with the wrist - a ring pinned to the screen would be wrong the moment you
+    // with the wrist. A ring pinned to the screen would be wrong as soon as you
     // turned your arm.
     function drawPlanet(dc as Graphics.Dc, x as Lang.Number, y as Lang.Number, obj as Lang.Dictionary, base as Lang.Number, offset as Lang.Array<Lang.Float>, zenith as Lang.Array?) as Void {
         var r = radius(obj);
@@ -250,7 +250,7 @@ module ObjectArt {
 
     // Half an ellipse as a filled polygon: semi-axis ax along (bx, by) and r across
     // it, closed along the diameter. ax may be negative, which puts the half on the
-    // other side - which is exactly what the terminator needs.
+    // other side, as the terminator needs.
     //
     // Two convex halves rather than one lune, because a crescent is concave and how
     // a device fills a concave polygon is not something to rely on.

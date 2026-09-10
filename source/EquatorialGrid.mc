@@ -1,8 +1,8 @@
 using Toybox.Graphics as Graphics;
 using Toybox.Lang as Lang;
 
-// Draws the equatorial coordinate grid - circles of equal declination, and the
-// hour circles running between the celestial poles - as seen looking out through
+// Draws the equatorial coordinate grid (circles of equal declination, and the
+// hour circles running between the celestial poles) as seen looking out through
 // the back of the watch.
 //
 // This is the frame the stars are fixed in rather than the one you are standing
@@ -11,8 +11,10 @@ using Toybox.Lang as Lang;
 // catalogue gives positions in it. Where HorizonGrid answers "how high, and which
 // way", this answers "where among the stars".
 //
-// Same shape and the same costs as HorizonGrid: each plotted point is a handful of
-// trig calls, and the sampling constants below are the knob to turn.
+// Unlike the HorizonGrid mesh, these points are worked out every frame. Each is
+// one raDecToEnu call, and the sampling constants below set how many there are.
+// Refraction is not applied: it is a fraction of a degree at the horizon and
+// nothing higher up, which is under the width of these lines.
 module EquatorialGrid {
     const DEC_LIMIT = 60;       // highest and lowest circle of equal declination drawn
     const RA_SAMPLE = 20;       // plotted point spacing round a circle of equal declination
@@ -27,12 +29,12 @@ module EquatorialGrid {
 
     // view is [cx, cy, focal], the same screen mapping everything else uses. step
     // is the spacing between lines in degrees, and 0 draws nothing: right ascension
-    // runs round the same 360 degrees as azimuth does, so the default 15 makes each
-    // hour circle exactly that - one hour of right ascension.
+    // runs round the same 360 degrees as azimuth does, so a step of 15 puts the
+    // hour circles one hour of right ascension apart.
     //
-    // lat and lstDeg are what hold this frame against the sky overhead. They turn a
-    // catalogue position into somewhere on the screen, and they are the whole
-    // reason this grid moves at all.
+    // lat and lstDeg tie this frame to the sky overhead. They turn a catalogue
+    // position into a place on the screen, and a changing lstDeg is what makes
+    // this grid move.
     function draw(dc as Graphics.Dc, frame as Lang.Array<Lang.Float>, view as Lang.Array<Lang.Numeric>, step as Lang.Number, lat as Lang.Float, lstDeg as Lang.Double) as Void {
         if (step <= 0) {
             return;
@@ -44,24 +46,24 @@ module EquatorialGrid {
         var dec = 0;
         while (dec <= DEC_LIMIT) {
             dc.setColor(declinationColor(dec), Graphics.COLOR_TRANSPARENT);
-            drawDeclinationCircle(dc, frame, dec, view, lat, lstDeg);
+            DeviceAim.drawRun(dc, frame, declinationRun(dec, lat, lstDeg), view);
             if (dec != 0) {
                 dc.setColor(declinationColor(-dec), Graphics.COLOR_TRANSPARENT);
-                drawDeclinationCircle(dc, frame, -dec, view, lat, lstDeg);
+                DeviceAim.drawRun(dc, frame, declinationRun(-dec, lat, lstDeg), view);
             }
             dec += step;
         }
 
+        dc.setColor(LINE_COLOR, Graphics.COLOR_TRANSPARENT);
         var ra = 0;
         while (ra < 360) {
-            dc.setColor(LINE_COLOR, Graphics.COLOR_TRANSPARENT);
-            drawHourCircle(dc, frame, ra, view, lat, lstDeg);
+            DeviceAim.drawRun(dc, frame, hourRun(ra, lat, lstDeg), view);
             ra += step;
         }
     }
 
-    // The celestial equator is the one line worth telling from the rest: it is
-    // where the Sun crosses at the equinoxes and the zero of declination.
+    // The celestial equator gets its own colour: it is the zero of declination,
+    // where the Sun crosses at the equinoxes.
     function declinationColor(decDeg as Lang.Numeric) as Lang.Number {
         if (decDeg == 0) {
             return EQUATOR_COLOR;
@@ -70,64 +72,36 @@ module EquatorialGrid {
     }
 
     // A circle of equal declination, running parallel to the celestial equator all
-    // the way round.
-    //
-    // As in HorizonGrid, the previous point is held as plain coordinates plus a
-    // flag rather than a nullable pair, so a point dropped behind the watch breaks
-    // the line here instead of joining across the gap.
-    function drawDeclinationCircle(dc as Graphics.Dc, frame as Lang.Array<Lang.Float>, decDeg as Lang.Numeric, view as Lang.Array<Lang.Numeric>, lat as Lang.Float, lstDeg as Lang.Double) as Void {
-        var havePrevious = false;
-        var previousX = 0;
-        var previousY = 0;
+    // the way round, as a flat run of East-North-Up triples.
+    function declinationRun(decDeg as Lang.Numeric, lat as Lang.Float, lstDeg as Lang.Double) as Lang.Array<Lang.Float> {
+        var run = new [(360 / RA_SAMPLE + 1) * 3];
+        var i = 0;
         var ra = 0;
         while (ra <= 360) {
-            var point = screenPoint(frame, ra, decDeg, view, lat, lstDeg);
-            if (point != null) {
-                var x = point[0];
-                var y = point[1];
-                if (havePrevious) {
-                    dc.drawLine(previousX, previousY, x, y);
-                }
-                previousX = x;
-                previousY = y;
-                havePrevious = true;
-            } else {
-                havePrevious = false;
-            }
+            var enu = SkyMath.raDecToEnu(ra, decDeg, lat, lstDeg);
+            run[i] = enu[0];
+            run[i + 1] = enu[1];
+            run[i + 2] = enu[2];
+            i += 3;
             ra += RA_SAMPLE;
         }
+        return run;
     }
 
     // An hour circle: straight from pole to pole at one right ascension. Sampled to
     // both poles, so they all meet at the two points the sky turns about.
-    function drawHourCircle(dc as Graphics.Dc, frame as Lang.Array<Lang.Float>, raDeg as Lang.Numeric, view as Lang.Array<Lang.Numeric>, lat as Lang.Float, lstDeg as Lang.Double) as Void {
-        var havePrevious = false;
-        var previousX = 0;
-        var previousY = 0;
+    function hourRun(raDeg as Lang.Numeric, lat as Lang.Float, lstDeg as Lang.Double) as Lang.Array<Lang.Float> {
+        var run = new [(180 / DEC_SAMPLE + 1) * 3];
+        var i = 0;
         var dec = -90;
         while (dec <= 90) {
-            var point = screenPoint(frame, raDeg, dec, view, lat, lstDeg);
-            if (point != null) {
-                var x = point[0];
-                var y = point[1];
-                if (havePrevious) {
-                    dc.drawLine(previousX, previousY, x, y);
-                }
-                previousX = x;
-                previousY = y;
-                havePrevious = true;
-            } else {
-                havePrevious = false;
-            }
+            var enu = SkyMath.raDecToEnu(raDeg, dec, lat, lstDeg);
+            run[i] = enu[0];
+            run[i + 1] = enu[1];
+            run[i + 2] = enu[2];
+            i += 3;
             dec += DEC_SAMPLE;
         }
-    }
-
-    // Where a point of the equatorial grid lands on screen, or null if it is behind
-    // the watch. Refraction is not applied: it is a fraction of a degree at the
-    // horizon and nothing higher up, which is under the width of these lines.
-    function screenPoint(frame as Lang.Array<Lang.Float>, raDeg as Lang.Numeric, decDeg as Lang.Numeric, view as Lang.Array<Lang.Numeric>, lat as Lang.Float, lstDeg as Lang.Double) as Lang.Array<Lang.Number>? {
-        var enu = SkyMath.raDecToEnu(raDeg, decDeg, lat, lstDeg);
-        return DeviceAim.screenPoint(frame, enu[0], enu[1], enu[2], view);
+        return run;
     }
 }

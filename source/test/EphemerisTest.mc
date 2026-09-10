@@ -1,16 +1,16 @@
 using Toybox.Test;
 using Toybox.Math as Math;
 
-// SolarLunar and Planets: the series and orbital elements that say where each
-// body actually is.
+// SolarLunar and Planets: the series and orbital elements that give each body's
+// position.
 //
 // Checked against the physical facts they must reproduce rather than against
-// recopied decimals - the Sun cannot leave the tropics, the planets cannot leave
-// the zodiac, Kepler's equation has to actually be solved. Those hold for every
-// date, which is more than a single spot value can say.
+// recopied decimals: the Sun cannot leave the tropics, the planets cannot leave
+// the zodiac, and Kepler's equation has to be solved. Those hold for every date,
+// where a single spot value covers one.
 // Annotated so the whole module is dropped from release builds. It holds no tests
 // itself, only the dates they share, and an un-annotated function in a test file
-// is compiled into the shipped app like any other code - 416 bytes of it, here.
+// is compiled into the shipped app like any other code (416 bytes of it, here).
 (:test)
 module EphemerisTest {
     // Dates spread across a year and a couple of decades, so nothing passes by
@@ -34,7 +34,7 @@ function obliquityIsAboutTwentyThreeAndAHalf(logger) {
     var atEpoch = SolarLunar.obliquity(0.0);
     Test.assertMessage((atEpoch - 23.439291).abs() < 0.000001, "obliquity at J2000");
 
-    // It decreases very slowly - about 47 arcseconds a century.
+    // It decreases slowly, by about 47 arcseconds a century.
     var aCenturyOn = SolarLunar.obliquity(1.0);
     Test.assertMessage(aCenturyOn < atEpoch, "obliquity should be decreasing");
     Test.assertMessage((atEpoch - aCenturyOn) < 0.02, "but only by arcseconds a century");
@@ -122,8 +122,7 @@ function moonStaysNearTheEcliptic(logger) {
 
 (:test)
 function moonMovesAboutThirteenDegreesADay(logger) {
-    // It laps the sky in roughly 27.3 days, so about 13 degrees a day - the one
-    // number that separates a working lunar series from a broken one.
+    // It laps the sky in roughly 27.3 days, so it moves about 13 degrees a day.
     var jd = SkyMath.julianDay(2026, 5, 2, 0, 0, 0);
     var today = SolarLunar.moonPosition(jd);
     var tomorrow = SolarLunar.moonPosition(jd + 1.0d);
@@ -135,7 +134,7 @@ function moonMovesAboutThirteenDegreesADay(logger) {
 (:test)
 function moonParallaxStaysInItsRange(logger) {
     // Meeus' series runs about 0.95 degrees, swinging with the Moon's distance.
-    // This is the one body where the correction is worth applying at all.
+    // The Moon is the only body where the correction is large enough to apply.
     var jds = EphemerisTest.samples();
     var i = 0;
     while (i < jds.size()) {
@@ -151,8 +150,8 @@ function moonParallaxStaysInItsRange(logger) {
 (:test)
 function keplersEquationIsActuallySolved(logger) {
     // The Newton iteration returns E; feeding it back through M = E - e sin E has
-    // to give back the M that went in. That is the whole contract, and it holds
-    // for a circle and for a comet-like ellipse alike.
+    // to give back the M that went in, for a circle and for a comet-like ellipse
+    // alike.
     var eccentricities = [0.0, 0.0068, 0.0934, 0.2056, 0.6];
     var e = 0;
     while (e < eccentricities.size()) {
@@ -201,8 +200,8 @@ function planetsStayInTheZodiac(logger) {
 
 (:test)
 function innerPlanetsNeverStrayFarFromTheSun(logger) {
-    // Mercury and Venus are between us and the Sun, so their elongation is capped -
-    // about 28 and 47 degrees. This catches a heliocentric-to-geocentric shift
+    // Mercury and Venus are between us and the Sun, so their elongation is capped
+    // at about 28 and 47 degrees. This catches a heliocentric-to-geocentric shift
     // that has been left out or applied the wrong way round, which a bounds check
     // on RA alone would sail straight past.
     var jds = EphemerisTest.samples();

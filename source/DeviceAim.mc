@@ -1,9 +1,10 @@
+using Toybox.Graphics as Graphics;
 using Toybox.Lang as Lang;
 using Toybox.Math as Math;
 
 // Turns the watch into a viewfinder. You hold it up with the screen toward you
-// and the back toward the sky, and the object is drawn where it really is behind
-// the watch - the same idea as a phone astronomy app pointed with its camera.
+// and the back toward the sky, and the object is drawn where it sits in the sky
+// behind the watch, the same idea as a phone astronomy app pointed with its camera.
 //
 // The aim axis is therefore the watch's Z axis, straight out through the back,
 // not the 12 o'clock edge. That changes what roll means: looking through a
@@ -12,7 +13,7 @@ using Toybox.Math as Math;
 // turn/tilt guidance stays measured against gravity, because that describes how
 // to move your arm and should not care how the watch is rotated in your hand.
 //
-// Hardware conventions live in the three constants below. Each is a single
+// Hardware conventions live in the two constants below. Each is a single
 // physical fact about how this watch labels its axes, and each has a check
 // against the readouts on the pointer screen.
 module DeviceAim {
@@ -23,20 +24,13 @@ module DeviceAim {
     // Aim elevation reads about 0; tip the back up toward the sky and it climbs.
     const UP_SIGN = -1;
 
-    // Whether the watch's X, Y and Z axes form a right-handed set, X running to
-    // 3 o'clock and Z out through the screen. It only affects working out which
-    // way is east, so the check is whether east and west come out swapped.
-    const HANDEDNESS = 1;
-
     // Which way along Z the back of the case lies. Z points out through the
-    // screen, so the back - the face you aim at the sky - is the other way.
+    // screen, so the back (the face you aim at the sky) is the other way.
     //
-    // This is deliberately kept apart from which way X runs. Getting the two
-    // tangled is what made the whole view track the wrong way: the sideways and
-    // forward components were being flipped together, so the flip cancelled in
-    // the sideways divide and could only ever invert up and down. An inverted
-    // forward is what turns BOTH axes over at once, which is what "the object
-    // follows the watch instead of sliding against it" looks like.
+    // This sign applies to forward alone. Flipping the sideways and forward
+    // components together cancels in the sideways divide and can only invert up
+    // and down. Inverting forward turns both screen axes over at once, which
+    // shows up as the object following the watch instead of sliding against it.
     const BACK_SIGN = -1;
 
     // Below this the aim axis is within ~2 degrees of vertical, where "which way
@@ -80,10 +74,10 @@ module DeviceAim {
     // vertical.
     //
     // This is the tilt compensation a flat compass heading lacks. Stellarium's
-    // SensorsMgr does the same thing - it never trusts a system heading either,
-    // it de-rotates the raw field by the device's own roll and pitch first. Here
-    // that falls out of flattening both the field and the aim axis onto the plane
-    // at right angles to gravity, so the answer holds at any tilt.
+    // SensorsMgr does the same: it ignores the system heading and de-rotates the
+    // raw field by the device's own roll and pitch first. Here that falls out of
+    // flattening both the field and the aim axis onto the plane at right angles
+    // to gravity, so the answer holds at any tilt.
     //
     // Magnetic, not true: the caller adds declination.
     function magneticAzimuth(accel as Lang.Array<Lang.Numeric>, mag as Lang.Array<Lang.Numeric>) as Lang.Float? {
@@ -117,7 +111,7 @@ module DeviceAim {
         // Angle from north round to the aim, turning the way a compass counts.
         var cross = (py * n[2] - pz * n[1]) * ux + (pz * n[0] - px * n[2]) * uy + (px * n[1] - py * n[0]) * uz;
         var along = px * n[0] + py * n[1] + pz * n[2];
-        return SkyMath.norm360(SkyMath.datan2(HANDEDNESS * cross, along));
+        return SkyMath.norm360(SkyMath.datan2(cross, along));
     }
 
     // Magnetic north along the ground, in the watch's coordinates: the field with
@@ -139,7 +133,7 @@ module DeviceAim {
     }
 
     // The world's axes written in the watch's coordinates, as
-    // [eE,eN,eU, nE,nN,nU, uE,uN,uU] - east, north and up. Multiplying a sky
+    // [eE,eN,eU, nE,nN,nU, uE,uN,uU] for east, north and up. Multiplying a sky
     // direction's world components by these lands it in the watch's frame, which
     // is what the viewfinder needs. Null if the sensors cannot place it.
     function deviceFrame(accel as Lang.Array<Lang.Numeric>, mag as Lang.Array<Lang.Numeric>, declinationDeg as Lang.Float) as Lang.Array<Lang.Float>? {
@@ -151,20 +145,20 @@ module DeviceAim {
         if (n == null) {
             return null;
         }
-        // East = north x up, mirrored back if the watch's axes are left-handed.
-        var eE = HANDEDNESS * (n[1] * u[2] - n[2] * u[1]);
-        var eN = HANDEDNESS * (n[2] * u[0] - n[0] * u[2]);
-        var eU = HANDEDNESS * (n[0] * u[1] - n[1] * u[0]);
+        // East = north x up.
+        var eE = n[1] * u[2] - n[2] * u[1];
+        var eN = n[2] * u[0] - n[0] * u[2];
+        var eU = n[0] * u[1] - n[1] * u[0];
 
-        // Swung round to TRUE north, which is the whole point of taking the
-        // declination as an argument.
+        // Swung round to true north, which is what the declination argument is for.
         //
-        // The magnetometer gives magnetic north; every object placed on this screen
-        // came out of RA/Dec and sidereal time, which are true by construction. Left
-        // magnetic, the frame turned the entire drawn sky by the local declination
-        // against the numbers printed underneath it - a few degrees in most places,
-        // twenty in parts of Canada, against an eight degree lock. Correcting the
-        // heading readout alone was never enough: the picture is built from this.
+        // The magnetometer gives magnetic north, but every object placed on this
+        // screen comes from RA/Dec and sidereal time, which are true by
+        // construction. A magnetic frame would turn the whole drawn sky by the local
+        // declination against the numbers printed underneath it: a few degrees in
+        // most places, twenty in parts of Canada, against an eight degree lock. The
+        // picture is built from this frame, so correcting only the heading readout
+        // would still leave it wrong.
         //
         // Declination is measured east-positive, so magnetic north sits that far
         // east of true and true north is the same angle back the other way.
@@ -205,8 +199,8 @@ module DeviceAim {
     // Where a sky direction lands on screen, or null when it is not out in front
     // of the watch's back. view is [cx, cy, focal], where focal is the
     // pixels-per-radian scale that sets how wide a piece of sky the screen
-    // covers - the perspective divide by "forward" is what makes the sky line up
-    // the way a camera would rather than merely pointing in the right direction.
+    // covers. Dividing by "forward" lines the sky up the way a camera would,
+    // instead of only pointing in the right direction.
     function screenPoint(frame as Lang.Array<Lang.Float>, tE as Lang.Float, tN as Lang.Float, tU as Lang.Float, view as Lang.Array<Lang.Numeric>) as Lang.Array<Lang.Number>? {
         var offset = viewOffset(frame, tE, tN, tU);
         var forward = offset[2];
@@ -253,7 +247,7 @@ module DeviceAim {
 
     // Puts a world direction into that frame, as [turnDeg, tiltDeg, forward]:
     // how far right and how far up it sits from the aim, plus the cosine of the
-    // angle off the aim axis - negative means it is behind the watch.
+    // angle off the aim axis, which is negative when it is behind the watch.
     function project(basis as Lang.Array<Lang.Float>, e as Lang.Float, n as Lang.Float, u as Lang.Float) as Lang.Array<Lang.Float> {
         var alongAim = e * basis[0] + n * basis[1] + u * basis[2];
         var alongRight = e * basis[3] + n * basis[4] + u * basis[5];
@@ -270,5 +264,30 @@ module DeviceAim {
             SkyMath.datan2(alongUp, acrossAim),
             alongAim
         ];
+    }
+
+    // Draws a run of world directions, flat East-North-Up triples, as one line.
+    // A point behind the watch comes back null from the projection and breaks the
+    // line there instead of joining across the gap. Both grids and the
+    // constellation figures draw through this.
+    function drawRun(dc as Graphics.Dc, frame as Lang.Array<Lang.Float>, run as Lang.Array<Lang.Float>, view as Lang.Array<Lang.Numeric>) as Void {
+        var havePrevious = false;
+        var previousX = 0;
+        var previousY = 0;
+        var i = 0;
+        while (i < run.size()) {
+            var point = screenPoint(frame, run[i], run[i + 1], run[i + 2], view);
+            if (point != null) {
+                if (havePrevious) {
+                    dc.drawLine(previousX, previousY, point[0], point[1]);
+                }
+                previousX = point[0];
+                previousY = point[1];
+                havePrevious = true;
+            } else {
+                havePrevious = false;
+            }
+            i += 3;
+        }
     }
 }

@@ -3,10 +3,10 @@ using Toybox.Math as Math;
 
 // SkyMath: time, coordinate conversion and the two atmospheric corrections.
 //
-// Written as invariants wherever one exists - a zenith is a zenith at every
-// latitude, a rotation preserves length, the two routes to a vector must agree -
+// Written as invariants wherever one exists (a zenith is a zenith at every
+// latitude, a rotation preserves length, the two routes to a vector must agree),
 // because an invariant keeps testing after someone changes a constant, and a
-// hand-copied decimal only ever tests that it was copied correctly.
+// hand-copied decimal only tests that it was copied correctly.
 
 // ---------------------------------------------------------------- angles
 
@@ -50,7 +50,7 @@ function julianDayAdvancesOnePerDay(logger) {
 (:test)
 function julianDayCrossesTheMarchBoundary(logger) {
     // January and February are counted as months 13 and 14 of the previous year,
-    // so the turn of March is the branch worth pinning down.
+    // so this pins down the branch at the turn of March.
     var feb = SkyMath.julianDay(2026, 2, 28, 0, 0, 0);
     var mar = SkyMath.julianDay(2026, 3, 1, 0, 0, 0);
     Test.assertMessage((mar - feb - 1.0d).abs() < 0.0000001, "2026 is not a leap year, so 28 Feb to 1 Mar is one day");
@@ -59,8 +59,8 @@ function julianDayCrossesTheMarchBoundary(logger) {
 
 (:test)
 function julianDayKeepsTheTimeOfDay(logger) {
-    // The regression test for the precision bug this app was written around: a
-    // 32-bit float carries about seven digits, so a Julian Day near 2.46 million
+    // The Float precision problem from SkyMath.julianDay: a 32-bit float carries
+    // about seven digits, so a Julian Day near 2.46 million
     // rounds the time of day to the nearest six hours and whole evenings collapse
     // onto one stored value. Six hours must come out as exactly a quarter day.
     var midnight = SkyMath.julianDay(2026, 9, 6, 0, 0, 0);
@@ -150,9 +150,10 @@ function poleSitsAtAltitudeEqualToLatitude(logger) {
 
 (:test)
 function raDecToEnuAgreesWithTheTwoStepRoute(logger) {
-    // The direct rotation replaced raDecToAltAz followed by horizontalToEnu in the
-    // grid's hot loop. It has to give the same answer everywhere, including over
-    // the poles where the arccosine it drops is least well behaved.
+    // raDecToEnu does in one rotation what raDecToAltAz followed by
+    // horizontalToEnu does in two, so both routes have to give the same answer
+    // everywhere, including over the poles where the arccosine it skips is least
+    // well behaved.
     var ra = 0.0;
     while (ra < 360.0) {
         var dec = -85.0;
@@ -252,8 +253,8 @@ function parallaxVanishesAtTheZenith(logger) {
 // ---------------------------------------------------------------- the grid mesh
 
 // HorizonGrid builds its geometry once and keeps it. The cache and its
-// invalidation are new logic with a branch in them, and they need no graphics
-// context to exercise - only the drawing of the mesh does.
+// invalidation have a branch in them and need no graphics context to exercise;
+// only drawing the mesh does.
 
 (:test)
 function meshHoldsWellFormedRuns(logger) {
@@ -296,8 +297,8 @@ function meshHasTheRightNumberOfLines(logger) {
 
 (:test)
 function meshIsCachedUntilTheSpacingChanges(logger) {
-    // Rebuilding this every frame was the most expensive thing the app did, so the
-    // cache holding is the point of it.
+    // Rebuilding the mesh every frame would be the most expensive thing the app
+    // does, so this checks that the cache holds.
     var first = HorizonGrid.meshFor(30);
     var again = HorizonGrid.meshFor(30);
     Test.assertMessage(first.size() == again.size(), "the same spacing should give the same mesh back");

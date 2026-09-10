@@ -1,8 +1,8 @@
 using Toybox.Graphics as Graphics;
 using Toybox.Lang as Lang;
 
-// Draws the horizon coordinate grid - circles of equal altitude and the vertical
-// circles running between zenith and nadir - as seen looking out through the back
+// Draws the horizon coordinate grid (circles of equal altitude and the vertical
+// circles running between zenith and nadir) as seen looking out through the back
 // of the watch.
 //
 // This is the frame you are standing in rather than the one the stars turn in, so
@@ -12,13 +12,12 @@ using Toybox.Lang as Lang;
 // the vertical circles should all converge on the centre of the display.
 //
 // The mesh is built once and kept. Nothing in azimuth/altitude to East-North-Up
-// depends on the clock, on where you stand, or on how the watch is held: the same
-// few hundred vectors come out every frame, for ever. Working them out afresh ten
-// times a second was by a wide margin the most expensive thing this app did - at
-// the default spacing, sixteen thousand trig calls a second to arrive at numbers
-// that had not moved, against about a hundred for the whole 35-object catalogue,
-// whose positions were already cached. Only the rotation into the watch's axes has
-// to be redone per frame, which is exactly the work an object costs.
+// depends on the clock, on where you stand, or on how the watch is held, so the
+// same few hundred vectors come out every frame. Working them out ten times a
+// second at a 15 degree spacing would take about sixteen thousand trig calls a
+// second, against about a hundred for the whole 35-object catalogue, whose
+// positions are cached. Only the rotation into the watch's axes is redone per
+// frame, the same per-point work an object costs.
 module HorizonGrid {
     const ALT_LIMIT = 60;       // highest and lowest circle of equal altitude drawn
     const AZ_SAMPLE = 20;       // plotted point spacing round a circle of equal altitude
@@ -34,12 +33,12 @@ module HorizonGrid {
 
     // view is [cx, cy, focal], the same screen mapping the object dot uses, so the
     // grid and the object always agree. Points behind the watch come back null from
-    // the projection and simply break the line there, rather than folding back
+    // the projection and break the line there, rather than folding back
     // across the view.
     //
     // step is the spacing between lines in degrees, from the settings menu. The sky
-    // turns 360 degrees in 24 hours, so the default 15 makes every cell an hour
-    // wide. Zero draws no lines at all.
+    // turns 360 degrees in 24 hours, so a step of 15 makes every cell an hour
+    // wide. Zero draws no lines.
     function draw(dc as Graphics.Dc, frame as Lang.Array<Lang.Float>, view as Lang.Array<Lang.Numeric>, step as Lang.Number) as Void {
         if (step > 0) {
             var mesh = meshFor(step);
@@ -47,18 +46,18 @@ module HorizonGrid {
             while (i < mesh.size()) {
                 var line = mesh[i];
                 dc.setColor(line[0], Graphics.COLOR_TRANSPARENT);
-                drawRun(dc, frame, line[1], view);
+                DeviceAim.drawRun(dc, frame, line[1], view);
                 i += 1;
             }
         }
 
-        // Drawn even with the grid switched off. Which way you are facing is the
-        // most directly useful thing on the screen, and it is not grid furniture.
+        // Drawn even with the grid switched off, because the letters say which way
+        // you are facing.
         drawCardinals(dc, frame, view);
     }
 
     // The mesh for a given spacing, built on first use and kept until the spacing
-    // changes - which only happens when someone presses the menu button.
+    // changes, which only happens from the settings menu.
     function meshFor(step as Lang.Number) as Lang.Array {
         var held = _mesh;
         if (held != null && _meshStep == step) {
@@ -74,7 +73,6 @@ module HorizonGrid {
 
         // Counted outwards from the horizon rather than up from the bottom, so the
         // horizon itself is always one of the lines whatever the spacing is set to.
-        // It is the one worth guaranteeing.
         var alt = 0;
         while (alt <= ALT_LIMIT) {
             lines.add([altitudeColor(alt), altitudeRun(alt)]);
@@ -98,9 +96,9 @@ module HorizonGrid {
     // A circle of equal altitude, running parallel to the horizon all the way round,
     // as a flat run of East-North-Up triples.
     //
-    // Both runs below are sized up front and filled in place. How many points there
-    // are is known before the loop starts, and growing an array a value at a time
-    // to reach a length already in hand is work for nothing.
+    // Both runs below are sized up front and filled in place. The point count is
+    // known before the loop starts, so growing the array a value at a time would
+    // be wasted work.
     function altitudeRun(altDeg as Lang.Numeric) as Lang.Array<Lang.Float> {
         var run = new [(360 / AZ_SAMPLE + 1) * 3];
         var i = 0;
@@ -134,8 +132,8 @@ module HorizonGrid {
         return run;
     }
 
-    // The horizon is the line worth telling apart. Below it the ground is in the
-    // way, so those circles are drawn dimmer to read as underfoot.
+    // The horizon is drawn brighter than the other circles. Below it the ground is
+    // in the way, so those circles are drawn grey to read as underfoot.
     function altitudeColor(altDeg as Lang.Numeric) as Lang.Number {
         if (altDeg == 0) {
             return Graphics.COLOR_BLUE;
@@ -146,37 +144,8 @@ module HorizonGrid {
         return Graphics.COLOR_DK_BLUE;
     }
 
-    // Rotates one run into the watch's axes and draws it.
-    //
-    // The previous point is held as plain coordinates plus a flag rather than a
-    // nullable pair, so that dropping a point behind the watch simply breaks the
-    // line here instead of joining across the gap.
-    function drawRun(dc as Graphics.Dc, frame as Lang.Array<Lang.Float>, run as Lang.Array<Lang.Float>, view as Lang.Array<Lang.Numeric>) as Void {
-        var havePrevious = false;
-        var previousX = 0;
-        var previousY = 0;
-        var i = 0;
-        while (i < run.size()) {
-            var point = DeviceAim.screenPoint(frame, run[i], run[i + 1], run[i + 2], view);
-            if (point != null) {
-                var x = point[0];
-                var y = point[1];
-                if (havePrevious) {
-                    dc.drawLine(previousX, previousY, x, y);
-                }
-                previousX = x;
-                previousY = y;
-                havePrevious = true;
-            } else {
-                havePrevious = false;
-            }
-            i += 3;
-        }
-    }
-
-    // North, east, south and west, lettered where they meet the horizon. The most
-    // directly useful thing on the screen: it says which way you are facing. Four
-    // points, so these are not worth meshing.
+    // North, east, south and west, lettered where they meet the horizon. There are
+    // only four points, so they are projected each frame instead of meshed.
     function drawCardinals(dc as Graphics.Dc, frame as Lang.Array<Lang.Float>, view as Lang.Array<Lang.Numeric>) as Void {
         dc.setColor(Graphics.COLOR_BLUE, Graphics.COLOR_TRANSPARENT);
         var az = 0;

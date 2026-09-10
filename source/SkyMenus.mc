@@ -23,10 +23,9 @@ module SkyMenus {
         return menu;
     }
 
-    // Listed by name, whatever order the catalogue holds them in. It has its own
-    // reasons for that order - stars by brightness, planets by their distance out
-    // from the Sun - and neither is any help at all when you are thumbing down 28
-    // entries looking for Vega.
+    // Listed by name, whatever order the catalogue holds them in. The catalogue
+    // orders stars by brightness and planets by distance from the Sun, and neither
+    // helps when you are thumbing down 28 entries looking for Vega.
     //
     // Sorted into a copy rather than in place: a star's id is its position in the
     // catalogue, so the catalogue's own order is not ours to move. Insertion sort,
@@ -57,16 +56,16 @@ module SkyMenus {
     }
 
     // Each item carries its current value as the sub-label, and selecting it steps
-    // that value on - see SettingsMenuDelegate. The two spacings come first because
-    // they are what is actually on the screen; what is allowed to move follows.
+    // that value on (see SettingsMenuDelegate). The two spacings come first because
+    // they are what is on the screen; what is allowed to move follows.
     function buildSettingsMenu() {
         var menu = new WatchUi.Menu2({:title => "Settings"});
-        menu.addItem(new WatchUi.MenuItem("Horizon Grid", Settings.gridLabel(Settings.horizonStep()), "horizon", {}));
-        menu.addItem(new WatchUi.MenuItem("Equatorial Grid", Settings.gridLabel(Settings.equatorialStep()), "equatorial", {}));
-        menu.addItem(new WatchUi.MenuItem("Constellations", Settings.constellationLabel(), "constellations", {}));
-        menu.addItem(new WatchUi.MenuItem("Equatorial Motion", Settings.equatorialMotionLabel(), "dynEquatorial", {}));
-        menu.addItem(new WatchUi.MenuItem("Azimuth Motion", Settings.azimuthMotionLabel(), "dynAzimuth", {}));
-        menu.addItem(new WatchUi.MenuItem("Update Location", Settings.locationLabel(), "location", {}));
+        menu.addItem(new WatchUi.MenuItem("Horizon Grid", Settings.label("horizon"), "horizon", {}));
+        menu.addItem(new WatchUi.MenuItem("Equatorial Grid", Settings.label("equatorial"), "equatorial", {}));
+        menu.addItem(new WatchUi.MenuItem("Constellations", Settings.label("constellations"), "constellations", {}));
+        menu.addItem(new WatchUi.MenuItem("Equatorial Motion", Settings.label("dynEquatorial"), "dynEquatorial", {}));
+        menu.addItem(new WatchUi.MenuItem("Azimuth Motion", Settings.label("dynAzimuth"), "dynAzimuth", {}));
+        menu.addItem(new WatchUi.MenuItem("Update Location", Settings.label("location"), "location", {}));
         return menu;
     }
 }

@@ -15,9 +15,9 @@ class RootMenuDelegate extends WatchUi.Menu2InputDelegate {
             // whole-catalogue mode.
             WatchUi.pushView(new PointerView(null), new PointerDelegate(), WatchUi.SLIDE_LEFT);
         } else if (id.equals("planets")) {
-            WatchUi.pushView(SkyMenus.buildObjectMenu("Planets", SkyCatalog.planets()), new ObjectMenuDelegate(), WatchUi.SLIDE_LEFT);
+            WatchUi.pushView(SkyMenus.buildObjectMenu("Planets", SkyCatalog.planets()), new RootMenuDelegate(), WatchUi.SLIDE_LEFT);
         } else if (id.equals("stars")) {
-            WatchUi.pushView(SkyMenus.buildObjectMenu("Stars", SkyCatalog.stars()), new ObjectMenuDelegate(), WatchUi.SLIDE_LEFT);
+            WatchUi.pushView(SkyMenus.buildObjectMenu("Stars", SkyCatalog.stars()), new RootMenuDelegate(), WatchUi.SLIDE_LEFT);
         } else {
             var obj = SkyCatalog.findById(id);
             if (obj != null) {

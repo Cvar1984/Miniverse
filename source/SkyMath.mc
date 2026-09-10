@@ -2,27 +2,18 @@ using Toybox.Math as Math;
 using Toybox.Lang as Lang;
 
 module SkyMath {
-    const DEG2RAD = 3.14159265358979 / 180.0;
     const RAD2DEG = 180.0 / 3.14159265358979;
 
-    function toRad(deg) {
-        return deg * DEG2RAD;
-    }
-
-    function toDeg(rad) {
-        return rad * RAD2DEG;
-    }
-
     function dsin(deg) {
-        return Math.sin(toRad(deg));
+        return Math.sin(Math.toRadians(deg));
     }
 
     function dcos(deg) {
-        return Math.cos(toRad(deg));
+        return Math.cos(Math.toRadians(deg));
     }
 
     function dtan(deg) {
-        return Math.tan(toRad(deg));
+        return Math.tan(Math.toRadians(deg));
     }
 
     function dasin(x) {
@@ -33,7 +24,7 @@ module SkyMath {
         if (v < -1.0) {
             v = -1.0;
         }
-        return toDeg(Math.asin(v));
+        return Math.toDegrees(Math.asin(v));
     }
 
     function dacos(x) {
@@ -44,11 +35,11 @@ module SkyMath {
         if (v < -1.0) {
             v = -1.0;
         }
-        return toDeg(Math.acos(v));
+        return Math.toDegrees(Math.acos(v));
     }
 
     function datan2(y, x) {
-        return toDeg(Math.atan2(y, x));
+        return Math.toDegrees(Math.atan2(y, x));
     }
 
     // Normalize degrees to [0,360)
@@ -69,8 +60,8 @@ module SkyMath {
     //
     // The precision matters more here than anywhere else in the app. A Julian Day
     // this century runs to about 2.46 million, and a 32-bit Float carries only
-    // about seven digits - enough for the date and nothing whatever for the time
-    // of day, which rounds to the nearest six hours.
+    // about seven digits: enough for the date, but the time of day rounds to the
+    // nearest six hours.
     //
     // Measured against the sky: an observation at 04:06 wants JD 2461286.37917,
     // a Float holds 2461286.5, and those 2.9 hours moved Saturn from 61 degrees
@@ -116,7 +107,7 @@ module SkyMath {
     // rotation, for callers that only ever wanted the vector.
     //
     // Going raDecToAltAz then horizontalToEnu costs an arcsine, an arccosine, a
-    // quadrant test and about fourteen trig calls - to produce two angles that are
+    // quadrant test and about fourteen trig calls, producing two angles that are
     // immediately turned back into the vector they came from. Written out directly
     // it is four trig calls and no round trip, so about a quarter of the work, and
     // it drops the acos near the poles where that function is least well behaved.
@@ -151,8 +142,8 @@ module SkyMath {
 
     // How much the atmosphere lifts an object above its true height, in degrees
     // (Bennett's formula). About 0.57 degrees right at the horizon, 0.09 at ten
-    // degrees up, and negligible overhead - so it matters for exactly the objects
-    // that are hardest to find anyway, the ones just clearing the skyline.
+    // degrees up, and negligible overhead, so it matters most for objects just
+    // clearing the skyline, which are the hardest to find anyway.
     function refraction(altDeg) {
         if (altDeg < -2.0) {
             return 0.0;
@@ -171,7 +162,7 @@ module SkyMath {
         return r;
     }
 
-    // Where an object actually appears from the ground, given its height as seen
+    // Where an object appears from the ground, given its height as seen
     // from Earth's centre. Parallax pushes it down, by more the closer it is, and
     // refraction lifts it back up, by more the lower it is. Both act along the
     // vertical circle, so the azimuth is untouched.
@@ -187,8 +178,8 @@ module SkyMath {
 
         // Clamped before the arcsine, the way dasin and dacos already are. An
         // object passing close to overhead makes this sum come to a shade over 1
-        // in floating point - sin(dec)sin(lat) + cos(dec)cos(lat) is exactly 1 when
-        // the two angles match and the hour angle is zero - and asin outside its
+        // in floating point (sin(dec)sin(lat) + cos(dec)cos(lat) is exactly 1 when
+        // the two angles match and the hour angle is zero), and asin outside its
         // domain is not a number, which then poisons the altitude, the azimuth and
         // everything drawn from either.
         var sinAlt = dsin(decDeg) * dsin(latDeg) + dcos(decDeg) * dcos(latDeg) * dcos(h);
@@ -200,7 +191,7 @@ module SkyMath {
         }
 
         var altRad = Math.asin(sinAlt);
-        var alt = toDeg(altRad);
+        var alt = Math.toDegrees(altRad);
         var cosAlt = Math.cos(altRad);
         var az;
         if (cosAlt.abs() < 0.000001) {

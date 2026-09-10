@@ -102,7 +102,7 @@ module Planets {
     // Returns [ra, dec] in degrees for the given Julian Day (UTC).
     function planetPosition(id, jd) {
         // Double, so the fraction of a day survives being subtracted from a
-        // number in the millions - see SkyMath.julianDay.
+        // number in the millions (see SkyMath.julianDay).
         var d = jd - 2451543.5d;
         var sun = sunGeocentric(d);
 

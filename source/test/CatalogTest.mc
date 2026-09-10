@@ -2,11 +2,11 @@ using Toybox.Test;
 using Toybox.Math as Math;
 
 // The data the app draws from, and the small pure helpers that decide how it
-// looks: SkyCatalog, StarCatalog, Constellations and ObjectArt.
+// looks: SkyCatalog, Constellations and ObjectArt.
 //
-// Mostly integrity checks. Coordinate typos in a catalogue do not crash anything -
-// they just quietly put a star in the wrong place, which is the one class of bug
-// nobody notices by looking at the screen.
+// Mostly integrity checks. Coordinate typos in a catalogue do not crash anything.
+// They put a star in the wrong place, which is hard to spot by looking at the
+// screen.
 
 // ---------------------------------------------------------------- the catalogue
 
@@ -60,7 +60,7 @@ function catalogueIdsAreUnique(logger) {
 (:test)
 function starCoordinatesAreInRange(logger) {
     // A typo here puts a star somewhere else in the sky and nothing complains.
-    var stars = StarCatalog.getStars();
+    var stars = SkyCatalog.stars();
     var i = 0;
     while (i < stars.size()) {
         var s = stars[i];
@@ -77,7 +77,7 @@ function starCoordinatesAreInRange(logger) {
 function knownStarsSitWhereTheyShould(logger) {
     // Two anchors anyone can check: Polaris is almost exactly at the north pole of
     // the sky, and Sirius is the brightest star there is.
-    var stars = StarCatalog.getStars();
+    var stars = SkyCatalog.stars();
     var polaris = null;
     var brightest = stars[0];
     var i = 0;
@@ -116,8 +116,8 @@ function parallaxIsAppliedToTheMoonAlone(logger) {
 (:test)
 function constellationRunsAreWellFormed(logger) {
     // Points are stored in flat pairs, so an odd length means a coordinate was
-    // dropped and every vertex after it is shifted by one - which draws a figure
-    // that looks plausible and is entirely wrong.
+    // dropped and every vertex after it is shifted by one, which draws a figure
+    // that looks plausible and is wrong.
     var figures = Constellations.figures();
     Test.assertMessage(figures.size() > 0, "there should be figures to draw");
 
@@ -140,10 +140,10 @@ function constellationRunsAreWellFormed(logger) {
 
 (:test)
 function constellationVerticesMatchTheirCatalogueStars(logger) {
-    // A dozen vertices are repeated from StarCatalog rather than looked up. If the
-    // two lists drift apart, the figure hangs off its own star - so the duplication
-    // is checked here rather than trusted to a comment.
-    var stars = StarCatalog.getStars();
+    // A dozen vertices are repeated from SkyCatalog rather than looked up. If the
+    // two lists drift apart, the figure hangs off its own star, so this checks the
+    // repeated vertices still match.
+    var stars = SkyCatalog.stars();
     var figures = Constellations.figures();
 
     var names = ["Betelgeuse", "Rigel", "Polaris", "Antares", "Deneb", "Regulus"];
@@ -191,8 +191,8 @@ function shadeDarkensEachChannelEvenly(logger) {
 
 (:test)
 function shadeKeepsChannelsApart(logger) {
-    // The channels must not bleed into one another - a shift done in the wrong
-    // order would turn a dimmed red into something else entirely.
+    // The channels must not bleed into one another: a shift done in the wrong
+    // order would turn a dimmed red into a different colour.
     var dimmedRed = ObjectArt.shade(0xFF0000, 1, 2);
     Test.assertMessage(dimmedRed == 0x7F0000, "red should stay red");
     var dimmedBlue = ObjectArt.shade(0x0000FF, 1, 4);
@@ -239,7 +239,7 @@ function everyObjectHasADrawableSize(logger) {
 
 (:test)
 function brighterStarsDrawLarger(logger) {
-    // Radius is magnitude-scaled, and magnitude runs backwards - lower is brighter.
+    // Radius is magnitude-scaled, and magnitude runs backwards: lower is brighter.
     var bright = ObjectArt.radius({:type => :star, :mag => -1.46});
     var faint = ObjectArt.radius({:type => :star, :mag => 2.2});
     Test.assertMessage(bright > faint, "Sirius should draw larger than a second-magnitude star");

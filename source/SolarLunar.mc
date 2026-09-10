@@ -42,8 +42,8 @@ module SolarLunar {
     // The Moon's horizontal parallax in degrees: how far its apparent place shifts
     // between Earth's centre, which moonPosition works from, and a watch on the
     // surface 6378 km off that centre. It runs to about 0.95 degrees, roughly two
-    // full-Moon widths, which makes it the one body where the difference is worth
-    // correcting - see SkyMath.apparentAltitude.
+    // full-Moon widths, so the Moon is the only body where the correction matters
+    // (see SkyMath.apparentAltitude).
     //
     // Meeus' parallax series. Earth's polar radius is 0.34% shorter than its
     // equatorial one, which would move this by about 12 arcseconds; that is far

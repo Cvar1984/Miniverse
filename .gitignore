@@ -18,3 +18,5 @@ developer_key
 *.swp
 *.swo
 
+/mir/
+/internal-mir/

@@ -8,7 +8,7 @@ class PointerDelegate extends WatchUi.BehaviorDelegate {
 
     // Holding the up/menu button. Every setting changes what is on the screen
     // underneath, so they are reachable from the screen they affect rather than
-    // only from the root menu two steps back - and the effect is there waiting when
+    // only from the root menu two steps back, and the change is visible as soon as
     // the menu closes.
     function onMenu() as Lang.Boolean {
         WatchUi.pushView(SkyMenus.buildSettingsMenu(), new SettingsMenuDelegate(), WatchUi.SLIDE_UP);
