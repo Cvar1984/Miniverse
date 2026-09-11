@@ -1,5 +1,6 @@
 using Toybox.Application as Application;
 using Toybox.Lang as Lang;
+using Toybox.System as System;
 
 // The choices the app keeps between runs.
 //
@@ -27,7 +28,8 @@ module Settings {
     // Both grids start off, since the sky is what the screen is for. Grid spacings
     // run coarse to fine, wrapping, with Off in the ring. Finer spacings cost frame
     // time (halving the step roughly doubles the points plotted), so the list stops
-    // at 10 rather than running down to 5.
+    // at 10 rather than running down to 5, and higher still on watches that cannot
+    // carry the finest ones (see finestGrid).
     //
     // Both motions are held still by default. When allowed to, the equatorial grid
     // turns with the sky, which is accurate but leaves a reference that keeps
@@ -39,7 +41,16 @@ module Settings {
     // hour is far below what a wrist compass can resolve.
     function specs() as Lang.Dictionary {
         if (_specs == null) {
-            var grid = [0, 60, 45, 30, 15, 10];
+            var grid = [];
+            var steps = [0, 60, 45, 30, 15, 10];
+            var finest = finestGrid();
+            var i = 0;
+            while (i < steps.size()) {
+                if (steps[i] == 0 || steps[i] >= finest) {
+                    grid.add(steps[i]);
+                }
+                i += 1;
+            }
             var toggle = [false, true];
             _specs = {
                 "horizon" => ["horizonGrid", grid, 0],
@@ -53,6 +64,23 @@ module Settings {
         return _specs;
     }
 
+    // The finest grid spacing this watch can draw, from simulator runs at the
+    // heaviest settings: Show All with both grids and the constellations on.
+    // With under 100 KB for the app, both grids finer than 30 degrees leave too
+    // little room for the menus around them. The older system software with
+    // 128 KB also gets half the per-frame budget, and both grids at 10 degrees is
+    // more than that.
+    function finestGrid() as Lang.Number {
+        var total = System.getSystemStats().totalMemory;
+        if (total < 100000) {
+            return 30;
+        }
+        if (total <= 131072 && System.getDeviceSettings().monkeyVersion[0] < 4) {
+            return 15;
+        }
+        return 10;
+    }
+
     function get(id) {
         var spec = specs()[id];
         if (_cache == null) {
@@ -62,8 +90,11 @@ module Settings {
         if (held != null) {
             return held;
         }
+        // Storage outlives any one version of the app, and a grid spacing this
+        // watch cannot draw would stop it, so anything not in the list falls back
+        // to the default.
         var stored = Application.Storage.getValue(spec[0]);
-        if (stored == null) {
+        if (stored == null || spec[1].indexOf(stored) < 0) {
             stored = spec[2];
         }
         _cache[spec[0]] = stored;

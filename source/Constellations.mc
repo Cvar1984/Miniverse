@@ -1,5 +1,6 @@
 using Toybox.Graphics as Graphics;
 using Toybox.Lang as Lang;
+using Toybox.Math as Math;
 
 // The constellation stick figures for eight familiar constellations, drawn as
 // lines joining their stars.
@@ -84,40 +85,105 @@ module Constellations {
         ];
     }
 
+    // Every figure as runs of fixed equatorial unit vectors, worked out once.
+    var _vectors as Lang.Array<Lang.Array<Lang.Float>>?;
+
+    // Refraction is only worked out for vertices lower than this. At 15 degrees up
+    // it is already down to 0.06 degrees, a fraction of a pixel, and it only gets
+    // smaller higher up. It is the sine of that altitude, because the up component
+    // of each vertex is already to hand.
+    const REFRACTION_BELOW = 0.2588;
+
     // view is [cx, cy, focal], the same screen mapping everything else uses. lat
     // and lstDeg must be the live ones, not the reading the equatorial grid may be
     // pinned to: the figures have to stay under the stars they join, and the stars
     // are drawn from the current time.
+    //
+    // The vertices are fixed on the sky, so each frame only turns them with one
+    // matrix, the same one the equatorial grid uses.
     function draw(dc as Graphics.Dc, frame as Lang.Array<Lang.Float>, view as Lang.Array<Lang.Numeric>, lat as Lang.Float, lstDeg as Lang.Double) as Void {
+        // Built from the view timer, not here (see PointerView.prepare), so the
+        // frame that switches them on does not pay for them on top of its drawing.
+        var runs = _vectors;
+        if (runs == null) {
+            return;
+        }
         dc.setColor(LINE_COLOR, Graphics.COLOR_TRANSPARENT);
-        var figs = figures();
+        var rows = SkyMath.equatorialToEnu(lat, lstDeg);
         var i = 0;
-        while (i < figs.size()) {
-            DeviceAim.drawRun(dc, frame, enuRun(figs[i], lat, lstDeg), view);
+        while (i < runs.size()) {
+            DeviceAim.drawRun(dc, frame, enuRun(runs[i], rows), view);
             i += 1;
         }
     }
 
-    // One figure's RA/Dec pairs as a flat run of East-North-Up triples.
+    // Whether the vectors are built and waiting.
+    function ready() as Lang.Boolean {
+        return _vectors != null;
+    }
+
+    function vectors() as Lang.Array<Lang.Array<Lang.Float>> {
+        var held = _vectors;
+        if (held != null) {
+            return held;
+        }
+        var figs = figures();
+        var out = [];
+        var f = 0;
+        while (f < figs.size()) {
+            var points = figs[f];
+            var run = new [points.size() / 2 * 3];
+            var i = 0;
+            var j = 0;
+            while (i < points.size()) {
+                var v = SkyMath.raDecToVector(points[i], points[i + 1]);
+                run[j] = v[0];
+                run[j + 1] = v[1];
+                run[j + 2] = v[2];
+                i += 2;
+                j += 3;
+            }
+            out.add(run);
+            f += 1;
+        }
+        _vectors = out;
+        return out;
+    }
+
+    // One figure turned into East-North-Up for this frame.
     //
     // Refraction is applied here, unlike in the grids. A grid line is its own
     // reference and nothing has to agree with it, but these lines have to sit
     // under the stars they join, and those stars are placed through
     // SkyMath.apparentAltitude, which lifts them. Without it Orion's belt draws a
-    // couple of pixels below its own three stars as the constellation rises.
+    // couple of pixels below its own three stars as the constellation rises. The
+    // lift moves a vertex up its vertical circle, so the up component takes the
+    // new altitude and the level part shrinks to match.
     //
     // Parallax is not applied: it is zero for stars, and every vertex here is one.
-    function enuRun(points as Lang.Array<Lang.Float>, lat as Lang.Float, lstDeg as Lang.Double) as Lang.Array<Lang.Float> {
-        var run = new [points.size() / 2 * 3];
-        var i = 0;
+    function enuRun(vecs as Lang.Array<Lang.Float>, rows as Lang.Array<Lang.Float>) as Lang.Array<Lang.Float> {
+        var run = new [vecs.size()];
         var j = 0;
-        while (i < points.size()) {
-            var altAz = SkyMath.raDecToAltAz(points[i], points[i + 1], lat, lstDeg);
-            var enu = SkyMath.horizontalToEnu(altAz[1], SkyMath.apparentAltitude(altAz[0], 0.0));
-            run[j] = enu[0];
-            run[j + 1] = enu[1];
-            run[j + 2] = enu[2];
-            i += 2;
+        while (j < vecs.size()) {
+            var x = vecs[j];
+            var y = vecs[j + 1];
+            var z = vecs[j + 2];
+            var e = rows[0] * x + rows[1] * y + rows[2] * z;
+            var n = rows[3] * x + rows[4] * y + rows[5] * z;
+            var u = rows[6] * x + rows[7] * y + rows[8] * z;
+            if (u < REFRACTION_BELOW) {
+                var level = Math.sqrt(e * e + n * n);
+                if (level > 0.000001) {
+                    var lifted = SkyMath.apparentAltitude(SkyMath.dasin(u), 0.0);
+                    var k = SkyMath.dcos(lifted) / level;
+                    e = e * k;
+                    n = n * k;
+                    u = SkyMath.dsin(lifted);
+                }
+            }
+            run[j] = e;
+            run[j + 1] = n;
+            run[j + 2] = u;
             j += 3;
         }
         return run;

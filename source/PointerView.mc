@@ -88,6 +88,11 @@ class PointerView extends WatchUi.View {
     const CHEVRON_SIZE = 10;
     const MARKER_REACH = 22;
 
+    // How long the screen waits for a first magnetometer reading before saying
+    // the watch has no compass. A watch without one never fills the reading in,
+    // and waiting on it for ever looks like a hang.
+    const COMPASS_WAIT_SEC = 5;
+
     hidden var _obj as Lang.Dictionary?;
     hidden var _lat as Lang.Float?;
     hidden var _lon as Lang.Float?;
@@ -119,6 +124,9 @@ class PointerView extends WatchUi.View {
     // Whether the glass is round. Settled on first use and kept (see isRound).
     hidden var _round as Lang.Boolean?;
 
+    // When this screen opened, for the compass wait.
+    hidden var _shownAt as Lang.Number;
+
     function initialize(obj as Lang.Dictionary?) {
         View.initialize();
         _obj = obj;
@@ -138,6 +146,7 @@ class PointerView extends WatchUi.View {
         _gridLst = null;
         _locationAt = 0;
         _round = null;
+        _shownAt = 0;
     }
 
     function onShow() as Void {
@@ -160,6 +169,7 @@ class PointerView extends WatchUi.View {
         // The refresh interval runs from here, so the first one lands an interval
         // after the screen opened rather than straight away.
         _locationAt = Time.now().value();
+        _shownAt = _locationAt;
     }
 
     // Some devices leave the accelerometer powered down until a data listener asks
@@ -273,6 +283,7 @@ class PointerView extends WatchUi.View {
         }
         keepAwake();
         refreshLocation();
+        prepare();
         WatchUi.requestUpdate();
     }
 
@@ -415,6 +426,14 @@ class PointerView extends WatchUi.View {
         var cx = w / 2;
         var cy = h / 2;
 
+        // Checked before the position, because without a compass there is nothing
+        // to aim with however long the fix takes. Two lines, so it fits the
+        // narrowest glass.
+        if (_mag == null && Time.now().value() - _shownAt >= COMPASS_WAIT_SEC) {
+            drawStatus(dc, cx, cy, "No compass\non this watch");
+            return;
+        }
+
         var lat = _lat;
         var lon = _lon;
         if (lat == null || lon == null) {
@@ -496,7 +515,7 @@ class PointerView extends WatchUi.View {
         // nothing to be told to turn towards: all it can usefully say is where the
         // watch is currently pointing.
         if (_obj == null) {
-            drawAllObjects(dc, view, frame, lat, jd, lstDeg, sunOffset, zenith);
+            drawAllObjects(dc, view, frame, sunOffset, zenith);
             drawScale(dc, view, horizonStep, equatorialStep);
             // Room is left for a second row it does not use, which lifts it clear
             // of the very bottom of the glass. That is the narrowest part of a round
@@ -773,14 +792,18 @@ class PointerView extends WatchUi.View {
     //
     // Below the horizon they are darkened rather than greyed out, so they still
     // read as underfoot without losing the colour and the face that identify them.
-    function drawAllObjects(dc as Graphics.Dc, view as Lang.Array<Lang.Numeric>, frame as Lang.Array<Lang.Float>, lat as Lang.Float, jd as Lang.Double, lstDeg as Lang.Double, sunOffset as Lang.Array, zenith as Lang.Array) as Void {
+    function drawAllObjects(dc as Graphics.Dc, view as Lang.Array<Lang.Numeric>, frame as Lang.Array<Lang.Float>, sunOffset as Lang.Array, zenith as Lang.Array) as Void {
         var w = dc.getWidth();
         var h = dc.getHeight();
         var cx = view[0];
         var cy = view[1];
         var focal = view[2];
 
-        var sky = skyPositions(lat, jd, lstDeg);
+        // Worked out from the timer (see prepare); empty until the first pass.
+        var sky = _sky;
+        if (sky == null) {
+            sky = [];
+        }
         var i = 0;
         while (i < sky.size()) {
             var entry = sky[i];
@@ -814,12 +837,19 @@ class PointerView extends WatchUi.View {
     // worked out at most every SKY_REFRESH_SEC and held between times. Only the
     // projection onto the screen is redone per frame, which is what keeps this mode
     // as cheap to draw as the single-object one.
-    function skyPositions(lat as Lang.Float, jd as Lang.Double, lstDeg as Lang.Double) as Lang.Array {
-        var now = Time.now().value();
-        var cached = _sky;
-        if (cached != null && now - _skyAt < SKY_REFRESH_SEC) {
-            return cached;
+    function refreshSky() as Void {
+        var lat = _lat;
+        var lon = _lon;
+        if (lat == null || lon == null) {
+            return;
         }
+        var now = Time.now().value();
+        if (_sky != null && now - _skyAt < SKY_REFRESH_SEC) {
+            return;
+        }
+        var g = Gregorian.utcInfo(Time.now(), Time.FORMAT_SHORT);
+        var jd = SkyMath.julianDay(g.year, g.month, g.day, g.hour, g.min, g.sec);
+        var lstDeg = SkyMath.lst(jd, lon);
 
         var list = SkyCatalog.objects();
         var out = [];
@@ -835,7 +865,31 @@ class PointerView extends WatchUi.View {
 
         _sky = out;
         _skyAt = now;
-        return out;
+    }
+
+    // One-off work kept out of onUpdate, which has the whole frame to draw as
+    // well: the mesh for a new grid spacing, and the Show All positions when they
+    // are due. The older watches allow half as much work per event as the newest
+    // ones, and a rebuild on top of a full frame is more than that. One job per
+    // tick; the screen draws without it until it is done.
+    function prepare() as Void {
+        var horizonStep = Settings.get("horizon");
+        if (horizonStep > 0 && !HorizonGrid.ready(horizonStep)) {
+            HorizonGrid.meshFor(horizonStep);
+            return;
+        }
+        var equatorialStep = Settings.get("equatorial");
+        if (equatorialStep > 0 && !EquatorialGrid.ready(equatorialStep)) {
+            EquatorialGrid.meshFor(equatorialStep);
+            return;
+        }
+        if (Settings.get("constellations") && !Constellations.ready()) {
+            Constellations.vectors();
+            return;
+        }
+        if (_obj == null) {
+            refreshSky();
+        }
     }
 
     // How far out the round glass reaches on a given row, measured from the middle

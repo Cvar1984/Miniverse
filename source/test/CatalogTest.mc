@@ -276,3 +276,19 @@ function gridLabelSaysTheHoursWhenItCan(logger) {
     Test.assertMessage(Settings.gridLabel(10).equals("10 deg"), "10 degrees is not a whole hour");
     return true;
 }
+
+// The grid list offers Off and nothing finer than this watch can draw, so the
+// menu can never step onto a spacing that stops the app.
+(:test)
+function gridChoicesStopAtTheFinestThisWatchCanDraw(logger) {
+    var choices = Settings.specs()["horizon"][1];
+    var finest = Settings.finestGrid();
+    Test.assertMessage(choices[0] == 0, "Off should come first");
+    var i = 1;
+    while (i < choices.size()) {
+        Test.assertMessage(choices[i] >= finest, "no spacing finer than the watch can draw");
+        i += 1;
+    }
+    Test.assertMessage(choices[choices.size() - 1] == finest, "the finest allowed spacing should be offered");
+    return true;
+}

@@ -134,6 +134,28 @@ module SkyMath {
         ];
     }
 
+    // The rotation raDecToEnu does, written out once as a matrix: rows E, N and U,
+    // columns the equatorial axes (towards RA 0, towards RA 90, and the north
+    // celestial pole). Worked out once a frame and applied to fixed unit vectors,
+    // it costs nine multiplications a point instead of four trig calls.
+    function equatorialToEnu(latDeg, lstDeg) as Lang.Array<Lang.Float> {
+        var sinL = dsin(lstDeg);
+        var cosL = dcos(lstDeg);
+        var sinP = dsin(latDeg);
+        var cosP = dcos(latDeg);
+        return [
+            -sinL, cosL, 0.0,
+            -sinP * cosL, -sinP * sinL, cosP,
+            cosP * cosL, cosP * sinL, sinP
+        ];
+    }
+
+    // A catalogue position as a unit vector in the equatorial frame.
+    function raDecToVector(raDeg, decDeg) as Lang.Array<Lang.Float> {
+        var cosDec = dcos(decDeg);
+        return [cosDec * dcos(raDeg), cosDec * dsin(raDeg), dsin(decDeg)];
+    }
+
     // Azimuth/altitude (deg) as a world East-North-Up unit vector.
     function horizontalToEnu(azDeg, altDeg) as Lang.Array<Lang.Float> {
         var cosAlt = dcos(altDeg);

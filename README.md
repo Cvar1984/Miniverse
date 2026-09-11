@@ -173,6 +173,9 @@ behind the menu showing it.
 | Azimuth Motion | Held still · Follows position | Held still |
 | Update Location | One fix only · every 5 / 15 / 30 / 60 min | One fix only |
 
+Watches that cannot draw the finest spacings in time, or hold them in memory, stop
+at 15 or 30 degrees.
+
 Spacings that come to a whole number of hours say so. The sky turns $360^\circ$ in
 24 hours, so $15^\circ$ is one hour of it and the grid divides the sky into
 hour-wide cells.
@@ -402,9 +405,10 @@ Then to a world East-North-Up unit vector:
 \,\big)
 ```
 
-The equatorial grid skips those two steps. `SkyMath.raDecToEnu` writes the same
-rotation out in one, without the arcsine, arccosine and quadrant test, and gives the
-same answer to within floating-point noise:
+The equatorial grid and the constellation lines skip those two steps.
+`SkyMath.raDecToEnu` writes the same rotation out in one, without the arcsine,
+arccosine and quadrant test, and gives the same answer to within floating-point
+noise:
 
 ```math
 \begin{aligned}
@@ -413,6 +417,10 @@ N &= \sin\delta \cos\varphi - \cos\delta \cos H \sin\varphi \\
 U &= \cos\delta \cos H \cos\varphi + \sin\delta \sin\varphi
 \end{aligned}
 ```
+
+`SkyMath.equatorialToEnu` holds the same rotation as a matrix. The grid and the
+figures keep their points as fixed unit vectors, so each frame turns them with nine
+multiplications apiece.
 
 ## 4. Corrections
 
@@ -626,7 +634,7 @@ flowchart LR
     end
     subgraph E["Equatorial grid"]
         direction LR
-        EA["RA, Dec"] --> EB["raDecToEnu"]
+        EA["RA, Dec<br/>fixed unit vectors"] --> EB["equatorialToEnu<br/>one matrix a frame"]
         LATLST["latitude and<br/>sidereal time"] --> EB
         EB --> EC["ENU vector"]
     end
@@ -639,8 +647,8 @@ The horizon grid takes no clock and no position: $(A_{\text{az}}, h)$ maps strai
 to a direction. Rest the watch flat on a table and it looks at the nadir, with the
 vertical circles converging in the middle of the screen.
 
-The equatorial grid runs every point through
-$\text{raDecToEnu}(\alpha, \delta, \varphi, \mathrm{LST})$. Sidereal time is the
+The equatorial grid keeps its points as fixed unit vectors and turns them with
+$\text{equatorialToEnu}(\varphi, \mathrm{LST})$ once a frame. Sidereal time is the
 only thing in that chain that moves, so pinning LST to one reading holds the grid
 still, and that is the default. Let loose, it turns at $15^\circ$ per hour, one full
 revolution per sidereal day, pivoting about the celestial poles at altitude
@@ -808,10 +816,10 @@ screen.
 `onUpdate` runs at 10 Hz, and what dominates the frame is grid density and
 catalogue size.
 
-- **Grids:** the point count grows as the spacing shrinks. The horizon grid's
-  points never change, so they are built once per spacing and only rotated each
-  frame; the equatorial grid recomputes its points through `raDecToEnu`. Each grid's
-  sampling constants are the knob if that ever costs too much.
+- **Grids:** the point count grows as the spacing shrinks. Both grids keep fixed
+  points, built once per spacing from the view timer rather than in the draw, and
+  each frame only rotates them. Watches with less memory or less time per frame
+  stop at a coarser finest spacing.
 - **Show All** works out where every object is every few seconds and holds the
   result, since the sky moves well under a pixel in that time. Only the projection
   is redone per frame, and the cache is dropped when your position changes.
@@ -836,10 +844,13 @@ Permissions: `Positioning` and `Sensor`.
 ## Devices
 
 Every product listed in `manifest.xml`, across round, rectangular and
-semi-octagonal displays. Layout is derived from the display size and the real font
+semi-octagonal displays. Requires Connect IQ API level 3.4 or later. Layout is derived from the display size and the real font
 metrics rather than fixed pixel offsets, so the picture takes every row the text
 does not need. On round displays, labels are pulled in to where the glass reaches
 on each row.
+
+A watch without a magnetometer shows `No compass on this watch` rather than waiting
+for a reading that never comes.
 
 ## Accuracy
 

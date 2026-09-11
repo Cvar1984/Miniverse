@@ -216,3 +216,25 @@ function aimBasisGivesUpWhenAimedStraightUp(logger) {
     Test.assertMessage(DeviceAim.aimBasis(45.0, 0.0) != null, "a slanted aim still has one");
     return true;
 }
+
+// Folding a rotation into the frame has to land every point exactly where
+// rotating it first and projecting it after would.
+(:test)
+function rotatedFrameProjectsLikeTheTwoSteps(logger) {
+    var frame = DeviceAim.deviceFrame([0, -400, -900], [310, 40, -120], 0.0);
+    Test.assertMessage(frame != null, "frame should build");
+    var rows = SkyMath.equatorialToEnu(51.5, 100.0);
+    var turned = DeviceAim.rotateFrame(frame, rows);
+    var v = SkyMath.raDecToVector(83.8, -5.4);
+    var e = rows[0] * v[0] + rows[1] * v[1] + rows[2] * v[2];
+    var n = rows[3] * v[0] + rows[4] * v[1] + rows[5] * v[2];
+    var u = rows[6] * v[0] + rows[7] * v[1] + rows[8] * v[2];
+    var direct = DeviceAim.viewOffset(frame, e, n, u);
+    var folded = DeviceAim.viewOffset(turned, v[0], v[1], v[2]);
+    var k = 0;
+    while (k < 3) {
+        Test.assertMessage((direct[k] - folded[k]).abs() < 0.00001, "folded and two-step projections should agree");
+        k += 1;
+    }
+    return true;
+}

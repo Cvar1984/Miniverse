@@ -40,8 +40,10 @@ module HorizonGrid {
     // turns 360 degrees in 24 hours, so a step of 15 makes every cell an hour
     // wide. Zero draws no lines.
     function draw(dc as Graphics.Dc, frame as Lang.Array<Lang.Float>, view as Lang.Array<Lang.Numeric>, step as Lang.Number) as Void {
-        if (step > 0) {
-            var mesh = meshFor(step);
+        // The mesh is built from the view timer, not here, so a frame never pays
+        // for a rebuild on top of its drawing. Until it is ready the lines wait.
+        var mesh = _mesh;
+        if (step > 0 && mesh != null && _meshStep == step) {
             var i = 0;
             while (i < mesh.size()) {
                 var line = mesh[i];
@@ -54,6 +56,11 @@ module HorizonGrid {
         // Drawn even with the grid switched off, because the letters say which way
         // you are facing.
         drawCardinals(dc, frame, view);
+    }
+
+    // Whether the mesh for this spacing is built and waiting.
+    function ready(step as Lang.Number) as Lang.Boolean {
+        return _mesh != null && _meshStep == step;
     }
 
     // The mesh for a given spacing, built on first use and kept until the spacing

@@ -342,3 +342,26 @@ function meshAlwaysIncludesTheHorizon(logger) {
     }
     return true;
 }
+
+// The equatorial grid and the constellation figures keep fixed equatorial
+// vectors and turn them with one matrix a frame. That matrix has to give exactly
+// what raDecToEnu gives, or the lines would drift off the stars.
+(:test)
+function equatorialRotationMatchesRaDecToEnu(logger) {
+    var cases = [[0.0, 0.0, 51.5, 100.0], [83.8, -5.4, -33.9, 300.0], [279.2, 38.8, 10.0, 12.5], [37.9, 89.3, 65.0, 200.0]];
+    var i = 0;
+    while (i < cases.size()) {
+        var c = cases[i];
+        var rows = SkyMath.equatorialToEnu(c[2], c[3]);
+        var v = SkyMath.raDecToVector(c[0], c[1]);
+        var want = SkyMath.raDecToEnu(c[0], c[1], c[2], c[3]);
+        var k = 0;
+        while (k < 3) {
+            var got = rows[3 * k] * v[0] + rows[3 * k + 1] * v[1] + rows[3 * k + 2] * v[2];
+            Test.assertMessage((got - want[k]).abs() < 0.00001, "the rotation should match raDecToEnu");
+            k += 1;
+        }
+        i += 1;
+    }
+    return true;
+}

@@ -271,23 +271,61 @@ module DeviceAim {
     // line there instead of joining across the gap. Both grids and the
     // constellation figures draw through this.
     function drawRun(dc as Graphics.Dc, frame as Lang.Array<Lang.Float>, run as Lang.Array<Lang.Float>, view as Lang.Array<Lang.Numeric>) as Void {
+        // The same sums as viewOffset and screenPoint, written out here with the
+        // frame held in locals, because every overlay point goes through this
+        // loop: no call and no new array per point.
+        var cx = view[0];
+        var cy = view[1];
+        var focal = view[2];
+        var x0 = frame[0];
+        var y0 = frame[1];
+        var z0 = frame[2];
+        var x1 = frame[3];
+        var y1 = frame[4];
+        var z1 = frame[5];
+        var x2 = frame[6];
+        var y2 = frame[7];
+        var z2 = frame[8];
         var havePrevious = false;
         var previousX = 0;
         var previousY = 0;
+        var n = run.size();
         var i = 0;
-        while (i < run.size()) {
-            var point = screenPoint(frame, run[i], run[i + 1], run[i + 2], view);
-            if (point != null) {
+        while (i < n) {
+            var tE = run[i];
+            var tN = run[i + 1];
+            var tU = run[i + 2];
+            var forward = BACK_SIGN * (tE * z0 + tN * z1 + tU * z2);
+            if (forward >= MIN_FORWARD) {
+                var px = (cx + focal * (tE * x0 + tN * x1 + tU * x2) / forward).toNumber();
+                var py = (cy - focal * (tE * y0 + tN * y1 + tU * y2) / forward).toNumber();
                 if (havePrevious) {
-                    dc.drawLine(previousX, previousY, point[0], point[1]);
+                    dc.drawLine(previousX, previousY, px, py);
                 }
-                previousX = point[0];
-                previousY = point[1];
+                previousX = px;
+                previousY = py;
                 havePrevious = true;
             } else {
                 havePrevious = false;
             }
             i += 3;
         }
+    }
+
+    // The frame for vectors kept in some other set of axes. rows maps those axes
+    // into East-North-Up, row-major with rows E, N and U. Folding it in once a
+    // frame lets a whole grid kept in that other set go straight through drawRun.
+    function rotateFrame(frame as Lang.Array<Lang.Float>, rows as Lang.Array<Lang.Float>) as Lang.Array<Lang.Float> {
+        var out = new [9];
+        var c = 0;
+        while (c < 3) {
+            var k = 0;
+            while (k < 3) {
+                out[3 * c + k] = frame[k] * rows[c] + frame[3 + k] * rows[3 + c] + frame[6 + k] * rows[6 + c];
+                k += 1;
+            }
+            c += 1;
+        }
+        return out;
     }
 }
