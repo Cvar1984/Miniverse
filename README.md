@@ -107,15 +107,17 @@ flowchart LR
     AIM -->|back| ROOT
 ```
 
+![Root menu](Screenshoot/G94J3307.png)
+
 ### Aiming at one object
 
 ![Moon with phase, locked on](Screenshoot/G94J1340.png)
 
-The object name at the top, the marker where the object is, and four readouts. Each
-readout pairs the object against the aim on the same axis (`Alt obj +30  aim +25`),
-so the two numbers converge as you settle onto it. Showing both halves is
-deliberate: a sensor axis wired the wrong way makes the pair diverge as you close
-in, which is obvious, instead of just puzzling.
+The object name at the top, the marker where the object is, and a table below:
+azimuth and altitude for the object (`Obj`) and for the aim (`Aim`), then how far
+to `Turn` and `Tilt`. The two rows converge as you settle onto the object. If a
+sensor axis is wired the wrong way they move apart as you close in, so the fault
+shows at once.
 
 Within $8^\circ$ of the object the marker takes a green ring and the guidance is
 replaced by `On target`. Below the horizon it takes a red ring instead: the object
@@ -129,10 +131,9 @@ both stay on the glass.
 
 ![Show All with both grids](Screenshoot/G94J1044.png)
 
-This mode draws the whole catalogue as a plain sky map: the Sun, the Moon, five
-planets and 28 bright stars, 35 objects in all. Nothing is being aimed at, so there
-is nothing to steer towards and no turn/tilt guidance: the single line at the bottom
-says only where the watch is currently pointing.
+This mode draws the whole catalogue as a plain sky map: the Sun, the Moon, the
+planets and the bright stars. Nothing is being aimed at, so there is no turn/tilt
+guidance, only a readout of where the watch is pointing.
 
 Objects below the horizon are darkened rather than greyed out, so they still read
 as underfoot without losing the colour and the face that identify them. Nothing is
@@ -150,9 +151,8 @@ and a star id is its position in it, so only the menu presentation is sorted.
 
 ![Horizon grid at 10 degrees, near the zenith](Screenshoot/G94J1216.png)
 
-Aimed near the zenith with the horizon grid at $10^\circ$, where the vertical
-circles all converge on the point overhead. The dense end of the range: 36 vertical
-circles and 13 circles of equal altitude.
+Aimed near the zenith with the horizon grid at $10^\circ$, the finest spacing,
+where the vertical circles converge on the point overhead.
 
 ## Settings
 
@@ -184,10 +184,8 @@ Azimuth Motion has nothing but position updates to follow, since the horizon fra
 has no clock in it. With location updates off it says `On - no updates` rather than
 claiming to follow something that never arrives.
 
-The display is held awake while a sky screen is up, re-arming the backlight every 3
-seconds. Burn-in protection means the system refuses to hold it on indefinitely
-(about a minute at a stretch), so the refusal is caught and the panel given a
-10-second rest before asking again.
+The display is held awake while a sky screen is up. When burn-in protection
+refuses to keep it on, the panel gets a short rest before the app asks again.
 
 ---
 
@@ -260,7 +258,7 @@ flowchart TD
     OBJ["Object from the catalogue"] --> T{"type"}
     T -->|star| S["Read J2000 RA and Dec<br/>straight from the table"]
     T -->|sun| SU["Meeus abbreviated<br/>mean longitude, anomaly,<br/>equation of the centre"]
-    T -->|moon| MO["Meeus series<br/>13 longitude terms<br/>10 latitude terms"]
+    T -->|moon| MO["Meeus series<br/>largest terms only"]
     T -->|planet| PL["Keplerian elements<br/>Newton solve for E"]
     PL --> HG["Heliocentric to geocentric<br/>add the Sun vector"]
     SU --> EQ["Ecliptic to equatorial<br/>rotate by the obliquity"]
@@ -270,9 +268,9 @@ flowchart TD
     S --> OUT
 ```
 
-### Stars (`StarCatalog`)
+### Stars (`SkyCatalog`)
 
-28 naked-eye stars as literal J2000 RA/Dec plus visual magnitude. Proper motion and
+Bright naked-eye stars as literal J2000 RA/Dec plus visual magnitude. Proper motion and
 precession are ignored; both are far below what a wrist magnetometer can resolve.
 
 ### Sun (`SolarLunar.sunPosition`)
@@ -297,8 +295,7 @@ C   &= \left(1.914602 - 0.004817\,T - 0.000014\,T^{2}\right)\sin M \\
 
 The Moon needs a series rather than a formula. It is built from four fundamental
 arguments (mean elongation $D$, solar anomaly $M$, lunar anomaly $M'$ and argument
-of latitude $F$), with a 13-term longitude series and a 10-term latitude series.
-The largest terms:
+of latitude $F$), with truncated longitude and latitude series. The largest terms:
 
 ```math
 \begin{aligned}
@@ -405,10 +402,9 @@ Then to a world East-North-Up unit vector:
 \,\big)
 ```
 
-Grids do not go through those two steps. `SkyMath.raDecToEnu` writes the same
-rotation out in one, which drops an arcsine, an arccosine and a quadrant test for
-about a quarter of the trig. The answer is identical to within floating-point
-noise, and a grid plots four hundred of these a frame:
+The equatorial grid skips those two steps. `SkyMath.raDecToEnu` writes the same
+rotation out in one, without the arcsine, arccosine and quadrant test, and gives the
+same answer to within floating-point noise:
 
 ```math
 \begin{aligned}
@@ -533,17 +529,16 @@ the computed magnetic azimuth is therefore the local declination:
   + 0.05\left(\theta_{\text{system}} - A_{\text{mag}}\right)
 ```
 
-banked slowly, only while $\lvert \epsilon \rvert < 25^\circ$, and then applied at
-any tilt. Averaging stops after 100 near-level samples, well past convergence, so
-the reference stops creeping. A fresh position re-opens it, if Azimuth Motion is on.
+banked slowly, only while the watch is near level, and then applied at any tilt.
+Averaging stops once it has converged, so the reference stops creeping. A fresh
+position re-opens it, if Azimuth Motion is on.
 
 ### The device frame
 
-`DeviceAim.deviceFrame` returns the world's axes written in the watch's coordinates,
-with $\sigma_H = \pm 1$ for handedness:
+`DeviceAim.deviceFrame` returns the world's axes written in the watch's coordinates:
 
 ```math
-\hat{\mathbf{e}} = \sigma_H\,(\hat{\mathbf{n}} \times \hat{\mathbf{u}})
+\hat{\mathbf{e}} = \hat{\mathbf{n}} \times \hat{\mathbf{u}}
 \qquad
 \hat{\mathbf{n}},\ \hat{\mathbf{u}} \text{ as above}
 ```
@@ -583,11 +578,6 @@ o'clock, $\hat{\mathbf{z}}$ out through the screen):
 Forward is the component whose sign flips, because the aim is out through the back.
 All three are direction cosines, ready for a perspective divide.
 
-Keeping that back sign separate from the handedness sign matters: tangling them
-flips the sideways and forward components together, the flip cancels in the sideways
-divide, and the result can only ever invert up and down, which looks like the
-object following the watch instead of sliding against it.
-
 ## 6. Putting the sky on the screen
 
 A pinhole camera, with $f$ the focal length in pixels:
@@ -626,7 +616,7 @@ answer different questions, and the constellation figures.
 |---|---|---|
 | **Horizon** (`HorizonGrid`) — circles of equal altitude, vertical circles between zenith and nadir | the ground and the compass | you move the watch |
 | **Equatorial** (`EquatorialGrid`) — circles of equal declination, hour circles between the celestial poles | the stars | you move the watch, **and** as time passes |
-| **Constellations** (`Constellations`) — eight stick figures joining their stars | the stars | you move the watch, **and** as time passes |
+| **Constellations** (`Constellations`) — stick figures joining their stars | the stars | you move the watch, **and** as time passes |
 
 ```mermaid
 flowchart LR
@@ -636,7 +626,7 @@ flowchart LR
     end
     subgraph E["Equatorial grid"]
         direction LR
-        EA["RA, Dec"] --> EB["raDecToAltAz"]
+        EA["RA, Dec"] --> EB["raDecToEnu"]
         LATLST["latitude and<br/>sidereal time"] --> EB
         EB --> EC["ENU vector"]
     end
@@ -669,14 +659,11 @@ facing is the most directly useful thing on the screen.
 Orion, Ursa Major, Ursa Minor, Cassiopeia, Cygnus, Crux, Scorpius and Leo, drawn as
 lines joining their stars.
 
-The vertices live in `Constellations` rather than in `StarCatalog`, because most of
-them are not stars anyone would aim at. A figure needs its faint stars to read: the
-catalogue holds only two of the Plough's seven, Alkaid and Mizar, and adding every
-figure's faint stars would bury the 28 bright ones in the Stars menu and scatter
-faint dots across Show All. They are line endpoints, not objects, so they are held
-as plain coordinates: each figure is one unbroken run of RA/Dec pairs, and a
-constellation that does not trace in a single stroke takes more than one run.
-Orion takes four.
+The vertices live in `Constellations` rather than in `SkyCatalog`, because most of
+them are not stars anyone would aim at. A figure needs its faint stars to read, and
+adding them to the catalogue would bury the bright ones in the Stars menu and
+scatter faint dots across Show All. They are line endpoints, not objects, so each
+figure is held as runs of RA/Dec pairs, one per unbroken stroke.
 
 Two things separate them from the equatorial grid they share a frame with. They are
 always drawn from the live sidereal time, never the reading the grid may be pinned
@@ -728,15 +715,14 @@ is far to one side, where "aim" and "up" both fall to zero and dividing one by t
 other is meaningless.
 
 Aimed within a couple of degrees of straight up or down there is no sensible "turn
-left" to give, since every direction is sideways from there. Those two lines drop
-out; the picture still holds.
+left" to give, since every direction is sideways from there, so the screen says
+`Straight up/down` instead; the picture still holds.
 
 ## 9. Drawing the objects
 
 `ObjectArt`. Stellarium wraps photographic surface maps onto spheres on the GPU.
-None of that survives the trip down to a disc 32 pixels across, and the maps are
-equirectangular, meant to be wrapped around a sphere. So what is drawn is the
-handful of features still recognisable as shapes at this size.
+None of that survives the trip down to a disc a few dozen pixels across, so what
+is drawn is the handful of features still recognisable at that size.
 
 ### Moon phase
 
@@ -801,72 +787,59 @@ screen.
 |---|---|
 | `PointerView.mc` | The sky screen: sensors, layout, both modes, drawing |
 | `ObjectArt.mc` | Colour, size and face of each body; Moon phase |
-| `DeviceAim.mc` | Orientation, tilt-compensated compass, projection |
+| `DeviceAim.mc` | Orientation, tilt-compensated compass, projection, overlay lines |
 | `Settings.mc` | Persisted choices, cached in memory |
 | `SkyMath.mc` | Time, coordinate conversion, refraction, parallax |
 | `HorizonGrid.mc` | Alt/az grid and cardinal letters |
 | `EquatorialGrid.mc` | RA/Dec grid |
-| `Constellations.mc` | Eight stick figures, drawn from their own vertices |
+| `Constellations.mc` | Stick figures, drawn from their own vertices |
 | `Planets.mc` | Keplerian planetary positions |
 | `SolarLunar.mc` | Sun and Moon series, obliquity, parallax |
-| `SkyCatalog.mc` | The object registry and RA/Dec dispatch |
+| `SkyCatalog.mc` | The object registry, the bright-star table, RA/Dec dispatch |
 | `SettingsMenuDelegate.mc` | Cycling settings in place |
 | `SkyMenus.mc` | Menu construction |
-| `StarCatalog.mc` | 28 bright stars, J2000 |
-| `RootMenuDelegate.mc` | Root menu routing |
+| `RootMenuDelegate.mc` | Root and object-list menu routing |
 | `PointerDelegate.mc` | Back, and the menu button |
-| `ObjectMenuDelegate.mc` | Object list routing |
 | `MiniverseApp.mc` | Entry point |
+| `test/` | Unit tests |
 
 ## Cost and frame time
 
 `onUpdate` runs at 10 Hz, and what dominates the frame is grid density and
 catalogue size.
 
-- **Grids:** a grid at spacing $s$ draws $360/s$ vertical circles and
-  $2\lfloor 60/s \rfloor + 1$ circles of equal altitude, each sampled every
-  $20^\circ$. At $s = 15^\circ$ that is about 410 plotted points per grid per frame;
-  at $10^\circ$ about 610. Both grids on at $10^\circ$ is roughly 1200. The horizon
-  grid's points never change, so they are built once per spacing and only rotated
-  each frame; the equatorial grid recomputes its points through `raDecToEnu`.
-  `AZ_SAMPLE` and `ALT_SAMPLE` are the knob if that ever costs too much.
-- **Show All** works out where all 35 objects are at most every 5 seconds and holds
-  the result. The sky turns $15^\circ$ an hour, so 5 seconds moves it $0.02^\circ$,
-  well under a pixel, while running the Sun, Moon and planets through their own
-  orbital maths ten times a second would cost far more than drawing them does. Only
-  the projection is redone per frame. The cache is dropped when your position
-  changes.
+- **Grids:** the point count grows as the spacing shrinks. The horizon grid's
+  points never change, so they are built once per spacing and only rotated each
+  frame; the equatorial grid recomputes its points through `raDecToEnu`. Each grid's
+  sampling constants are the knob if that ever costs too much.
+- **Show All** works out where every object is every few seconds and holds the
+  result, since the sky moves well under a pixel in that time. Only the projection
+  is redone per frame, and the cache is dropped when your position changes.
 - **Position** is event-driven, not per-frame. A cached fix is used immediately; if
-  nothing usable arrives within 4 seconds the GPS is driven actively.
+  nothing usable arrives within a few seconds the GPS is driven actively.
 
 ## Building
 
-Requires the [Connect IQ SDK](https://developer.garmin.com/connect-iq/sdk/) 6.0.2 or
-later and a developer key.
+Requires the [Connect IQ SDK](https://developer.garmin.com/connect-iq/sdk/) and a
+developer key.
 
 ```sh
 monkeyc -f monkey.jungle -o bin/Miniverse.prg -y developer_key -d instinctcrossoveramoled
 ```
 
 Run it in the simulator with `connectiq` followed by `monkeydo bin/Miniverse.prg
-instinctcrossoveramoled`, or build for the store with `-e -r`.
+instinctcrossoveramoled`, or build for the store with `-e -r`. For the unit tests,
+add `-t` to the build and `/t` to `monkeydo`.
 
 Permissions: `Positioning` and `Sensor`.
 
 ## Devices
 
-27 products: 23 round displays from 260×260 to 466×466, one rectangular (venux1,
-448×486) and three semi-octagonal Instincts at 166×166 and 176×176. Layout is
-derived from the display size and the real font metrics rather than fixed pixel
-offsets, so the picture takes every row the text does not need. On round displays,
-labels are pulled in to where the glass reaches on each row.
-
-`enduro3` · `fenix843mm` · `fenix847mm` · `fenix8pro47mm` · `fenix8solar47mm` ·
-`fenix8solar51mm` · `fenix943mm` · `fenix947mm` · `fenix9pro43mm` · `fenix9pro47mm` ·
-`fenix9pro51mm` · `fenix9prosolar47mm` · `fenix9prosolar51mm` · `fenixe` ·
-`fr57042mm` · `fr57047mm` · `fr970` · `instinct3amoled45mm` · `instinct3amoled50mm` ·
-`instinct3solar45mm` · `instinctcrossoveramoled` · `instincte40mm` · `instincte45mm` ·
-`venu441mm` · `venu445mm` · `venux1` · `vivoactive6`
+Every product listed in `manifest.xml`, across round, rectangular and
+semi-octagonal displays. Layout is derived from the display size and the real font
+metrics rather than fixed pixel offsets, so the picture takes every row the text
+does not need. On round displays, labels are pulled in to where the glass reaches
+on each row.
 
 ## Accuracy
 
