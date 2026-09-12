@@ -23,12 +23,8 @@ module EquatorialGrid {
     const RA_SAMPLE = 20;       // plotted point spacing round a circle of equal declination
     const DEC_SAMPLE = 20;      // plotted point spacing along an hour circle
 
-    // Reds, so this tells apart at a glance from the blues HorizonGrid draws, and
-    // kept dimmer than those: the horizon frame is the one you steer by, and this
-    // sits behind it. There is no named red darker than DK_RED, so the ordinary
-    // lines take a literal one.
-    const EQUATOR_COLOR = Graphics.COLOR_DK_RED;
-    const LINE_COLOR = 0x550000;
+    // Blue, so this tells apart at a glance from the green HorizonGrid draws.
+    const LINE_COLOR = Graphics.COLOR_DK_BLUE;
 
     // One entry per line: its colour, then a flat run of equatorial unit vectors.
     // Held between frames, rebuilt only when the spacing changes.
@@ -57,7 +53,7 @@ module EquatorialGrid {
         while (i < mesh.size()) {
             var line = mesh[i];
             dc.setColor(line[0], Graphics.COLOR_TRANSPARENT);
-            DeviceAim.drawRun(dc, sky, line[1], view);
+            DeviceAim.drawRun(dc, sky, line[1], view, 0);
             i += 1;
         }
     }
@@ -86,9 +82,9 @@ module EquatorialGrid {
         // spacing is set to.
         var dec = 0;
         while (dec <= DEC_LIMIT) {
-            lines.add([declinationColor(dec), declinationRun(dec)]);
+            lines.add([LINE_COLOR, declinationRun(dec)]);
             if (dec != 0) {
-                lines.add([declinationColor(-dec), declinationRun(-dec)]);
+                lines.add([LINE_COLOR, declinationRun(-dec)]);
             }
             dec += step;
         }
@@ -102,15 +98,6 @@ module EquatorialGrid {
         _mesh = lines;
         _meshStep = step;
         return lines;
-    }
-
-    // The celestial equator gets its own colour: it is the zero of declination,
-    // where the Sun crosses at the equinoxes.
-    function declinationColor(decDeg as Lang.Numeric) as Lang.Number {
-        if (decDeg == 0) {
-            return EQUATOR_COLOR;
-        }
-        return LINE_COLOR;
     }
 
     // A circle of equal declination, running parallel to the celestial equator all

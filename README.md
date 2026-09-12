@@ -120,8 +120,8 @@ sensor axis is wired the wrong way they move apart as you close in, so the fault
 shows at once.
 
 Within $8^\circ$ of the object the marker takes a green ring and the guidance is
-replaced by `On target`. Below the horizon it takes a red ring instead: the object
-is placed correctly, but it is underneath you.
+replaced by `On target`. Below the horizon the altitude reads red: the object is
+placed correctly, but it is underneath you.
 
 When the object is off the edge of the view it pins to the rim with a chevron
 pointing further the way to move, inset far enough that the marker and its chevron
@@ -135,13 +135,11 @@ This mode draws the whole catalogue as a plain sky map: the Sun, the Moon, the
 planets and the bright stars. Nothing is being aimed at, so there is no turn/tilt
 guidance, only a readout of where the watch is pointing.
 
-Objects below the horizon are darkened rather than greyed out, so they still read
-as underfoot without losing the colour and the face that identify them. Nothing is
-pinned to the rim in this mode, because with the whole sky on show the markers would
-pile up around the edge. An object that is not in front of the watch is not drawn.
+Nothing is pinned to the rim in this mode, because with the whole sky on show the
+markers would pile up around the edge. An object that is not in front of the watch
+is not drawn.
 
-Above: both grids on at $60^\circ$, the blue horizon grid crossing the red
-equatorial one, with `N` at the north point.
+Above: both grids on at $60^\circ$, crossing each other, with `N` at the north point.
 
 Objects are listed alphabetically in the Planets and Stars menus. The catalogue
 keeps its own order (stars by brightness, planets by distance out from the Sun),
@@ -169,6 +167,8 @@ behind the menu showing it.
 | Horizon Grid | Off · 60 · 45 · 30 · 15 · 10 degrees | Off |
 | Equatorial Grid | Off · 60 · 45 · 30 · 15 · 10 degrees | Off |
 | Constellations | Off · On | Off |
+| Sun Path | Off · On | Off |
+| Moon Path | Off · On | Off |
 | Equatorial Motion | Held still · Turns with sky | Held still |
 | Azimuth Motion | Held still · Follows position | Held still |
 | Update Location | One fix only · every 5 / 15 / 30 / 60 min | One fix only |
@@ -617,14 +617,16 @@ display and the text is drawn on top of it afterwards.
 
 ## 7. The sky overlays
 
-Three things can be drawn over the sky, each switched on separately: two grids that
-answer different questions, and the constellation figures.
+Five things can be drawn over the sky, each switched on separately: two grids that
+answer different questions, the constellation figures, and the paths of the Sun and
+the Moon.
 
 | | anchored to | moves when |
 |---|---|---|
 | **Horizon** (`HorizonGrid`) — circles of equal altitude, vertical circles between zenith and nadir | the ground and the compass | you move the watch |
 | **Equatorial** (`EquatorialGrid`) — circles of equal declination, hour circles between the celestial poles | the stars | you move the watch, **and** as time passes |
 | **Constellations** (`Constellations`) — stick figures joining their stars | the stars | you move the watch, **and** as time passes |
+| **Sun and Moon paths** (`SkyPaths`) — where each will be, marked by date | the stars | you move the watch, **and** as time passes |
 
 ```mermaid
 flowchart LR
@@ -652,8 +654,8 @@ $\text{equatorialToEnu}(\varphi, \mathrm{LST})$ once a frame. Sidereal time is t
 only thing in that chain that moves, so pinning LST to one reading holds the grid
 still, and that is the default. Let loose, it turns at $15^\circ$ per hour, one full
 revolution per sidereal day, pivoting about the celestial poles at altitude
-$= \varphi$. Turn both on and you can watch the red grid slide past the stationary
-blue one.
+$= \varphi$. Turn both on and you can watch the blue grid slide past the stationary
+green one.
 
 Both count outwards from their zero line (the horizon for one, the celestial equator
 for the other) rather than up from the bottom, so that line is drawn at every
@@ -664,8 +666,11 @@ facing is the most directly useful thing on the screen.
 
 ### Constellations
 
-Orion, Ursa Major, Ursa Minor, Cassiopeia, Cygnus, Crux, Scorpius and Leo, drawn as
-lines joining their stars.
+Orion, Ursa Major, Ursa Minor, Cassiopeia, Cygnus, Crux and the twelve constellations
+of the zodiac, drawn as lines joining their stars, with a dot on each star. The
+watches with half the per-frame budget carry Leo and Scorpius but not the other ten
+zodiac figures: a frame with all of them on top of everything else is more than
+those watches allow.
 
 The vertices live in `Constellations` rather than in `SkyCatalog`, because most of
 them are not stars anyone would aim at. A figure needs its faint stars to read, and
@@ -679,6 +684,18 @@ to, because they have to stay under the stars they join. And they are the one
 overlay that applies refraction, for the same reason: the stars are placed through
 `apparentAltitude`, so a belt drawn without it sits a couple of pixels below its own
 three stars as the constellation rises.
+
+### Sun and Moon paths
+
+The Sun's path through the next twelve months, with a dot on the first of each
+month, and the Moon's through the next four weeks, with a dot and the date on
+each day. Both come from the same series that place the bodies, with the same
+parallax and refraction, so the Sun and the Moon each sit on their own line. Each
+line has its own switch.
+
+The dated positions are fixed on the sky, so they are worked out once a month for
+the Sun and once a day for the Moon, from the view timer a few days at a time,
+and placed for your time and position every few seconds.
 
 ## 8. Turn-and-tilt guidance
 
@@ -801,6 +818,7 @@ screen.
 | `HorizonGrid.mc` | Alt/az grid and cardinal letters |
 | `EquatorialGrid.mc` | RA/Dec grid |
 | `Constellations.mc` | Stick figures, drawn from their own vertices |
+| `SkyPaths.mc` | Sun and Moon calendar lines |
 | `Planets.mc` | Keplerian planetary positions |
 | `SolarLunar.mc` | Sun and Moon series, obliquity, parallax |
 | `SkyCatalog.mc` | The object registry, the bright-star table, RA/Dec dispatch |
@@ -876,4 +894,5 @@ smoothing raw vectors rather than angles, de-rotating the raw field instead of
 trusting a system heading, and taking the lunar phase from the elongation. No
 Stellarium code or assets are used. Solar and lunar series are from Jean Meeus,
 *Astronomical Algorithms*; the planetary elements follow Paul Schlyter's *How to
-compute planetary positions*.
+compute planetary positions*. The zodiac line figures follow those published with
+[d3-celestial](https://github.com/ofrohn/d3-celestial) (BSD 3-Clause).

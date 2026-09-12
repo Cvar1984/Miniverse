@@ -56,6 +56,8 @@ module Settings {
                 "horizon" => ["horizonGrid", grid, 0],
                 "equatorial" => ["eqGridStep", grid, 0],
                 "constellations" => ["constellations", toggle, false],
+                "sunPath" => ["sunPath", toggle, false],
+                "moonPath" => ["moonPath", toggle, false],
                 "dynEquatorial" => ["dynEquatorial", toggle, false],
                 "dynAzimuth" => ["dynAzimuth", toggle, false],
                 "location" => ["locationMinutes", [0, 5, 15, 30, 60], 0]
@@ -65,20 +67,30 @@ module Settings {
     }
 
     // The finest grid spacing this watch can draw, from simulator runs at the
-    // heaviest settings: Show All with both grids and the constellations on.
-    // With under 100 KB for the app, both grids finer than 30 degrees leave too
-    // little room for the menus around them. The older system software with
-    // 128 KB also gets half the per-frame budget, and both grids at 10 degrees is
-    // more than that.
+    // heaviest settings: Show All with both grids, the constellations and both
+    // paths on. The watches with half the per-frame budget (see monkey.jungle)
+    // stop at 15 degrees, and the smallest of those, with under 100 KB for the
+    // app, at 30, where everything still leaves room for the menus around it.
     function finestGrid() as Lang.Number {
-        var total = System.getSystemStats().totalMemory;
-        if (total < 100000) {
+        if (!halfBudget()) {
+            return 10;
+        }
+        if (System.getSystemStats().totalMemory < 100000) {
             return 30;
         }
-        if (total <= 131072 && System.getDeviceSettings().monkeyVersion[0] < 4) {
-            return 15;
-        }
-        return 10;
+        return 15;
+    }
+
+    // Whether this build is for a watch with half the per-frame budget. The build
+    // configuration keeps one of these two (see monkey.jungle).
+    (:halfBudget)
+    function halfBudget() as Lang.Boolean {
+        return true;
+    }
+
+    (:fullBudget)
+    function halfBudget() as Lang.Boolean {
+        return false;
     }
 
     function get(id) {

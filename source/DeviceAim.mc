@@ -270,7 +270,7 @@ module DeviceAim {
     // A point behind the watch comes back null from the projection and breaks the
     // line there instead of joining across the gap. Both grids and the
     // constellation figures draw through this.
-    function drawRun(dc as Graphics.Dc, frame as Lang.Array<Lang.Float>, run as Lang.Array<Lang.Float>, view as Lang.Array<Lang.Numeric>) as Void {
+    function drawRun(dc as Graphics.Dc, frame as Lang.Array<Lang.Float>, run as Lang.Array<Lang.Float>, view as Lang.Array<Lang.Numeric>, dotRadius as Lang.Number) as Void {
         // The same sums as viewOffset and screenPoint, written out here with the
         // frame held in locals, because every overlay point goes through this
         // loop: no call and no new array per point.
@@ -301,6 +301,11 @@ module DeviceAim {
                 var py = (cy - focal * (tE * y0 + tN * y1 + tU * y2) / forward).toNumber();
                 if (havePrevious) {
                     dc.drawLine(previousX, previousY, px, py);
+                }
+                // A dot on the point as well, for the constellation stars, in the
+                // same pass so no point is projected twice.
+                if (dotRadius > 0) {
+                    dc.fillCircle(px, py, dotRadius);
                 }
                 previousX = px;
                 previousY = py;

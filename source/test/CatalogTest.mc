@@ -118,7 +118,7 @@ function constellationRunsAreWellFormed(logger) {
     // Points are stored in flat pairs, so an odd length means a coordinate was
     // dropped and every vertex after it is shifted by one, which draws a figure
     // that looks plausible and is wrong.
-    var figures = Constellations.figures();
+    var figures = Constellations.build();
     Test.assertMessage(figures.size() > 0, "there should be figures to draw");
 
     var i = 0;
@@ -144,7 +144,7 @@ function constellationVerticesMatchTheirCatalogueStars(logger) {
     // two lists drift apart, the figure hangs off its own star, so this checks the
     // repeated vertices still match.
     var stars = SkyCatalog.stars();
-    var figures = Constellations.figures();
+    var figures = Constellations.build();
 
     var names = ["Betelgeuse", "Rigel", "Polaris", "Antares", "Deneb", "Regulus"];
     var n = 0;

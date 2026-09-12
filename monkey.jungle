@@ -2,3 +2,18 @@ project.manifest = manifest.xml
 
 base.sourcePath = source
 base.resourcePath = resources
+
+# Watches with half the per-frame budget (a watchdog count of 120000 in their
+# simulator profiles). They build the (:halfBudget) versions of the functions
+# marked that way, and every other watch the (:fullBudget) ones.
+base.excludeAnnotations = halfBudget
+descentg1.excludeAnnotations = fullBudget
+enduro.excludeAnnotations = fullBudget
+fenix6.excludeAnnotations = fullBudget
+fenix6s.excludeAnnotations = fullBudget
+fr255.excludeAnnotations = fullBudget
+fr255s.excludeAnnotations = fullBudget
+instinct2.excludeAnnotations = fullBudget
+instinct2s.excludeAnnotations = fullBudget
+instinct2x.excludeAnnotations = fullBudget
+instinctcrossover.excludeAnnotations = fullBudget

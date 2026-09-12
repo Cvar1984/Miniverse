@@ -63,6 +63,8 @@ module SkyMenus {
         menu.addItem(new WatchUi.MenuItem("Horizon Grid", Settings.label("horizon"), "horizon", {}));
         menu.addItem(new WatchUi.MenuItem("Equatorial Grid", Settings.label("equatorial"), "equatorial", {}));
         menu.addItem(new WatchUi.MenuItem("Constellations", Settings.label("constellations"), "constellations", {}));
+        menu.addItem(new WatchUi.MenuItem("Sun Path", Settings.label("sunPath"), "sunPath", {}));
+        menu.addItem(new WatchUi.MenuItem("Moon Path", Settings.label("moonPath"), "moonPath", {}));
         menu.addItem(new WatchUi.MenuItem("Equatorial Motion", Settings.label("dynEquatorial"), "dynEquatorial", {}));
         menu.addItem(new WatchUi.MenuItem("Azimuth Motion", Settings.label("dynAzimuth"), "dynAzimuth", {}));
         menu.addItem(new WatchUi.MenuItem("Update Location", Settings.label("location"), "location", {}));

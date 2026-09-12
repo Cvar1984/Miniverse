@@ -281,10 +281,36 @@ class PointerView extends WatchUi.View {
         if (info has :mag && info.mag != null) {
             applyMag(info.mag);
         }
+        previewStandIn();
         keepAwake();
         refreshLocation();
         prepare();
         WatchUi.requestUpdate();
+    }
+
+    // Simulator stand-in, in debug builds only. Out of the box the simulator
+    // reports no magnetometer, no accelerometer and no position, and its sensor
+    // menus pair external ANT and Bluetooth sensors, not the watch's own. So a
+    // quick preview would never get past the waiting messages. This fills in a
+    // fixed position and a watch held upright, aimed at the horizon, wherever a
+    // real reading is missing. Release builds, the store package included, leave
+    // it out.
+    (:debug)
+    function previewStandIn() as Void {
+        if (_lat == null) {
+            _lat = 51.5;
+            _lon = -0.1;
+        }
+        if (_accel == null) {
+            _accel = [0, -1000, 0];
+        }
+        if (_mag == null) {
+            _mag = [0, -300, -400];
+        }
+    }
+
+    (:release)
+    function previewStandIn() as Void {
     }
 
     // Asks the system to keep the display lit, at most once every
@@ -510,6 +536,11 @@ class PointerView extends WatchUi.View {
         if (Settings.get("constellations")) {
             Constellations.draw(dc, frame, view, lat, lstDeg);
         }
+        var sunPath = Settings.get("sunPath");
+        var moonPath = Settings.get("moonPath");
+        if (sunPath || moonPath) {
+            SkyPaths.draw(dc, frame, view, sunPath, moonPath);
+        }
 
         // Whole-catalogue mode. There is no object being aimed at, so there is
         // nothing to be told to turn towards: all it can usefully say is where the
@@ -537,7 +568,7 @@ class PointerView extends WatchUi.View {
         var objEnu = SkyMath.horizontalToEnu(az, alt);
         var objOffset = DeviceAim.viewOffset(frame, objEnu[0], objEnu[1], objEnu[2]);
         var onTarget = SkyMath.dacos(objOffset[2]) < LOCK_DEGREES;
-        drawObject(dc, view, objOffset, alt, onTarget, sunOffset, zenith);
+        drawObject(dc, view, objOffset, onTarget, sunOffset, zenith);
 
         dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_TRANSPARENT);
         dc.drawText(cx, nameRow(h), NAME_FONT, _obj[:name], Graphics.TEXT_JUSTIFY_CENTER);
@@ -674,7 +705,7 @@ class PointerView extends WatchUi.View {
     // Draws the object as a dot that slides in from the edge of the screen as the
     // offset from the aim axis shrinks. Outside the field of view the dot pins to
     // the edge with a chevron pointing further the way to move.
-    function drawObject(dc as Graphics.Dc, view as Lang.Array<Lang.Numeric>, offset as Lang.Array<Lang.Float>, alt as Lang.Float, onTarget as Lang.Boolean, sunOffset as Lang.Array, zenith as Lang.Array) as Void {
+    function drawObject(dc as Graphics.Dc, view as Lang.Array<Lang.Numeric>, offset as Lang.Array<Lang.Float>, onTarget as Lang.Boolean, sunOffset as Lang.Array, zenith as Lang.Array) as Void {
         var cx = view[0];
         var cy = view[1];
         var focal = view[2];
@@ -741,11 +772,6 @@ class PointerView extends WatchUi.View {
 
         ObjectArt.draw(dc, dotX, dotY, _obj, ObjectArt.color(_obj), offset, sunOffset, zenith);
 
-        if (alt < 0) {
-            dc.setColor(Graphics.COLOR_RED, Graphics.COLOR_TRANSPARENT);
-            dc.drawCircle(dotX, dotY, ObjectArt.radius(_obj) + 3);
-        }
-
         // One chevron, along the line the object lies on. That is the same line
         // the marker was pinned along, so the two agree. A chevron per axis would
         // draw two at right angles for an object off a corner, and neither would
@@ -789,9 +815,6 @@ class PointerView extends WatchUi.View {
     // pinned to the rim and no chevron points off it, because with the whole sky on
     // show there is nothing in particular to be steered towards. An object that is
     // not out in front of the watch is left out.
-    //
-    // Below the horizon they are darkened rather than greyed out, so they still
-    // read as underfoot without losing the colour and the face that identify them.
     function drawAllObjects(dc as Graphics.Dc, view as Lang.Array<Lang.Numeric>, frame as Lang.Array<Lang.Float>, sunOffset as Lang.Array, zenith as Lang.Array) as Void {
         var w = dc.getWidth();
         var h = dc.getHeight();
@@ -818,22 +841,14 @@ class PointerView extends WatchUi.View {
                 var py = (cy - focal * offset[1] / forward).toNumber();
                 if (px >= 0 && px < w && py >= 0 && py < h) {
                     var obj = entry[0];
-                    var base = ObjectArt.color(obj);
-                    if (entry[2] < 0) {
-                        // Underfoot. Darkened rather than replaced with a flat grey,
-                        // which would lose the colour and the face that identify
-                        // the object: the Sun would be a plain disc and the planets
-                        // would look like dim stars.
-                        base = ObjectArt.shade(base, 1, 3);
-                    }
-                    ObjectArt.draw(dc, px, py, obj, base, offset, sunOffset, zenith);
+                    ObjectArt.draw(dc, px, py, obj, ObjectArt.color(obj), offset, sunOffset, zenith);
                 }
             }
             i += 1;
         }
     }
 
-    // Where every object in the catalogue is, as [object, ENU direction, altitude],
+    // Where every object in the catalogue is, as [object, ENU direction],
     // worked out at most every SKY_REFRESH_SEC and held between times. Only the
     // projection onto the screen is redone per frame, which is what keeps this mode
     // as cheap to draw as the single-object one.
@@ -851,6 +866,10 @@ class PointerView extends WatchUi.View {
         var jd = SkyMath.julianDay(g.year, g.month, g.day, g.hour, g.min, g.sec);
         var lstDeg = SkyMath.lst(jd, lon);
 
+        // Let go of the old positions before working out the new ones, so both
+        // are never held at once. This all runs in one event, so no frame sees
+        // the gap.
+        _sky = null;
         var list = SkyCatalog.objects();
         var out = [];
         var i = 0;
@@ -859,7 +878,7 @@ class PointerView extends WatchUi.View {
             var raDec = SkyCatalog.getRaDec(obj, jd);
             var altAz = SkyMath.raDecToAltAz(raDec[0], raDec[1], lat, lstDeg);
             var alt = SkyMath.apparentAltitude(altAz[0], SkyCatalog.horizontalParallax(obj, jd));
-            out.add([obj, SkyMath.horizontalToEnu(altAz[1], alt), alt]);
+            out.add([obj, SkyMath.horizontalToEnu(altAz[1], alt)]);
             i += 1;
         }
 
@@ -884,7 +903,10 @@ class PointerView extends WatchUi.View {
             return;
         }
         if (Settings.get("constellations") && !Constellations.ready()) {
-            Constellations.vectors();
+            Constellations.buildSome();
+            return;
+        }
+        if (SkyPaths.work(_lat, _lon, Settings.get("sunPath"), Settings.get("moonPath"))) {
             return;
         }
         if (_obj == null) {

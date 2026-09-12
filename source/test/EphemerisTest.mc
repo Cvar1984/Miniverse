@@ -236,3 +236,23 @@ function outerPlanetsMoveSlowlyAgainstTheStars(logger) {
     Test.assertMessage(moved < 0.5, "Saturn should barely move in a day");
     return true;
 }
+
+// The Sun's calendar line: labels in order from the month it starts in, every
+// sample inside the band the Sun never leaves, and the year closing back on
+// itself.
+(:test)
+function sunPathMarksEachMonthAndClosesOnItself(logger) {
+    var vecs = SkyPaths.sunPath(2026, 9);
+    Test.assertMessage(vecs.size() == 37 * 3, "the 1st, 11th and 21st of twelve months, and a closing 1st");
+    Test.assertMessage(SkyPaths.monthLabel(9, 0).equals("Sep") && SkyPaths.monthLabel(9, 11).equals("Aug"), "labels should run in order from the starting month");
+    var limit = Math.sin(Math.toRadians(23.5));
+    var i = 0;
+    while (i < vecs.size()) {
+        Test.assertMessage(vecs[i + 2].abs() <= limit, "the Sun cannot leave the tropics");
+        i += 3;
+    }
+    var last = vecs.size() - 3;
+    var dot = vecs[0] * vecs[last] + vecs[1] * vecs[last + 1] + vecs[2] * vecs[last + 2];
+    Test.assertMessage(dot > Math.cos(Math.toRadians(1.5)), "a year on, the Sun should be back where it started");
+    return true;
+}

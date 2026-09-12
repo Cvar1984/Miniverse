@@ -23,6 +23,10 @@ module HorizonGrid {
     const AZ_SAMPLE = 20;       // plotted point spacing round a circle of equal altitude
     const ALT_SAMPLE = 20;      // plotted point spacing along a vertical circle
 
+    // Green, so this tells apart at a glance from the blue EquatorialGrid draws.
+    // The compass letters take the brighter green, so they read over the lines.
+    const LINE_COLOR = Graphics.COLOR_DK_GREEN;
+
     // One entry per line of the grid: its colour, then a flat run of East-North-Up
     // triples. Held between frames, rebuilt only when the spacing changes.
     //
@@ -48,7 +52,7 @@ module HorizonGrid {
             while (i < mesh.size()) {
                 var line = mesh[i];
                 dc.setColor(line[0], Graphics.COLOR_TRANSPARENT);
-                DeviceAim.drawRun(dc, frame, line[1], view);
+                DeviceAim.drawRun(dc, frame, line[1], view, 0);
                 i += 1;
             }
         }
@@ -82,16 +86,16 @@ module HorizonGrid {
         // horizon itself is always one of the lines whatever the spacing is set to.
         var alt = 0;
         while (alt <= ALT_LIMIT) {
-            lines.add([altitudeColor(alt), altitudeRun(alt)]);
+            lines.add([LINE_COLOR, altitudeRun(alt)]);
             if (alt != 0) {
-                lines.add([altitudeColor(-alt), altitudeRun(-alt)]);
+                lines.add([LINE_COLOR, altitudeRun(-alt)]);
             }
             alt += step;
         }
 
         var az = 0;
         while (az < 360) {
-            lines.add([Graphics.COLOR_DK_BLUE, verticalRun(az)]);
+            lines.add([LINE_COLOR, verticalRun(az)]);
             az += step;
         }
 
@@ -139,22 +143,10 @@ module HorizonGrid {
         return run;
     }
 
-    // The horizon is drawn brighter than the other circles. Below it the ground is
-    // in the way, so those circles are drawn grey to read as underfoot.
-    function altitudeColor(altDeg as Lang.Numeric) as Lang.Number {
-        if (altDeg == 0) {
-            return Graphics.COLOR_BLUE;
-        }
-        if (altDeg < 0) {
-            return Graphics.COLOR_DK_GRAY;
-        }
-        return Graphics.COLOR_DK_BLUE;
-    }
-
     // North, east, south and west, lettered where they meet the horizon. There are
     // only four points, so they are projected each frame instead of meshed.
     function drawCardinals(dc as Graphics.Dc, frame as Lang.Array<Lang.Float>, view as Lang.Array<Lang.Numeric>) as Void {
-        dc.setColor(Graphics.COLOR_BLUE, Graphics.COLOR_TRANSPARENT);
+        dc.setColor(Graphics.COLOR_GREEN, Graphics.COLOR_TRANSPARENT);
         var az = 0;
         while (az < 360) {
             var point = screenPoint(frame, az, 0, view);
