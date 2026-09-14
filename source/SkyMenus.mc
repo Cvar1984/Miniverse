@@ -29,7 +29,8 @@ module SkyMenus {
     //
     // Sorted into a copy rather than in place: a star's id is its position in the
     // catalogue, so the catalogue's own order is not ours to move. Insertion sort,
-    // because the lists are short and this runs once as the menu opens.
+    // because the lists are short and this runs once as the menu opens, and
+    // Array.sort needs API 5, above this app's minimum of 3.4.
     function sortedByName(objList) {
         var out = [];
         var i = 0;
@@ -41,14 +42,9 @@ module SkyMenus {
                 at += 1;
             }
 
-            // Open a gap at "at" by pushing everything from there along one place.
-            out.add(null);
-            var j = out.size() - 1;
-            while (j > at) {
-                out[j] = out[j - 1];
-                j -= 1;
-            }
-            out[at] = o;
+            var head = out.slice(0, at);
+            head.add(o);
+            out = head.addAll(out.slice(at, null));
 
             i += 1;
         }
@@ -65,6 +61,7 @@ module SkyMenus {
         menu.addItem(new WatchUi.MenuItem("Constellations", Settings.label("constellations"), "constellations", {}));
         menu.addItem(new WatchUi.MenuItem("Sun Path", Settings.label("sunPath"), "sunPath", {}));
         menu.addItem(new WatchUi.MenuItem("Moon Path", Settings.label("moonPath"), "moonPath", {}));
+        menu.addItem(new WatchUi.MenuItem("Crosshair", Settings.label("crosshair"), "crosshair", {}));
         menu.addItem(new WatchUi.MenuItem("Equatorial Motion", Settings.label("dynEquatorial"), "dynEquatorial", {}));
         menu.addItem(new WatchUi.MenuItem("Azimuth Motion", Settings.label("dynAzimuth"), "dynAzimuth", {}));
         menu.addItem(new WatchUi.MenuItem("Update Location", Settings.label("location"), "location", {}));

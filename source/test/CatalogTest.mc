@@ -14,8 +14,8 @@ using Toybox.Math as Math;
 function catalogueHoldsEverythingItShould(logger) {
     var all = SkyCatalog.objects();
     Test.assertMessage(all.size() == 35, "Sun, Moon, five planets and 28 stars");
-    Test.assertMessage(SkyCatalog.planets().size() == 5, "Mercury through Saturn");
-    Test.assertMessage(SkyCatalog.stars().size() == 28, "28 bright stars");
+    Test.assertMessage(SkyCatalog.filterByType(:planet).size() == 5, "Mercury through Saturn");
+    Test.assertMessage(SkyCatalog.filterByType(:star).size() == 28, "28 bright stars");
     return true;
 }
 
@@ -60,7 +60,7 @@ function catalogueIdsAreUnique(logger) {
 (:test)
 function starCoordinatesAreInRange(logger) {
     // A typo here puts a star somewhere else in the sky and nothing complains.
-    var stars = SkyCatalog.stars();
+    var stars = SkyCatalog.filterByType(:star);
     var i = 0;
     while (i < stars.size()) {
         var s = stars[i];
@@ -77,7 +77,7 @@ function starCoordinatesAreInRange(logger) {
 function knownStarsSitWhereTheyShould(logger) {
     // Two anchors anyone can check: Polaris is almost exactly at the north pole of
     // the sky, and Sirius is the brightest star there is.
-    var stars = SkyCatalog.stars();
+    var stars = SkyCatalog.filterByType(:star);
     var polaris = null;
     var brightest = stars[0];
     var i = 0;
@@ -143,7 +143,7 @@ function constellationVerticesMatchTheirCatalogueStars(logger) {
     // A dozen vertices are repeated from SkyCatalog rather than looked up. If the
     // two lists drift apart, the figure hangs off its own star, so this checks the
     // repeated vertices still match.
-    var stars = SkyCatalog.stars();
+    var stars = SkyCatalog.filterByType(:star);
     var figures = Constellations.build();
 
     var names = ["Betelgeuse", "Rigel", "Polaris", "Antares", "Deneb", "Regulus"];

@@ -29,9 +29,6 @@ module SkyPaths {
     // Moon days worked out per timer tick.
     const MOON_CHUNK = 7;
 
-    // How often the lines are placed again for the turning sky.
-    const PLACE_SEC = 5;
-
     const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
     var _sunVecs = null;        // the Sun on the 1st, 11th and 21st of twelve months
@@ -89,7 +86,7 @@ module SkyPaths {
             }
         }
         var now = Time.now().value();
-        if ((sun && _sunRun == null) || (moon && _moonRun == null) || now - _placedAt >= PLACE_SEC) {
+        if ((sun && _sunRun == null) || (moon && _moonRun == null) || now - _placedAt >= SkyMath.SKY_REFRESH_SEC) {
             // Old lines go before the new ones are built, as with the Show All
             // positions; no frame runs in between.
             _sunRun = null;

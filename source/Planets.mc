@@ -99,7 +99,9 @@ module Planets {
         ];
     }
 
-    // Returns [ra, dec] in degrees for the given Julian Day (UTC).
+    // Returns [ra, dec, magnitude] for the given Julian Day (UTC), the position in
+    // degrees. The magnitude comes out of the same distances, so it costs nothing
+    // extra to have it here.
     function planetPosition(id, jd) {
         // Double, so the fraction of a day survives being subtracted from a
         // number in the millions (see SkyMath.julianDay).
@@ -118,6 +120,32 @@ module Planets {
 
         var t = (jd - 2451545.0) / 36525.0;
         var eps = SolarLunar.obliquity(t);
-        return SolarLunar.eclipticToEquatorial(lon, lat, eps);
+        var raDec = SolarLunar.eclipticToEquatorial(lon, lat, eps);
+        var r = Math.sqrt(helio[0] * helio[0] + helio[1] * helio[1] + helio[2] * helio[2]);
+        var dist = Math.sqrt(xg * xg + yg * yg + zg * zg);
+        var sunDist = Math.sqrt(sun[0] * sun[0] + sun[1] * sun[1]);
+        return [raDec[0], raDec[1], magnitude(id, d, r, dist, sunDist, lon, lat)];
+    }
+
+    // Apparent visual magnitude, from the same notes as the orbits: the distance
+    // from the Sun (r), from the Earth (dist), and the phase angle between the
+    // two. Saturn also depends on how far its rings are open to us, worked out
+    // from its geocentric ecliptic longitude and latitude.
+    function magnitude(id, d, r, dist, sunDist, lon, lat) {
+        var fv = SkyMath.dacos((r * r + dist * dist - sunDist * sunDist) / (2.0 * r * dist));
+        var m = 5.0 * Math.log(r * dist, 10);
+        if (id.equals("mercury")) {
+            return -0.36 + m + 0.027 * fv + 0.00000000000022 * Math.pow(fv, 6);
+        } else if (id.equals("venus")) {
+            return -4.34 + m + 0.013 * fv + 0.00000042 * Math.pow(fv, 3);
+        } else if (id.equals("mars")) {
+            return -1.51 + m + 0.016 * fv;
+        } else if (id.equals("jupiter")) {
+            return -9.25 + m + 0.014 * fv;
+        }
+        // saturn: the sine of the ring tilt is all the ring term needs
+        var sinB = SkyMath.dsin(lat) * SkyMath.dcos(28.06)
+            - SkyMath.dcos(lat) * SkyMath.dsin(28.06) * SkyMath.dsin(lon - (169.51 + 0.0000382 * d));
+        return -9.0 + m + 0.044 * fv - 2.6 * sinB.abs() + 1.2 * sinB * sinB;
     }
 }

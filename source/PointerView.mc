@@ -5,7 +5,6 @@ using Toybox.Position as Position;
 using Toybox.Sensor as Sensor;
 using Toybox.Timer as Timer;
 using Toybox.Time as Time;
-using Toybox.Time.Gregorian as Gregorian;
 using Toybox.Math as Math;
 using Toybox.Attention as Attention;
 using Toybox.System as System;
@@ -38,13 +37,6 @@ class PointerView extends WatchUi.View {
     const DECLINATION_SETTLE = 100;
 
     const LOCK_DEGREES = 8.0;
-
-    // Whole-catalogue mode works out where everything is at most this often rather
-    // than every frame. The sky turns 15 degrees an hour, so a few seconds moves it
-    // a small fraction of a pixel, while working out all 35 objects ten times a
-    // second, orbital maths for the Sun, Moon and planets included, would cost far
-    // more than drawing them does.
-    const SKY_REFRESH_SEC = 5;
 
     // Holds the display awake while this screen is up. You are looking at the sky
     // rather than at the watch, and glancing back to a display that has timed out
@@ -496,8 +488,7 @@ class PointerView extends WatchUi.View {
         //
         // Nothing is clipped and nothing is reserved: the sky is laid down across
         // the whole display first, and the text goes on top of it below.
-        var g = Gregorian.utcInfo(Time.now(), Time.FORMAT_SHORT);
-        var jd = SkyMath.julianDay(g.year, g.month, g.day, g.hour, g.min, g.sec);
+        var jd = SkyMath.julianDayNow();
         var lstDeg = SkyMath.lst(jd, lon);
 
         // Where the Sun is, and which way is up, both in the watch axes. The Sun
@@ -546,13 +537,21 @@ class PointerView extends WatchUi.View {
         // nothing to be told to turn towards: all it can usefully say is where the
         // watch is currently pointing.
         if (_obj == null) {
-            drawAllObjects(dc, view, frame, sunOffset, zenith);
+            var crosshair = Settings.get("crosshair");
+            var target = drawAllObjects(dc, view, frame, sunOffset, zenith, crosshair);
             drawScale(dc, view, horizonStep, equatorialStep);
-            // Room is left for a second row it does not use, which lifts it clear
-            // of the very bottom of the glass. That is the narrowest part of a round
-            // screen, and one line has no need to sit there.
+            // One row up from the bottom, which lifts it clear of the narrowest part
+            // of a round glass and leaves the last row for the crosshair.
             drawAimPair(dc, dataRow(dc, h, 2), headingDeg.format("%.0f"),
                 signedDegrees(aimElev));
+            if (crosshair) {
+                drawCrosshair(dc, cx, cy);
+                if (target != null) {
+                    dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_TRANSPARENT);
+                    dc.drawText(cx, nameRow(h), NAME_FONT, target[0][:name], Graphics.TEXT_JUSTIFY_CENTER);
+                    dc.drawText(cx, dataRow(dc, h, 1), DATA_FONT, "mag " + target[2].format("%.1f"), Graphics.TEXT_JUSTIFY_CENTER);
+                }
+            }
             return;
         }
 
@@ -811,16 +810,34 @@ class PointerView extends WatchUi.View {
         dc.drawText(x, y, LABEL_FONT, text, Graphics.TEXT_JUSTIFY_RIGHT);
     }
 
+    // A small cross at the middle of the glass, where the aim is. The arms stop
+    // short of the centre so the object under it stays in view.
+    function drawCrosshair(dc as Graphics.Dc, cx as Lang.Number, cy as Lang.Number) as Void {
+        var arm = dc.getWidth() / 30;
+        var gap = arm / 2;
+        dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_TRANSPARENT);
+        dc.drawLine(cx - gap - arm, cy, cx - gap, cy);
+        dc.drawLine(cx + gap, cy, cx + gap + arm, cy);
+        dc.drawLine(cx, cy - gap - arm, cx, cy - gap);
+        dc.drawLine(cx, cy + gap, cx, cy + gap + arm);
+    }
+
     // Every object in the catalogue at once, drawn as a plain sky map: no marker is
     // pinned to the rim and no chevron points off it, because with the whole sky on
     // show there is nothing in particular to be steered towards. An object that is
     // not out in front of the watch is left out.
-    function drawAllObjects(dc as Graphics.Dc, view as Lang.Array<Lang.Numeric>, frame as Lang.Array<Lang.Float>, sunOffset as Lang.Array, zenith as Lang.Array) as Void {
+    //
+    // With identify on, it also returns the entry nearest the middle of the
+    // screen, if one is within the lock angle, for the crosshair to name.
+    function drawAllObjects(dc as Graphics.Dc, view as Lang.Array<Lang.Numeric>, frame as Lang.Array<Lang.Float>, sunOffset as Lang.Array, zenith as Lang.Array, identify as Lang.Boolean) as Lang.Array? {
         var w = dc.getWidth();
         var h = dc.getHeight();
         var cx = view[0];
         var cy = view[1];
         var focal = view[2];
+        var best = null;
+        var bestDist = focal * SkyMath.dtan(LOCK_DEGREES);
+        bestDist = bestDist * bestDist;
 
         // Worked out from the timer (see prepare); empty until the first pass.
         var sky = _sky;
@@ -842,14 +859,24 @@ class PointerView extends WatchUi.View {
                 if (px >= 0 && px < w && py >= 0 && py < h) {
                     var obj = entry[0];
                     ObjectArt.draw(dc, px, py, obj, ObjectArt.color(obj), offset, sunOffset, zenith);
+                    if (identify) {
+                        var dx = px - cx;
+                        var dy = py - cy;
+                        var dist = dx * dx + dy * dy;
+                        if (dist <= bestDist) {
+                            bestDist = dist;
+                            best = entry;
+                        }
+                    }
                 }
             }
             i += 1;
         }
+        return best;
     }
 
-    // Where every object in the catalogue is, as [object, ENU direction],
-    // worked out at most every SKY_REFRESH_SEC and held between times. Only the
+    // Where every object in the catalogue is, as [object, ENU direction,
+    // magnitude], worked out at most every SkyMath.SKY_REFRESH_SEC and held between times. Only the
     // projection onto the screen is redone per frame, which is what keeps this mode
     // as cheap to draw as the single-object one.
     function refreshSky() as Void {
@@ -859,11 +886,10 @@ class PointerView extends WatchUi.View {
             return;
         }
         var now = Time.now().value();
-        if (_sky != null && now - _skyAt < SKY_REFRESH_SEC) {
+        if (_sky != null && now - _skyAt < SkyMath.SKY_REFRESH_SEC) {
             return;
         }
-        var g = Gregorian.utcInfo(Time.now(), Time.FORMAT_SHORT);
-        var jd = SkyMath.julianDay(g.year, g.month, g.day, g.hour, g.min, g.sec);
+        var jd = SkyMath.julianDayNow();
         var lstDeg = SkyMath.lst(jd, lon);
 
         // Let go of the old positions before working out the new ones, so both
@@ -872,13 +898,24 @@ class PointerView extends WatchUi.View {
         _sky = null;
         var list = SkyCatalog.objects();
         var out = [];
+        var sunEnu = [];
         var i = 0;
         while (i < list.size()) {
             var obj = list[i];
             var raDec = SkyCatalog.getRaDec(obj, jd);
             var altAz = SkyMath.raDecToAltAz(raDec[0], raDec[1], lat, lstDeg);
             var alt = SkyMath.apparentAltitude(altAz[0], SkyCatalog.horizontalParallax(obj, jd));
-            out.add([obj, SkyMath.horizontalToEnu(altAz[1], alt)]);
+            var enu = SkyMath.horizontalToEnu(altAz[1], alt);
+            // The Moon's brightness follows its phase: the phase angle is what is
+            // left of a half turn once its distance from the Sun is taken off. The
+            // Sun comes first in the catalogue, so it is always to hand.
+            var phase = 0.0;
+            if (obj[:type] == :moon && sunEnu.size() == 3) {
+                phase = 180.0 - SkyMath.dacos(enu[0] * sunEnu[0] + enu[1] * sunEnu[1] + enu[2] * sunEnu[2]);
+            } else if (obj[:type] == :sun) {
+                sunEnu = enu;
+            }
+            out.add([obj, enu, SkyCatalog.magnitude(obj, raDec, phase).toFloat()]);
             i += 1;
         }
 
@@ -893,13 +930,17 @@ class PointerView extends WatchUi.View {
     // tick; the screen draws without it until it is done.
     function prepare() as Void {
         var horizonStep = Settings.get("horizon");
+        var equatorialStep = Settings.get("equatorial");
+        // Both grids draw from HorizonGrid's meshes (see EquatorialGrid). The
+        // spacings neither uses go first, so an old mesh and a new one are never
+        // held at once.
+        HorizonGrid.keepOnly(horizonStep, equatorialStep);
         if (horizonStep > 0 && !HorizonGrid.ready(horizonStep)) {
             HorizonGrid.meshFor(horizonStep);
             return;
         }
-        var equatorialStep = Settings.get("equatorial");
-        if (equatorialStep > 0 && !EquatorialGrid.ready(equatorialStep)) {
-            EquatorialGrid.meshFor(equatorialStep);
+        if (equatorialStep > 0 && !HorizonGrid.ready(equatorialStep)) {
+            HorizonGrid.meshFor(equatorialStep);
             return;
         }
         if (Settings.get("constellations") && !Constellations.ready()) {

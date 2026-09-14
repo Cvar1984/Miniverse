@@ -78,13 +78,7 @@ module Constellations {
              252.541, -34.293, 252.968, -38.047, 253.646, -42.361, 258.038, -43.239,
              264.330, -42.998, 266.896, -40.127, 265.622, -39.030, 263.402, -37.104]
         ];
-        var more = zodiac();
-        var i = 0;
-        while (i < more.size()) {
-            figs.add(more[i]);
-            i += 1;
-        }
-        return figs;
+        return figs.addAll(zodiac());
     }
 
     // The other ten constellations of the zodiac. They are left out on the

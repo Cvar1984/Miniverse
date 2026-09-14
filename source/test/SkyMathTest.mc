@@ -148,45 +148,6 @@ function poleSitsAtAltitudeEqualToLatitude(logger) {
     return true;
 }
 
-(:test)
-function raDecToEnuAgreesWithTheTwoStepRoute(logger) {
-    // raDecToEnu does in one rotation what raDecToAltAz followed by
-    // horizontalToEnu does in two, so both routes have to give the same answer
-    // everywhere, including over the poles where the arccosine it skips is least
-    // well behaved.
-    var ra = 0.0;
-    while (ra < 360.0) {
-        var dec = -85.0;
-        while (dec <= 85.0) {
-            var lat = -70.0;
-            while (lat <= 70.0) {
-                var lst = ra + 37.0;
-                var direct = SkyMath.raDecToEnu(ra, dec, lat, lst);
-                var altAz = SkyMath.raDecToAltAz(ra, dec, lat, lst);
-                var stepped = SkyMath.horizontalToEnu(altAz[1], altAz[0]);
-
-                var dx = direct[0] - stepped[0];
-                var dy = direct[1] - stepped[1];
-                var dz = direct[2] - stepped[2];
-                var apart = Math.sqrt(dx * dx + dy * dy + dz * dz);
-                Test.assertMessage(apart < 0.0001, "the two routes must agree");
-                lat += 35.0;
-            }
-            dec += 42.5;
-        }
-        ra += 60.0;
-    }
-    return true;
-}
-
-(:test)
-function raDecToEnuReturnsUnitVectors(logger) {
-    var v = SkyMath.raDecToEnu(123.0, -41.0, 33.0, 250.0);
-    var len = Math.sqrt(v[0] * v[0] + v[1] * v[1] + v[2] * v[2]);
-    Test.assertMessage((len - 1.0).abs() < 0.000001, "must be unit length");
-    return true;
-}
-
 // ---------------------------------------------------------------- corrections
 
 (:test)
@@ -263,10 +224,7 @@ function meshHoldsWellFormedRuns(logger) {
 
     var i = 0;
     while (i < mesh.size()) {
-        var line = mesh[i];
-        Test.assertMessage(line.size() == 2, "each line is a colour and a run");
-
-        var run = line[1];
+        var run = mesh[i];
         Test.assertMessage(run.size() % 3 == 0, "points must come in whole triples");
         Test.assertMessage(run.size() >= 6, "a run needs two points to be a line");
 
@@ -289,7 +247,7 @@ function meshHasTheRightNumberOfLines(logger) {
     var mesh = HorizonGrid.meshFor(15);
     Test.assertMessage(mesh.size() == 24 + 9, "24 vertical and 9 altitude circles at 15 degrees");
 
-    // Coarser spacing must give fewer lines, and it must not keep the old ones.
+    // Coarser spacing must give fewer lines.
     var coarse = HorizonGrid.meshFor(60);
     Test.assertMessage(coarse.size() == 6 + 3, "6 vertical and 3 altitude circles at 60 degrees");
     return true;
@@ -323,7 +281,7 @@ function meshAlwaysIncludesTheHorizon(logger) {
         var i = 0;
         while (i < mesh.size()) {
             // A run lying flat on the horizon has zero up-component throughout.
-            var run = mesh[i][1];
+            var run = mesh[i];
             var flat = true;
             var j = 2;
             while (j < run.size()) {
@@ -343,25 +301,67 @@ function meshAlwaysIncludesTheHorizon(logger) {
     return true;
 }
 
-// The equatorial grid and the constellation figures keep fixed equatorial
-// vectors and turn them with one matrix a frame. That matrix has to give exactly
-// what raDecToEnu gives, or the lines would drift off the stars.
+// The overlays keep fixed equatorial vectors and turn them with one matrix a
+// frame. That matrix has to agree with the two-step route the objects take,
+// raDecToAltAz then horizontalToEnu, everywhere, including over the poles where
+// the arccosine it skips is least well behaved, or the lines would drift off
+// the stars.
 (:test)
-function equatorialRotationMatchesRaDecToEnu(logger) {
-    var cases = [[0.0, 0.0, 51.5, 100.0], [83.8, -5.4, -33.9, 300.0], [279.2, 38.8, 10.0, 12.5], [37.9, 89.3, 65.0, 200.0]];
-    var i = 0;
-    while (i < cases.size()) {
-        var c = cases[i];
-        var rows = SkyMath.equatorialToEnu(c[2], c[3]);
-        var v = SkyMath.raDecToVector(c[0], c[1]);
-        var want = SkyMath.raDecToEnu(c[0], c[1], c[2], c[3]);
-        var k = 0;
-        while (k < 3) {
-            var got = rows[3 * k] * v[0] + rows[3 * k + 1] * v[1] + rows[3 * k + 2] * v[2];
-            Test.assertMessage((got - want[k]).abs() < 0.00001, "the rotation should match raDecToEnu");
-            k += 1;
+function equatorialRotationMatchesTheTwoStepRoute(logger) {
+    var ra = 0.0;
+    while (ra < 360.0) {
+        var dec = -85.0;
+        while (dec <= 85.0) {
+            var lat = -70.0;
+            while (lat <= 70.0) {
+                var lst = ra + 37.0;
+                var rows = SkyMath.equatorialToEnu(lat, lst);
+                var v = SkyMath.raDecToVector(ra, dec);
+                var altAz = SkyMath.raDecToAltAz(ra, dec, lat, lst);
+                var want = SkyMath.horizontalToEnu(altAz[1], altAz[0]);
+                var k = 0;
+                while (k < 3) {
+                    var got = rows[3 * k] * v[0] + rows[3 * k + 1] * v[1] + rows[3 * k + 2] * v[2];
+                    Test.assertMessage((got - want[k]).abs() < 0.0001, "the rotation should match the two-step route");
+                    k += 1;
+                }
+                lat += 35.0;
+            }
+            dec += 42.5;
         }
-        i += 1;
+        ra += 60.0;
     }
+    return true;
+}
+
+// The equatorial grid draws from the horizon grid's points. That rests on one
+// identity: a horizon vector with its first two parts swapped is the equatorial
+// unit vector at RA equal to the azimuth and Dec equal to the altitude.
+(:test)
+function horizonPointsDoubleAsEquatorialOnes(logger) {
+    var az = 0;
+    while (az < 360) {
+        var alt = -80;
+        while (alt <= 80) {
+            var h = SkyMath.horizontalToEnu(az, alt);
+            var q = SkyMath.raDecToVector(az, alt);
+            Test.assertMessage((h[1] - q[0]).abs() < 0.00001 && (h[0] - q[1]).abs() < 0.00001
+                && (h[2] - q[2]).abs() < 0.00001, "a swapped horizon point should be the equatorial one");
+            alt += 40;
+        }
+        az += 45;
+    }
+    return true;
+}
+
+// Only the spacings the two grids use are kept; the rest go before anything new
+// is built.
+(:test)
+function meshesNeitherGridUsesAreLetGo(logger) {
+    HorizonGrid.meshFor(15);
+    HorizonGrid.meshFor(30);
+    HorizonGrid.keepOnly(30, 0);
+    Test.assertMessage(!HorizonGrid.ready(15), "a spacing neither grid uses should be let go");
+    Test.assertMessage(HorizonGrid.ready(30), "a spacing in use should be kept");
     return true;
 }

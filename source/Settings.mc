@@ -58,6 +58,7 @@ module Settings {
                 "constellations" => ["constellations", toggle, false],
                 "sunPath" => ["sunPath", toggle, false],
                 "moonPath" => ["moonPath", toggle, false],
+                "crosshair" => ["crosshair", toggle, false],
                 "dynEquatorial" => ["dynEquatorial", toggle, false],
                 "dynAzimuth" => ["dynAzimuth", toggle, false],
                 "location" => ["locationMinutes", [0, 5, 15, 30, 60], 0]
@@ -119,15 +120,10 @@ module Settings {
     function cycle(id) {
         var spec = specs()[id];
         var choices = spec[1];
-        var current = get(id);
+        var at = choices.indexOf(get(id));
         var next = spec[2];
-        var i = 0;
-        while (i < choices.size()) {
-            if (choices[i] == current) {
-                next = choices[(i + 1) % choices.size()];
-                break;
-            }
-            i += 1;
+        if (at >= 0) {
+            next = choices[(at + 1) % choices.size()];
         }
         _cache[spec[0]] = next;
         Application.Storage.setValue(spec[0], next);

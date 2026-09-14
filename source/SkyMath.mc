@@ -1,8 +1,17 @@
 using Toybox.Math as Math;
 using Toybox.Lang as Lang;
+using Toybox.Time as Time;
+using Toybox.Time.Gregorian as Gregorian;
 
 module SkyMath {
     const RAD2DEG = 180.0 / 3.14159265358979;
+
+    // How often positions that move with the sky are worked out again: the Show
+    // All catalogue and the Sun and Moon paths. The sky turns 15 degrees an hour,
+    // so a few seconds moves it a small fraction of a pixel, while working out
+    // all 35 objects ten times a second, orbital maths for the Sun, Moon and
+    // planets included, would cost far more than drawing them does.
+    const SKY_REFRESH_SEC = 5;
 
     function dsin(deg) {
         return Math.sin(Math.toRadians(deg));
@@ -86,6 +95,12 @@ module SkyMath {
         return jd + (hour + minute / 60.0d + second / 3600.0d) / 24.0d;
     }
 
+    // The Julian Day for this moment, from the clock in UTC.
+    function julianDayNow() {
+        var g = Gregorian.utcInfo(Time.now(), Time.FORMAT_SHORT);
+        return julianDay(g.year, g.month, g.day, g.hour, g.min, g.sec);
+    }
+
     // Greenwich Mean Sidereal Time in degrees for a given Julian Day.
     //
     // Kept in Double as well: the day count is multiplied by 361 before being
@@ -103,41 +118,12 @@ module SkyMath {
         return norm360(gmst(jd) + lonDeg);
     }
 
-    // Equatorial RA/Dec straight to a world East-North-Up unit vector, in one
-    // rotation, for callers that only ever wanted the vector.
-    //
-    // Going raDecToAltAz then horizontalToEnu costs an arcsine, an arccosine, a
-    // quadrant test and about fourteen trig calls, producing two angles that are
-    // immediately turned back into the vector they came from. Written out directly
-    // it is four trig calls and no round trip, so about a quarter of the work, and
-    // it drops the acos near the poles where that function is least well behaved.
-    // A grid plots four hundred of these a frame, ten times a second.
-    //
-    // Same rotation, same answer: hour angle H = LST - RA, then the equatorial
-    // vector (cos d cos H, cos d sin H, sin d) tilted by the observer's latitude.
-    function raDecToEnu(raDeg, decDeg, latDeg, lstDeg) as Lang.Array<Lang.Float> {
-        var h = lstDeg - raDeg;
-        var cosDec = dcos(decDeg);
-        var xEq = cosDec * dcos(h);
-        var yEq = cosDec * dsin(h);
-        var zEq = dsin(decDeg);
-
-        var sinLat = dsin(latDeg);
-        var cosLat = dcos(latDeg);
-
-        // East is the negative of the hour-angle component, because hour angle
-        // counts westward while azimuth counts eastward.
-        return [
-            -yEq,
-            zEq * cosLat - xEq * sinLat,
-            xEq * cosLat + zEq * sinLat
-        ];
-    }
-
-    // The rotation raDecToEnu does, written out once as a matrix: rows E, N and U,
-    // columns the equatorial axes (towards RA 0, towards RA 90, and the north
-    // celestial pole). Worked out once a frame and applied to fixed unit vectors,
-    // it costs nine multiplications a point instead of four trig calls.
+    // Equatorial to East-North-Up as one matrix: rows E, N and U, columns the
+    // equatorial axes (towards RA 0, towards RA 90, and the north celestial
+    // pole). It is the rotation raDecToAltAz and horizontalToEnu do in two steps,
+    // worked out once a frame and applied to fixed unit vectors: nine
+    // multiplications a point instead of an arcsine, an arccosine, a quadrant
+    // test and a dozen trig calls.
     function equatorialToEnu(latDeg, lstDeg) as Lang.Array<Lang.Float> {
         var sinL = dsin(lstDeg);
         var cosL = dcos(lstDeg);

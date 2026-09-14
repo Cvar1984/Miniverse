@@ -17,7 +17,8 @@ using Toybox.Lang as Lang;
 // second at a 15 degree spacing would take about sixteen thousand trig calls a
 // second, against about a hundred for the whole 35-object catalogue, whose
 // positions are cached. Only the rotation into the watch's axes is redone per
-// frame, the same per-point work an object costs.
+// frame, the same per-point work an object costs. The equatorial grid draws from
+// these meshes too (see EquatorialGrid).
 module HorizonGrid {
     const ALT_LIMIT = 60;       // highest and lowest circle of equal altitude drawn
     const AZ_SAMPLE = 20;       // plotted point spacing round a circle of equal altitude
@@ -27,13 +28,10 @@ module HorizonGrid {
     // The compass letters take the brighter green, so they read over the lines.
     const LINE_COLOR = Graphics.COLOR_DK_GREEN;
 
-    // One entry per line of the grid: its colour, then a flat run of East-North-Up
-    // triples. Held between frames, rebuilt only when the spacing changes.
-    //
-    // Colour travels with its own points rather than in a second array beside them,
-    // so the two cannot fall out of step with each other.
-    var _mesh as Lang.Array?;
-    var _meshStep as Lang.Number = 0;
+    // Meshes by spacing, each a list of flat runs of East-North-Up triples, one run
+    // a line. Both grids draw from here, so up to two are held at once, and only
+    // one when both grids use the same spacing.
+    var _meshes = {};
 
     // view is [cx, cy, focal], the same screen mapping the object dot uses, so the
     // grid and the object always agree. Points behind the watch come back null from
@@ -46,13 +44,12 @@ module HorizonGrid {
     function draw(dc as Graphics.Dc, frame as Lang.Array<Lang.Float>, view as Lang.Array<Lang.Numeric>, step as Lang.Number) as Void {
         // The mesh is built from the view timer, not here, so a frame never pays
         // for a rebuild on top of its drawing. Until it is ready the lines wait.
-        var mesh = _mesh;
-        if (step > 0 && mesh != null && _meshStep == step) {
+        var mesh = _meshes[step];
+        if (step > 0 && mesh != null) {
+            dc.setColor(LINE_COLOR, Graphics.COLOR_TRANSPARENT);
             var i = 0;
             while (i < mesh.size()) {
-                var line = mesh[i];
-                dc.setColor(line[0], Graphics.COLOR_TRANSPARENT);
-                DeviceAim.drawRun(dc, frame, line[1], view, 0);
+                DeviceAim.drawRun(dc, frame, mesh[i], view, 0);
                 i += 1;
             }
         }
@@ -64,21 +61,31 @@ module HorizonGrid {
 
     // Whether the mesh for this spacing is built and waiting.
     function ready(step as Lang.Number) as Lang.Boolean {
-        return _mesh != null && _meshStep == step;
+        return _meshes[step] != null;
     }
 
-    // The mesh for a given spacing, built on first use and kept until the spacing
-    // changes, which only happens from the settings menu.
+    // Lets go of every mesh neither grid is using, before anything new is built.
+    // Holding an old mesh and its replacement together doubles the peak, and at
+    // the finest spacing that is the difference between 14 KB and 28 KB on a
+    // device with 128 KB to spend on the lot.
+    function keepOnly(a as Lang.Number, b as Lang.Number) as Void {
+        var keys = _meshes.keys();
+        var i = 0;
+        while (i < keys.size()) {
+            if (keys[i] != a && keys[i] != b) {
+                _meshes.remove(keys[i]);
+            }
+            i += 1;
+        }
+    }
+
+    // The mesh for a given spacing, built on first use and kept until neither grid
+    // uses that spacing any more (see keepOnly).
     function meshFor(step as Lang.Number) as Lang.Array {
-        var held = _mesh;
-        if (held != null && _meshStep == step) {
+        var held = _meshes[step];
+        if (held != null) {
             return held;
         }
-
-        // Let go of the old mesh before building the new one. Holding both at once
-        // doubles the peak, and at the finest spacing that is the difference
-        // between 14 KB and 28 KB on a device with 128 KB to spend on the lot.
-        _mesh = null;
 
         var lines = [];
 
@@ -86,21 +93,20 @@ module HorizonGrid {
         // horizon itself is always one of the lines whatever the spacing is set to.
         var alt = 0;
         while (alt <= ALT_LIMIT) {
-            lines.add([LINE_COLOR, altitudeRun(alt)]);
+            lines.add(altitudeRun(alt));
             if (alt != 0) {
-                lines.add([LINE_COLOR, altitudeRun(-alt)]);
+                lines.add(altitudeRun(-alt));
             }
             alt += step;
         }
 
         var az = 0;
         while (az < 360) {
-            lines.add([LINE_COLOR, verticalRun(az)]);
+            lines.add(verticalRun(az));
             az += step;
         }
 
-        _mesh = lines;
-        _meshStep = step;
+        _meshes[step] = lines;
         return lines;
     }
 
@@ -149,7 +155,8 @@ module HorizonGrid {
         dc.setColor(Graphics.COLOR_GREEN, Graphics.COLOR_TRANSPARENT);
         var az = 0;
         while (az < 360) {
-            var point = screenPoint(frame, az, 0, view);
+            var enu = SkyMath.horizontalToEnu(az, 0);
+            var point = DeviceAim.screenPoint(frame, enu[0], enu[1], enu[2], view);
             if (point != null) {
                 dc.drawText(point[0], point[1] - 8, Graphics.FONT_XTINY, cardinalName(az), Graphics.TEXT_JUSTIFY_CENTER);
             }
@@ -168,11 +175,5 @@ module HorizonGrid {
             return "S";
         }
         return "W";
-    }
-
-    // Where a point of sky lands on screen, or null if it is behind the watch.
-    function screenPoint(frame as Lang.Array<Lang.Float>, azDeg as Lang.Numeric, altDeg as Lang.Numeric, view as Lang.Array<Lang.Numeric>) as Lang.Array<Lang.Number>? {
-        var enu = SkyMath.horizontalToEnu(azDeg, altDeg);
-        return DeviceAim.screenPoint(frame, enu[0], enu[1], enu[2], view);
     }
 }

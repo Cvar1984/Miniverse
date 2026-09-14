@@ -139,6 +139,12 @@ Nothing is pinned to the rim in this mode, because with the whole sky on show th
 markers would pile up around the edge. An object that is not in front of the watch
 is not drawn.
 
+With **Crosshair** on, a small cross marks the middle of the screen, and the object
+nearest it, within the same $8^\circ$ as `On target`, is named at the top with its
+magnitude at the bottom. Star magnitudes are catalogue values; a planet's comes
+from the same distances as its position (Schlyter's formulas, Saturn's rings
+included), the Moon's from its phase, and the Sun's is $-26.7$.
+
 Above: both grids on at $60^\circ$, crossing each other, with `N` at the north point.
 
 Objects are listed alphabetically in the Planets and Stars menus. The catalogue
@@ -169,6 +175,7 @@ behind the menu showing it.
 | Constellations | Off · On | Off |
 | Sun Path | Off · On | Off |
 | Moon Path | Off · On | Off |
+| Crosshair | Off · On | Off |
 | Equatorial Motion | Held still · Turns with sky | Held still |
 | Azimuth Motion | Held still · Follows position | Held still |
 | Update Location | One fix only · every 5 / 15 / 30 / 60 min | One fix only |
@@ -405,10 +412,10 @@ Then to a world East-North-Up unit vector:
 \,\big)
 ```
 
-The equatorial grid and the constellation lines skip those two steps.
-`SkyMath.raDecToEnu` writes the same rotation out in one, without the arcsine,
-arccosine and quadrant test, and gives the same answer to within floating-point
-noise:
+The equatorial grid, the constellation lines and the Sun and Moon paths skip those
+two steps. `SkyMath.equatorialToEnu` writes the same rotation as one matrix,
+without the arcsine, arccosine and quadrant test, and gives the same answer to
+within floating-point noise:
 
 ```math
 \begin{aligned}
@@ -418,9 +425,8 @@ U &= \cos\delta \cos H \cos\varphi + \sin\delta \sin\varphi
 \end{aligned}
 ```
 
-`SkyMath.equatorialToEnu` holds the same rotation as a matrix. The grid and the
-figures keep their points as fixed unit vectors, so each frame turns them with nine
-multiplications apiece.
+Those overlays keep their points as fixed unit vectors (`SkyMath.raDecToVector`),
+so each frame turns them with nine multiplications apiece.
 
 ## 4. Corrections
 
@@ -636,7 +642,7 @@ flowchart LR
     end
     subgraph E["Equatorial grid"]
         direction LR
-        EA["RA, Dec<br/>fixed unit vectors"] --> EB["equatorialToEnu<br/>one matrix a frame"]
+        EA["Horizon grid mesh<br/>east and north swapped"] --> EB["equatorialToEnu<br/>one matrix a frame"]
         LATLST["latitude and<br/>sidereal time"] --> EB
         EB --> EC["ENU vector"]
     end
@@ -649,8 +655,11 @@ The horizon grid takes no clock and no position: $(A_{\text{az}}, h)$ maps strai
 to a direction. Rest the watch flat on a table and it looks at the nadir, with the
 vertical circles converging in the middle of the screen.
 
-The equatorial grid keeps its points as fixed unit vectors and turns them with
-$\text{equatorialToEnu}(\varphi, \mathrm{LST})$ once a frame. Sidereal time is the
+The equatorial grid has no points of its own. A horizon-grid point with its east
+and north parts swapped is the equatorial unit vector at the same two numbers, so
+it draws the horizon grid's mesh through
+$\text{equatorialToEnu}(\varphi, \mathrm{LST})$ with those two columns swapped,
+and both grids share one mesh when their spacing matches. Sidereal time is the
 only thing in that chain that moves, so pinning LST to one reading holds the grid
 still, and that is the default. Let loose, it turns at $15^\circ$ per hour, one full
 revolution per sidereal day, pivoting about the celestial poles at altitude
@@ -815,8 +824,8 @@ screen.
 | `DeviceAim.mc` | Orientation, tilt-compensated compass, projection, overlay lines |
 | `Settings.mc` | Persisted choices, cached in memory |
 | `SkyMath.mc` | Time, coordinate conversion, refraction, parallax |
-| `HorizonGrid.mc` | Alt/az grid and cardinal letters |
-| `EquatorialGrid.mc` | RA/Dec grid |
+| `HorizonGrid.mc` | Alt/az grid, the mesh both grids share, and cardinal letters |
+| `EquatorialGrid.mc` | RA/Dec grid, drawn from the horizon grid's mesh |
 | `Constellations.mc` | Stick figures, drawn from their own vertices |
 | `SkyPaths.mc` | Sun and Moon calendar lines |
 | `Planets.mc` | Keplerian planetary positions |

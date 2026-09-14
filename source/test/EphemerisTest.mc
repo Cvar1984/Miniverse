@@ -209,15 +209,15 @@ function innerPlanetsNeverStrayFarFromTheSun(logger) {
     while (i < jds.size()) {
         var jd = jds[i];
         var sun = SolarLunar.sunPosition(jd);
-        var sunVec = SkyMath.raDecToEnu(sun[0], sun[1], 0.0, 0.0);
+        var sunVec = SkyMath.raDecToVector(sun[0], sun[1]);
 
         var venus = Planets.planetPosition("venus", jd);
-        var venusVec = SkyMath.raDecToEnu(venus[0], venus[1], 0.0, 0.0);
+        var venusVec = SkyMath.raDecToVector(venus[0], venus[1]);
         var dot = sunVec[0] * venusVec[0] + sunVec[1] * venusVec[1] + sunVec[2] * venusVec[2];
         Test.assertMessage(SkyMath.dacos(dot) < 50.0, "Venus cannot be more than about 47 degrees from the Sun");
 
         var mercury = Planets.planetPosition("mercury", jd);
-        var mercuryVec = SkyMath.raDecToEnu(mercury[0], mercury[1], 0.0, 0.0);
+        var mercuryVec = SkyMath.raDecToVector(mercury[0], mercury[1]);
         var mDot = sunVec[0] * mercuryVec[0] + sunVec[1] * mercuryVec[1] + sunVec[2] * mercuryVec[2];
         Test.assertMessage(SkyMath.dacos(mDot) < 32.0, "Mercury cannot be more than about 28 degrees from the Sun");
         i += 1;
@@ -254,5 +254,38 @@ function sunPathMarksEachMonthAndClosesOnItself(logger) {
     var last = vecs.size() - 3;
     var dot = vecs[0] * vecs[last] + vecs[1] * vecs[last + 1] + vecs[2] * vecs[last + 2];
     Test.assertMessage(dot > Math.cos(Math.toRadians(1.5)), "a year on, the Sun should be back where it started");
+    return true;
+}
+
+// Planet brightness has to stay inside the range each planet is actually seen
+// across over several years; a slip in the distance or phase terms throws it
+// well outside.
+(:test)
+function planetMagnitudesStayInTheirRanges(logger) {
+    var ids = ["mercury", "venus", "mars", "jupiter", "saturn"];
+    var low = [-2.7, -5.0, -3.0, -3.0, -0.7];
+    var high = [8.0, -2.5, 2.0, -1.5, 1.7];
+    var jd = 2460000.5d;
+    var k = 0;
+    while (k < 40) {
+        var i = 0;
+        while (i < ids.size()) {
+            var m = Planets.planetPosition(ids[i], jd)[2];
+            Test.assertMessage(m >= low[i] && m <= high[i], ids[i] + " magnitude out of its range");
+            i += 1;
+        }
+        jd += 37.0;
+        k += 1;
+    }
+    return true;
+}
+
+// The Moon: full is its brightest, a quarter about two and a half magnitudes
+// fainter.
+(:test)
+function moonMagnitudeFollowsThePhase(logger) {
+    Test.assertMessage((SkyCatalog.moonMagnitude(0.0) + 12.73).abs() < 0.01, "a full Moon is -12.7");
+    var quarter = SkyCatalog.moonMagnitude(90.0);
+    Test.assertMessage(quarter > -10.5 && quarter < -9.5, "a quarter Moon is about -10");
     return true;
 }

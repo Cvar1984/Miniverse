@@ -86,14 +86,6 @@ module SkyCatalog {
         return out;
     }
 
-    function planets() {
-        return filterByType(:planet);
-    }
-
-    function stars() {
-        return filterByType(:star);
-    }
-
     // How far the object's apparent place shifts between Earth's centre and the
     // surface, in degrees. Only the Moon is close enough for this to register: the
     // Sun comes to 0.0024 degrees, the planets at their closest to 0.009, and the
@@ -103,6 +95,28 @@ module SkyCatalog {
             return SolarLunar.moonHorizontalParallax(jd);
         }
         return 0.0;
+    }
+
+    // Apparent visual magnitude. Stars carry theirs, the Sun hardly varies, and a
+    // planet's comes with its position (Planets.planetPosition, the third value
+    // of raDec). The Moon's follows its phase angle, in degrees, 0 when full.
+    function magnitude(obj, raDec, moonPhase) {
+        var type = obj[:type];
+        if (type == :sun) {
+            return -26.74;
+        } else if (type == :moon) {
+            return moonMagnitude(moonPhase);
+        } else if (type == :planet) {
+            return raDec[2];
+        }
+        return obj[:mag];
+    }
+
+    // The Moon by its phase angle: the approximation Meeus gives, good to a few
+    // tenths. Full is -12.7, a quarter about -10.
+    function moonMagnitude(phase) {
+        var i = phase.abs();
+        return -12.73 + 0.026 * i + 0.000000004 * i * i * i * i;
     }
 
     // Returns [ra, dec] in degrees for the given object at Julian Day jd (UTC).
