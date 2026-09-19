@@ -28,6 +28,9 @@ module HorizonGrid {
     // The compass letters take the brighter green, so they read over the lines.
     const LINE_COLOR = Graphics.COLOR_DK_GREEN;
 
+    // The compass letters, one per quarter turn from north.
+    const CARDINALS = ["N", "E", "S", "W"];
+
     // Meshes by spacing, each a list of flat runs of East-North-Up triples, one run
     // a line. Both grids draw from here, so up to two are held at once, and only
     // one when both grids use the same spacing.
@@ -46,7 +49,7 @@ module HorizonGrid {
         // for a rebuild on top of its drawing. Until it is ready the lines wait.
         var mesh = _meshes[step];
         if (step > 0 && mesh != null) {
-            dc.setColor(LINE_COLOR, Graphics.COLOR_TRANSPARENT);
+            dc.setColor(Palette.shown(LINE_COLOR), Graphics.COLOR_TRANSPARENT);
             var i = 0;
             while (i < mesh.size()) {
                 DeviceAim.drawRun(dc, frame, mesh[i], view, 0);
@@ -152,28 +155,15 @@ module HorizonGrid {
     // North, east, south and west, lettered where they meet the horizon. There are
     // only four points, so they are projected each frame instead of meshed.
     function drawCardinals(dc as Graphics.Dc, frame as Lang.Array<Lang.Float>, view as Lang.Array<Lang.Numeric>) as Void {
-        dc.setColor(Graphics.COLOR_GREEN, Graphics.COLOR_TRANSPARENT);
+        dc.setColor(Palette.shown(Graphics.COLOR_GREEN), Graphics.COLOR_TRANSPARENT);
         var az = 0;
         while (az < 360) {
             var enu = SkyMath.horizontalToEnu(az, 0);
             var point = DeviceAim.screenPoint(frame, enu[0], enu[1], enu[2], view);
             if (point != null) {
-                dc.drawText(point[0], point[1] - 8, Graphics.FONT_XTINY, cardinalName(az), Graphics.TEXT_JUSTIFY_CENTER);
+                dc.drawText(point[0], point[1] - 8, Graphics.FONT_XTINY, CARDINALS[az / 90], Graphics.TEXT_JUSTIFY_CENTER);
             }
             az += 90;
         }
-    }
-
-    function cardinalName(azDeg as Lang.Numeric) as Lang.String {
-        if (azDeg == 0) {
-            return "N";
-        }
-        if (azDeg == 90) {
-            return "E";
-        }
-        if (azDeg == 180) {
-            return "S";
-        }
-        return "W";
     }
 }

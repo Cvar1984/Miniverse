@@ -32,8 +32,8 @@ class PointerView extends WatchUi.View {
 
     // Near-level samples folded into the declination average before it is taken as
     // settled. At 0.05 a sample this is well past converged, and it is what lets
-    // the horizon frame be held still: once settled it stops moving, and only a
-    // fresh position re-opens it.
+    // the horizon frame be held still: once settled it stops moving until the
+    // screen is next opened.
     const DECLINATION_SETTLE = 100;
 
     const LOCK_DEGREES = 8.0;
@@ -65,7 +65,8 @@ class PointerView extends WatchUi.View {
 
     // Readout rows the single-object mode needs along the bottom: object and aim
     // altitude, object and aim azimuth, then the two lines of turn-and-tilt
-    // guidance. Showing the whole catalogue needs one row, and says so itself.
+    // guidance. One fewer when the guidance comes to a single line. Showing the
+    // whole catalogue needs one row, and says so itself.
     const DATA_ROWS = 4;
 
     // Room left inside the rim, so nothing lands where the round glass has already
@@ -105,10 +106,8 @@ class PointerView extends WatchUi.View {
     // Not before this second is the display asked to stay awake again.
     hidden var _wakeAt as Lang.Number;
 
-    // Near-level samples folded in so far, and the sidereal time the equatorial grid
-    // is pinned to while it is being held still. Both are re-opened by a new fix.
+    // Near-level samples folded into the declination average so far.
     hidden var _declinationSamples as Lang.Number;
-    hidden var _gridLst as Lang.Double?;
 
     // When the position was last asked for, for the refresh interval.
     hidden var _locationAt as Lang.Number;
@@ -118,6 +117,15 @@ class PointerView extends WatchUi.View {
 
     // When this screen opened, for the compass wait.
     hidden var _shownAt as Lang.Number;
+
+    // The small round window some watches have in the top right corner, or null.
+    // Text at the top is kept clear of it.
+    hidden var _subscreen as Graphics.BoundingBox?;
+
+    // The font the readout is drawn in, chosen once for the screen, and whether
+    // there is room above its rows for the column heads.
+    hidden var _dataFont as Graphics.FontDefinition;
+    hidden var _heads as Lang.Boolean;
 
     function initialize(obj as Lang.Dictionary?) {
         View.initialize();
@@ -135,10 +143,15 @@ class PointerView extends WatchUi.View {
         _skyAt = 0;
         _wakeAt = 0;
         _declinationSamples = 0;
-        _gridLst = null;
         _locationAt = 0;
         _round = null;
         _shownAt = 0;
+        _dataFont = DATA_FONT;
+        _heads = true;
+        _subscreen = null;
+        if (WatchUi has :getSubscreen) {
+            _subscreen = WatchUi.getSubscreen();
+        }
     }
 
     function onShow() as Void {
@@ -212,18 +225,9 @@ class PointerView extends WatchUi.View {
         var deg = info.position.toDegrees();
         _lat = deg[0].toFloat();
         _lon = deg[1].toFloat();
-        // Stood somewhere else now, so nothing worked out for the old place still
-        // answers: the catalogue positions, and the sidereal time the held-still
-        // equatorial grid is pinned to.
+        // Stood somewhere else now, so the catalogue positions worked out for the
+        // old place no longer answer.
         _sky = null;
-        _gridLst = null;
-
-        // A new position is the only thing that makes the settled declination wrong,
-        // so it is the only thing that re-opens the average, and only when the
-        // horizon frame is set to follow the position.
-        if (Settings.get("dynAzimuth")) {
-            _declinationSamples = 0;
-        }
 
         var acc = info.accuracy;
         if (acc != null && acc >= Position.QUALITY_USABLE) {
@@ -393,8 +397,7 @@ class PointerView extends WatchUi.View {
                 var elev = DeviceAim.aimElevation(accel);
                 // Averaged only until it has settled. Left running it would keep
                 // nudging true north for as long as the screen was up, and the
-                // horizon grid would creep with it; a fresh position is the one
-                // thing that makes the old value wrong, and that re-opens it.
+                // horizon grid would creep with it.
                 if (systemHeading != null && elev != null && elev.abs() < DECLINATION_MAX_TILT
                         && _declinationSamples < DECLINATION_SETTLE) {
                     var target = SkyMath.norm180(systemHeading - magneticAz);
@@ -431,7 +434,31 @@ class PointerView extends WatchUi.View {
     // Top of the first of rows readout lines, counted back from the bottom so the
     // block always ends the same distance inside the rim however many it needs.
     function dataRow(dc as Graphics.Dc, h as Lang.Number, rows as Lang.Number) as Lang.Number {
-        return h - TEXT_MARGIN - rows * dc.getFontHeight(DATA_FONT);
+        return h - TEXT_MARGIN - rows * dc.getFontHeight(_dataFont);
+    }
+
+    // The readout has to end up below the middle of the screen, because that is
+    // where the object is once you are on it, ringed when you are on target.
+    //
+    // Where it will not fit under there in the usual font, it steps down a size.
+    // Where even that will not fit, the column heads go: the rows name themselves
+    // (Obj, Aim) and read without heads, while an object with the table over it is
+    // the thing you came to look at, covered. A 176-pixel Instinct needs both
+    // steps and a fenix neither.
+    function onLayout(dc as Graphics.Dc) as Void {
+        var h = dc.getHeight();
+        // Clear of the largest marker and its ring, which is the Sun's.
+        var clear = h / 2 + ObjectArt.radius(SkyCatalog.findById("sun"), dc.getWidth()) + GAP;
+        _dataFont = DATA_FONT;
+        if (readoutTop(dc, h) < clear) {
+            _dataFont = LABEL_FONT;
+        }
+        _heads = readoutTop(dc, h) >= clear;
+    }
+
+    // Top of the readout: the most rows it can need, with the heads above them.
+    function readoutTop(dc as Graphics.Dc, h as Lang.Number) as Lang.Number {
+        return h - TEXT_MARGIN - (DATA_ROWS - 1) * dc.getFontHeight(_dataFont) - dc.getFontHeight(LABEL_FONT);
     }
 
     function onUpdate(dc as Graphics.Dc) as Void {
@@ -506,19 +533,8 @@ class PointerView extends WatchUi.View {
         var equatorialStep = Settings.get("equatorial");
         HorizonGrid.draw(dc, frame, view, horizonStep);
 
-        // Sidereal time is the only thing in the equatorial grid that moves, so
-        // pinning it to one reading holds that grid still. It is held by default,
-        // because a grid that follows the sky keeps creeping and a still reference
-        // is easier to read against. A new position drops the pin, since it makes
-        // the old reading wrong.
-        var gridLst = lstDeg;
-        if (!Settings.get("dynEquatorial")) {
-            if (_gridLst == null) {
-                _gridLst = lstDeg;
-            }
-            gridLst = _gridLst;
-        }
-        EquatorialGrid.draw(dc, frame, view, equatorialStep, lat, gridLst);
+        // The equatorial grid turns with the sky, as the stars on it do.
+        EquatorialGrid.draw(dc, frame, view, equatorialStep, lat, lstDeg);
 
         // Over the grids so the figures read on top of them, under the objects so
         // the stars themselves sit on top of the lines that join them. Drawn from
@@ -539,7 +555,7 @@ class PointerView extends WatchUi.View {
         if (_obj == null) {
             var crosshair = Settings.get("crosshair");
             var target = drawAllObjects(dc, view, frame, sunOffset, zenith, crosshair);
-            drawScale(dc, view, horizonStep, equatorialStep);
+            drawScale(dc, view, horizonStep, equatorialStep, dataRow(dc, h, 2) - dc.getFontHeight(LABEL_FONT));
             // One row up from the bottom, which lifts it clear of the narrowest part
             // of a round glass and leaves the last row for the crosshair.
             drawAimPair(dc, dataRow(dc, h, 2), headingDeg.format("%.0f"),
@@ -548,8 +564,8 @@ class PointerView extends WatchUi.View {
                 drawCrosshair(dc, cx, cy);
                 if (target != null) {
                     dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_TRANSPARENT);
-                    dc.drawText(cx, nameRow(h), NAME_FONT, target[0][:name], Graphics.TEXT_JUSTIFY_CENTER);
-                    dc.drawText(cx, dataRow(dc, h, 1), DATA_FONT, "mag " + target[2].format("%.1f"), Graphics.TEXT_JUSTIFY_CENTER);
+                    drawName(dc, target[0][:name]);
+                    dc.drawText(cx, dataRow(dc, h, 1), _dataFont, "mag " + target[2].format("%.1f"), Graphics.TEXT_JUSTIFY_CENTER);
                 }
             }
             return;
@@ -569,24 +585,35 @@ class PointerView extends WatchUi.View {
         var onTarget = SkyMath.dacos(objOffset[2]) < LOCK_DEGREES;
         drawObject(dc, view, objOffset, onTarget, sunOffset, zenith);
 
-        dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_TRANSPARENT);
-        dc.drawText(cx, nameRow(h), NAME_FONT, _obj[:name], Graphics.TEXT_JUSTIFY_CENTER);
-        drawScale(dc, view, horizonStep, equatorialStep);
+        drawName(dc, _obj[:name]);
 
         // Object against where the watch is aimed, a row each, so the two
         // pairs read straight down their columns instead of having to be picked out
         // of a sentence. They should converge as you settle onto the object, which
         // makes a sensor axis that runs the wrong way obvious rather than puzzling.
-        var row = dataRow(dc, h, DATA_ROWS);
-        var step = dc.getFontHeight(DATA_FONT);
-        var cols = columns(dc, cy, row + 3 * step);
-        drawHeads(dc, cols, row);
+        // The guidance takes two lines, or one when there is nothing to turn by:
+        // on target, or aimed straight up or down. The block is sized to the rows
+        // it draws, so it sits as low as it can. A spare row would lift the column
+        // heads, and with a large font that puts them over the middle of the
+        // screen, which is where the object is when you are on it.
+        var basis = onTarget ? null : DeviceAim.aimBasis(aimElev, headingDeg);
+        var rows = DATA_ROWS;
+        if (basis == null) {
+            rows = DATA_ROWS - 1;
+        }
+        var row = dataRow(dc, h, rows);
+        var step = dc.getFontHeight(_dataFont);
+        var cols = columns(dc, cy, row + (rows - 1) * step);
+        drawScale(dc, view, horizonStep, equatorialStep, row - dc.getFontHeight(LABEL_FONT));
+        if (_heads) {
+            drawHeads(dc, cols, row);
+        }
 
         var altColor;
         if (alt >= 0) {
             altColor = Graphics.COLOR_WHITE;
         } else {
-            altColor = Graphics.COLOR_RED;
+            altColor = Palette.shown(Graphics.COLOR_RED);
         }
         drawPair(dc, cols, row, "Obj", az.format("%.0f"), signedDegrees(alt), altColor);
         drawPair(dc, cols, row + step, "Aim", headingDeg.format("%.0f"),
@@ -607,7 +634,6 @@ class PointerView extends WatchUi.View {
         // Aimed within a couple of degrees of straight up or down there is no
         // sensible "turn left" to give, since every direction is sideways from
         // there. The picture above still holds, so only these two lines drop out.
-        var basis = DeviceAim.aimBasis(aimElev, headingDeg);
         if (basis == null) {
             drawNote(dc, row + 2 * step, "Straight up/down");
             return;
@@ -643,7 +669,7 @@ class PointerView extends WatchUi.View {
     // row has the least glass under it, so that is the one with the casting vote.
     function columns(dc as Graphics.Dc, cy as Lang.Number, bottomRow as Lang.Number) as Lang.Array<Lang.Number> {
         var cx = dc.getWidth() / 2;
-        var half = screenHalfWidth(dc, cy, bottomRow + dc.getFontHeight(DATA_FONT) / 2);
+        var half = screenHalfWidth(dc, cy, bottomRow + dc.getFontHeight(_dataFont) / 2);
         return [cx - half, cx + (3 * half) / 10, cx + half];
     }
 
@@ -652,7 +678,7 @@ class PointerView extends WatchUi.View {
     // is which.
     function drawHeads(dc as Graphics.Dc, cols as Lang.Array<Lang.Number>, row as Lang.Number) as Void {
         var y = row - dc.getFontHeight(LABEL_FONT);
-        dc.setColor(Graphics.COLOR_DK_GRAY, Graphics.COLOR_TRANSPARENT);
+        dc.setColor(Palette.shown(Graphics.COLOR_DK_GRAY), Graphics.COLOR_TRANSPARENT);
         dc.drawText(cols[1], y, LABEL_FONT, "Az", Graphics.TEXT_JUSTIFY_RIGHT);
         dc.drawText(cols[2], y, LABEL_FONT, "Alt", Graphics.TEXT_JUSTIFY_RIGHT);
     }
@@ -666,13 +692,13 @@ class PointerView extends WatchUi.View {
         var gap = dc.getWidth() / 9;
         var headY = y - dc.getFontHeight(LABEL_FONT);
 
-        dc.setColor(Graphics.COLOR_DK_GRAY, Graphics.COLOR_TRANSPARENT);
+        dc.setColor(Palette.shown(Graphics.COLOR_DK_GRAY), Graphics.COLOR_TRANSPARENT);
         dc.drawText(cx - gap, headY, LABEL_FONT, "Az", Graphics.TEXT_JUSTIFY_CENTER);
         dc.drawText(cx + gap, headY, LABEL_FONT, "Alt", Graphics.TEXT_JUSTIFY_CENTER);
 
         dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_TRANSPARENT);
-        dc.drawText(cx - gap, y, DATA_FONT, azText, Graphics.TEXT_JUSTIFY_CENTER);
-        dc.drawText(cx + gap, y, DATA_FONT, altText, Graphics.TEXT_JUSTIFY_CENTER);
+        dc.drawText(cx - gap, y, _dataFont, azText, Graphics.TEXT_JUSTIFY_CENTER);
+        dc.drawText(cx + gap, y, _dataFont, altText, Graphics.TEXT_JUSTIFY_CENTER);
     }
 
     // One row of the table: a label and its two numbers. Altitude carries its own
@@ -680,10 +706,10 @@ class PointerView extends WatchUi.View {
     // colouring on its own rather than reddening the whole line.
     function drawPair(dc as Graphics.Dc, cols as Lang.Array<Lang.Number>, y as Lang.Number, label as Lang.String, azText as Lang.String, altText as Lang.String, altColor as Lang.Number) as Void {
         dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_TRANSPARENT);
-        dc.drawText(cols[0], y, DATA_FONT, label, Graphics.TEXT_JUSTIFY_LEFT);
-        dc.drawText(cols[1], y, DATA_FONT, azText, Graphics.TEXT_JUSTIFY_RIGHT);
+        dc.drawText(cols[0], y, _dataFont, label, Graphics.TEXT_JUSTIFY_LEFT);
+        dc.drawText(cols[1], y, _dataFont, azText, Graphics.TEXT_JUSTIFY_RIGHT);
         dc.setColor(altColor, Graphics.COLOR_TRANSPARENT);
-        dc.drawText(cols[2], y, DATA_FONT, altText, Graphics.TEXT_JUSTIFY_RIGHT);
+        dc.drawText(cols[2], y, _dataFont, altText, Graphics.TEXT_JUSTIFY_RIGHT);
     }
 
     // A row that runs across the columns and is centred on the screen. It holds a
@@ -691,7 +717,7 @@ class PointerView extends WatchUi.View {
     // round screen the middle of the row has the most room.
     function drawNote(dc as Graphics.Dc, y as Lang.Number, text as Lang.String) as Void {
         dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_TRANSPARENT);
-        dc.drawText(dc.getWidth() / 2, y, DATA_FONT, text, Graphics.TEXT_JUSTIFY_CENTER);
+        dc.drawText(dc.getWidth() / 2, y, _dataFont, text, Graphics.TEXT_JUSTIFY_CENTER);
     }
 
     // A waiting message has the whole screen to itself, so it is centred both ways
@@ -757,7 +783,7 @@ class PointerView extends WatchUi.View {
         // The limit stops short of the edge by the chevron's reach, so a pinned
         // marker and its chevron are both drawn whole. At that point they are the
         // only thing left to steer by.
-        var limit = markerLimit(dc, awayX, awayY, away);
+        var limit = markerLimit(dc.getWidth(), dc.getHeight(), awayX, awayY, away);
         var pinned = away > limit;
         if (pinned) {
             dotX = (cx + limit * awayX / away).toNumber();
@@ -765,8 +791,8 @@ class PointerView extends WatchUi.View {
         }
 
         if (onTarget) {
-            dc.setColor(Graphics.COLOR_GREEN, Graphics.COLOR_TRANSPARENT);
-            dc.drawCircle(dotX, dotY, ObjectArt.radius(_obj) + 6);
+            dc.setColor(Palette.shown(Graphics.COLOR_GREEN), Graphics.COLOR_TRANSPARENT);
+            dc.drawCircle(dotX, dotY, ObjectArt.radius(_obj, dc.getWidth()) + GAP);
         }
 
         ObjectArt.draw(dc, dotX, dotY, _obj, ObjectArt.color(_obj), offset, sunOffset, zenith);
@@ -783,6 +809,27 @@ class PointerView extends WatchUi.View {
         }
     }
 
+    // The object's name, along the top. On a watch with a sub-display in the top
+    // right corner it is centred in the room left of that window instead, and it
+    // steps down a size, on any watch, until it fits the room it has.
+    function drawName(dc as Graphics.Dc, name as Lang.String) as Void {
+        var y = nameRow(dc.getHeight());
+        var left = TEXT_MARGIN;
+        var right = dc.getWidth() - TEXT_MARGIN;
+        var sub = _subscreen;
+        if (sub != null && y < sub.y + sub.height) {
+            right = sub.x - GAP;
+        }
+        var font = LABEL_FONT;
+        if (dc.getTextWidthInPixels(name, NAME_FONT) <= right - left) {
+            font = NAME_FONT;
+        } else if (dc.getTextWidthInPixels(name, _dataFont) <= right - left) {
+            font = _dataFont;
+        }
+        dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_TRANSPARENT);
+        dc.drawText((left + right) / 2, y, font, name, Graphics.TEXT_JUSTIFY_CENTER);
+    }
+
     // What each grid's cells are worth, one line per grid that is switched on, in
     // the top right where the sky is emptiest. Each line names its frame, since two
     // grids at different spacings would otherwise be a bare number apiece.
@@ -790,12 +837,25 @@ class PointerView extends WatchUi.View {
     // Nothing is drawn at the middle of the screen. Where the watch points is the
     // centre of the display whether it is marked or not, and a reticle there would
     // crowd the object just as you aim at it.
-    function drawScale(dc as Graphics.Dc, view as Lang.Array<Lang.Numeric>, horizonStep as Lang.Number, equatorialStep as Lang.Number) as Void {
+    //
+    // limit is the top of the readout. Where two lines will not fit above it,
+    // which is what a sub-display leaves on a small screen, both go on one.
+    function drawScale(dc as Graphics.Dc, view as Lang.Array<Lang.Numeric>, horizonStep as Lang.Number, equatorialStep as Lang.Number, limit as Lang.Number) as Void {
         var y = nameRow(dc.getHeight()) + dc.getFontHeight(NAME_FONT) + GAP;
-        dc.setColor(Graphics.COLOR_DK_GRAY, Graphics.COLOR_TRANSPARENT);
+        // Right-aligned, so on a watch with a sub-display they start below it.
+        var sub = _subscreen;
+        if (sub != null && y < sub.y + sub.height + GAP) {
+            y = sub.y + sub.height + GAP;
+        }
+        dc.setColor(Palette.shown(Graphics.COLOR_DK_GRAY), Graphics.COLOR_TRANSPARENT);
+        var lineH = dc.getFontHeight(LABEL_FONT);
+        if (horizonStep > 0 && equatorialStep > 0 && y + 2 * lineH > limit) {
+            drawScaleLine(dc, view, y, horizonStep.toString() + " alt/az  " + equatorialStep.toString() + " ra/dec");
+            return;
+        }
         if (horizonStep > 0) {
             drawScaleLine(dc, view, y, horizonStep.toString() + " alt/az");
-            y += dc.getFontHeight(LABEL_FONT);
+            y += lineH;
         }
         if (equatorialStep > 0) {
             drawScaleLine(dc, view, y, equatorialStep.toString() + " ra/dec");
@@ -910,10 +970,17 @@ class PointerView extends WatchUi.View {
             // left of a half turn once its distance from the Sun is taken off. The
             // Sun comes first in the catalogue, so it is always to hand.
             var phase = 0.0;
-            if (obj[:type] == :moon && sunEnu.size() == 3) {
-                phase = 180.0 - SkyMath.dacos(enu[0] * sunEnu[0] + enu[1] * sunEnu[1] + enu[2] * sunEnu[2]);
-            } else if (obj[:type] == :sun) {
-                sunEnu = enu;
+            switch (obj[:type]) {
+                case :sun:
+                    sunEnu = enu;
+                    break;
+                case :moon:
+                    if (sunEnu.size() == 3) {
+                        phase = 180.0 - SkyMath.dacos(enu[0] * sunEnu[0] + enu[1] * sunEnu[1] + enu[2] * sunEnu[2]);
+                    }
+                    break;
+                default:
+                    break;
             }
             out.add([obj, enu, SkyCatalog.magnitude(obj, raDec, phase).toFloat()]);
             i += 1;
@@ -995,18 +1062,28 @@ class PointerView extends WatchUi.View {
     // corners instead of the circle drawn inside them. On a 448 by 486 panel a
     // circle would throw away a third of the height. The direction is preserved
     // either way, so the marker and the chevron agree on where the object is.
-    function markerLimit(dc as Graphics.Dc, awayX as Lang.Numeric, awayY as Lang.Numeric, away as Lang.Float) as Lang.Float {
-        var halfW = dc.getWidth() / 2 - MARKER_REACH;
+    //
+    // A line straight up, down or across has no part along one of the axes and
+    // never meets that pair of sides, so that side is left out rather than divided
+    // by nothing. With neither, the object is dead centre and there is nothing to
+    // pin. On a flat-sided screen that is every lock-on.
+    function markerLimit(width as Lang.Number, height as Lang.Number, awayX as Lang.Numeric, awayY as Lang.Numeric, away as Lang.Float) as Lang.Float {
+        var halfW = width / 2 - MARKER_REACH;
         if (isRound()) {
             return halfW.toFloat();
         }
-        var halfH = dc.getHeight() / 2 - MARKER_REACH;
+        var halfH = height / 2 - MARKER_REACH;
+        var ax = awayX.abs();
+        var ay = awayY.abs();
 
         // Scale along the line until it meets whichever side it reaches first.
-        var limit = halfW * away / awayX.abs();
-        if (awayY.abs() > 0.000001) {
-            var vertical = halfH * away / awayY.abs();
-            if (awayX.abs() < 0.000001 || vertical < limit) {
+        var limit = halfW.toFloat();
+        if (ax > 0.000001) {
+            limit = halfW * away / ax;
+        }
+        if (ay > 0.000001) {
+            var vertical = halfH * away / ay;
+            if (ax <= 0.000001 || vertical < limit) {
                 limit = vertical;
             }
         }

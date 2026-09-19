@@ -107,11 +107,11 @@ flowchart LR
     AIM -->|back| ROOT
 ```
 
-![Root menu](Screenshoot/G94J3307.png)
+![Root menu](Screenshoot/fenix9-root.png)
 
 ### Aiming at one object
 
-![Moon with phase, locked on](Screenshoot/G94J1340.png)
+![Moon with phase, locked on](Screenshoot/fenix9-moon.png)
 
 The object name at the top, the marker where the object is, and a table below:
 azimuth and altitude for the object (`Obj`) and for the aim (`Aim`), then how far
@@ -129,7 +129,9 @@ both stay on the glass.
 
 ### Show All
 
-![Show All with both grids](Screenshoot/G94J1044.png)
+![Show All with both grids](Screenshoot/fenix9-show-all.png)
+
+Above: both grids on at $60^\circ$, crossing each other, with `N` at the north point.
 
 This mode draws the whole catalogue as a plain sky map: the Sun, the Moon, the
 planets and the bright stars. Nothing is being aimed at, so there is no turn/tilt
@@ -145,7 +147,7 @@ magnitude at the bottom. Star magnitudes are catalogue values; a planet's comes
 from the same distances as its position (Schlyter's formulas, Saturn's rings
 included), the Moon's from its phase, and the Sun's is $-26.7$.
 
-Above: both grids on at $60^\circ$, crossing each other, with `N` at the north point.
+![Show All with the crosshair on the Moon](Screenshoot/fenix9-crosshair.png)
 
 Objects are listed alphabetically in the Planets and Stars menus. The catalogue
 keeps its own order (stars by brightness, planets by distance out from the Sun),
@@ -153,7 +155,7 @@ and a star id is its position in it, so only the menu presentation is sorted.
 
 ### The grids
 
-![Horizon grid at 10 degrees, near the zenith](Screenshoot/G94J1216.png)
+![Horizon grid at 10 degrees, near the zenith](Screenshoot/fenix9-zenith.png)
 
 Aimed near the zenith with the horizon grid at $10^\circ$, the finest spacing,
 where the vertical circles converge on the point overhead.
@@ -166,7 +168,7 @@ from the root menu. Selecting an item steps it to its next value in place. A sho
 list is quicker to thumb through than a submenu, and the label cannot go stale
 behind the menu showing it.
 
-![Settings](Screenshoot/G94J3349.png)
+![Settings](Screenshoot/fenix9-settings.png)
 
 | Setting | Values | Default |
 |---|---|---|
@@ -176,8 +178,6 @@ behind the menu showing it.
 | Sun Path | Off · On | Off |
 | Moon Path | Off · On | Off |
 | Crosshair | Off · On | Off |
-| Equatorial Motion | Held still · Turns with sky | Held still |
-| Azimuth Motion | Held still · Follows position | Held still |
 | Update Location | One fix only · every 5 / 15 / 30 / 60 min | One fix only |
 
 Watches that cannot draw the finest spacings in time, or hold them in memory, stop
@@ -187,12 +187,8 @@ Spacings that come to a whole number of hours say so. The sky turns $360^\circ$ 
 24 hours, so $15^\circ$ is one hour of it and the grid divides the sky into
 hour-wide cells.
 
-Everything starts off and held still. The grids are there when you ask for them,
-and a grid that stays put is easier to read against than one that drifts.
-
-Azimuth Motion has nothing but position updates to follow, since the horizon frame
-has no clock in it. With location updates off it says `On - no updates` rather than
-claiming to follow something that never arrives.
+Everything starts off; the grids are there when you ask for them. The equatorial
+grid turns with the sky, as the stars on it do, and the horizon grid never moves.
 
 The display is held awake while a sky screen is up. When burn-in protection
 refuses to keep it on, the panel gets a short rest before the app asks again.
@@ -544,8 +540,8 @@ the computed magnetic azimuth is therefore the local declination:
 ```
 
 banked slowly, only while the watch is near level, and then applied at any tilt.
-Averaging stops once it has converged, so the reference stops creeping. A fresh
-position re-opens it, if Azimuth Motion is on.
+Averaging stops once it has converged, so the reference stops creeping. It is
+worked out afresh each time a sky screen opens.
 
 ### The device frame
 
@@ -660,11 +656,10 @@ and north parts swapped is the equatorial unit vector at the same two numbers, s
 it draws the horizon grid's mesh through
 $\text{equatorialToEnu}(\varphi, \mathrm{LST})$ with those two columns swapped,
 and both grids share one mesh when their spacing matches. Sidereal time is the
-only thing in that chain that moves, so pinning LST to one reading holds the grid
-still, and that is the default. Let loose, it turns at $15^\circ$ per hour, one full
-revolution per sidereal day, pivoting about the celestial poles at altitude
-$= \varphi$. Turn both on and you can watch the blue grid slide past the stationary
-green one.
+only thing in that chain that moves, so the grid turns with the sky at $15^\circ$ per
+hour, one full revolution per sidereal day, pivoting about the celestial poles at
+altitude $= \varphi$, and the stars keep their places on it. Turn both grids on and
+you can watch the blue grid slide past the stationary green one.
 
 Both count outwards from their zero line (the horizon for one, the celestial equator
 for the other) rather than up from the bottom, so that line is drawn at every
@@ -687,10 +682,9 @@ adding them to the catalogue would bury the bright ones in the Stars menu and
 scatter faint dots across Show All. They are line endpoints, not objects, so each
 figure is held as runs of RA/Dec pairs, one per unbroken stroke.
 
-Two things separate them from the equatorial grid they share a frame with. They are
-always drawn from the live sidereal time, never the reading the grid may be pinned
-to, because they have to stay under the stars they join. And they are the one
-overlay that applies refraction, for the same reason: the stars are placed through
+One thing separates them from the equatorial grid they share a frame with. Like the
+Sun and Moon paths, they apply refraction, because they have to stay under the stars
+they join: the stars are placed through
 `apparentAltitude`, so a belt drawn without it sits a couple of pixels below its own
 three stars as the constellation rises.
 
@@ -871,7 +865,17 @@ Permissions: `Positioning` and `Sensor`.
 ## Devices
 
 Every product listed in `manifest.xml`, across round, rectangular and
-semi-octagonal displays. Requires Connect IQ API level 3.4 or later. Layout is derived from the display size and the real font
+semi-octagonal displays. Requires Connect IQ API level 3.4 or later.
+
+The black-and-white watches (the Instinct 2 family, the Instinct 3 Solar, the
+Instinct E and the Descent G1) show dark shades, red, green and orange as black,
+so on those everything that is not black is drawn white. On the watches with a
+small round window in the top right corner, the object name and the grid labels
+are kept clear of it. On the smallest screens the readout steps down a
+size, and drops its column heads if it still will not fit, so the object stays
+clear of the table describing it, and two grid labels share a line.
+
+![Show All on the Instinct 2, drawn in white](Screenshoot/instinct2-show-all.png) Layout is derived from the display size and the real font
 metrics rather than fixed pixel offsets, so the picture takes every row the text
 does not need. On round displays, labels are pulled in to where the glass reaches
 on each row.

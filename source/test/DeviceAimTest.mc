@@ -238,3 +238,21 @@ function rotatedFrameProjectsLikeTheTwoSteps(logger) {
     }
     return true;
 }
+
+// Pinning a marker to the edge of a flat-sided screen has to cope with an object
+// dead centre, or straight above, below or to one side of it, where the line to
+// it has no part along one axis. On the Instinct and the Venu X1 that is every
+// lock-on, and dividing by that missing part crashed the app.
+(:test)
+function markerLimitHandlesTheCentreLines(logger) {
+    var view = new PointerView(null);
+    var cases = [[0, 0, 0.0], [0, 60, 60.0], [0, -60, 60.0], [60, 0, 60.0], [30, 40, 50.0]];
+    var i = 0;
+    while (i < cases.size()) {
+        var c = cases[i];
+        var limit = view.markerLimit(176, 176, c[0], c[1], c[2]);
+        Test.assertMessage(limit == limit && limit > 0, "the limit should be a positive number");
+        i += 1;
+    }
+    return true;
+}

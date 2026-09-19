@@ -204,7 +204,7 @@ module SkyPaths {
     function draw(dc as Graphics.Dc, frame as Lang.Array<Lang.Float>, view as Lang.Array<Lang.Numeric>, sun as Lang.Boolean, moon as Lang.Boolean) as Void {
         var run = _sunRun;
         if (sun && run != null) {
-            dc.setColor(SUN_COLOR, Graphics.COLOR_TRANSPARENT);
+            dc.setColor(Palette.shown(SUN_COLOR), Graphics.COLOR_TRANSPARENT);
             DeviceAim.drawRun(dc, frame, run, view, 0);
             var m = 0;
             while (m < 12) {
@@ -216,7 +216,7 @@ module SkyPaths {
         run = _moonRun;
         var days = _moonDays;
         if (moon && run != null && days != null) {
-            dc.setColor(MOON_COLOR, Graphics.COLOR_TRANSPARENT);
+            dc.setColor(Palette.shown(MOON_COLOR), Graphics.COLOR_TRANSPARENT);
             DeviceAim.drawRun(dc, frame, run, view, 0);
             var k = 0;
             while (k <= MOON_DAYS) {

@@ -39,7 +39,7 @@ module EquatorialGrid {
         var mesh = HorizonGrid.meshFor(step);
         var r = SkyMath.equatorialToEnu(lat, lstDeg);
         var sky = DeviceAim.rotateFrame(frame, [r[1], r[0], r[2], r[4], r[3], r[5], r[7], r[6], r[8]]);
-        dc.setColor(LINE_COLOR, Graphics.COLOR_TRANSPARENT);
+        dc.setColor(Palette.shown(LINE_COLOR), Graphics.COLOR_TRANSPARENT);
         var i = 0;
         while (i < mesh.size()) {
             DeviceAim.drawRun(dc, sky, mesh[i], view, 0);

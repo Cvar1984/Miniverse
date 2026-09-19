@@ -1,5 +1,6 @@
 using Toybox.Test;
 using Toybox.Math as Math;
+using Toybox.Graphics as Graphics;
 
 // The data the app draws from, and the small pure helpers that decide how it
 // looks: SkyCatalog, Constellations and ObjectArt.
@@ -229,7 +230,7 @@ function everyObjectHasADrawableSize(logger) {
     var all = SkyCatalog.objects();
     var i = 0;
     while (i < all.size()) {
-        var r = ObjectArt.radius(all[i]);
+        var r = ObjectArt.radius(all[i], 400);
         Test.assertMessage(r >= 2, "every object needs to be big enough to see");
         Test.assertMessage(r <= 20, "and small enough not to swamp the screen");
         i += 1;
@@ -240,26 +241,26 @@ function everyObjectHasADrawableSize(logger) {
 (:test)
 function brighterStarsDrawLarger(logger) {
     // Radius is magnitude-scaled, and magnitude runs backwards: lower is brighter.
-    var bright = ObjectArt.radius({:type => :star, :mag => -1.46});
-    var faint = ObjectArt.radius({:type => :star, :mag => 2.2});
+    var bright = ObjectArt.radius({:type => :star, :mag => -1.46}, 400);
+    var faint = ObjectArt.radius({:type => :star, :mag => 2.2}, 400);
     Test.assertMessage(bright > faint, "Sirius should draw larger than a second-magnitude star");
 
     // Clamped at both ends so nothing runs away.
-    var absurd = ObjectArt.radius({:type => :star, :mag => -30.0});
+    var absurd = ObjectArt.radius({:type => :star, :mag => -30.0}, 400);
     Test.assertMessage(absurd == 7, "the radius is capped");
-    var invisible = ObjectArt.radius({:type => :star, :mag => 30.0});
+    var invisible = ObjectArt.radius({:type => :star, :mag => 30.0}, 400);
     Test.assertMessage(invisible == 2, "and floored");
 
-    var unknown = ObjectArt.radius({:type => :star});
+    var unknown = ObjectArt.radius({:type => :star}, 400);
     Test.assertMessage(unknown == 3, "a star with no magnitude gets a default");
     return true;
 }
 
 (:test)
 function theSunAndMoonAreTheBiggestThings(logger) {
-    var sun = ObjectArt.radius(SkyCatalog.findById("sun"));
-    var moon = ObjectArt.radius(SkyCatalog.findById("moon"));
-    var jupiter = ObjectArt.radius(SkyCatalog.findById("jupiter"));
+    var sun = ObjectArt.radius(SkyCatalog.findById("sun"), 400);
+    var moon = ObjectArt.radius(SkyCatalog.findById("moon"), 400);
+    var jupiter = ObjectArt.radius(SkyCatalog.findById("jupiter"), 400);
     Test.assertMessage(sun > moon, "the Sun draws largest");
     Test.assertMessage(moon > jupiter, "then the Moon");
     return true;
@@ -290,5 +291,65 @@ function gridChoicesStopAtTheFinestThisWatchCanDraw(logger) {
         i += 1;
     }
     Test.assertMessage(choices[choices.size() - 1] == finest, "the finest allowed spacing should be offered");
+    return true;
+}
+
+// ObjectArt draws the Sun, the Moon and the planets with the colour and radius
+// their catalogue entries carry, so every one of them has to have both.
+(:test)
+function everyBodyCarriesItsColourAndRadius(logger) {
+    var list = SkyCatalog.objects();
+    var i = 0;
+    while (i < list.size()) {
+        var obj = list[i];
+        if (obj[:type] != :star) {
+            Test.assertMessage(obj[:color] != null && obj[:r] != null, obj[:name] + " needs a colour and a radius");
+        }
+        i += 1;
+    }
+    return true;
+}
+
+// The switch statements match strings by value. An id put together at run time
+// is a different object from the literal in the case, and still has to reach the
+// same branch; the horizon case has to fall through to the equatorial one.
+(:test)
+function switchMatchesStringsByValue(logger) {
+    var parts = ["loca", "tion", "hori", "zon", "mer", "cury"];
+    var location = parts[0] + parts[1];
+    var horizon = parts[2] + parts[3];
+    var mercury = parts[4] + parts[5];
+
+    var text = Settings.label(location);
+    Test.assertMessage(text.equals(Settings.label("location")), "a built id should reach the same case as the literal");
+    Test.assertMessage(!text.equals("On") && !text.equals("Off"), "the location case should be reached, not the default");
+    Test.assertMessage(Settings.label(horizon).equals(Settings.gridLabel(Settings.get("horizon"))), "horizon should fall through to the grid label");
+
+    var mag = Planets.magnitude(mercury, 9000.0d, 0.4, 1.0, 1.0, 10.0, 1.0);
+    Test.assertMessage(mag == Planets.magnitude("mercury", 9000.0d, 0.4, 1.0, 1.0, 10.0, 1.0), "a built planet id should reach its case");
+    Test.assertMessage(mag != Planets.magnitude("saturn", 9000.0d, 0.4, 1.0, 1.0, 10.0, 1.0), "and not the default");
+    return true;
+}
+
+// The palette keeps a colour on a colour screen and shows it white on a
+// black-and-white one. Black has to stay black either way: it is the sky.
+(:test)
+function paletteKeepsBlackAndShowsTheRest(logger) {
+    Test.assertMessage(Palette.shown(Graphics.COLOR_BLACK) == Graphics.COLOR_BLACK, "black stays black");
+    var dark = Palette.shown(Graphics.COLOR_DK_GREEN);
+    Test.assertMessage(dark == Graphics.COLOR_DK_GREEN || dark == Graphics.COLOR_WHITE, "a colour is kept or shown white");
+    return true;
+}
+
+// A disc is sized for the screen it is drawn on: what suits a fenix takes a fifth
+// of an Instinct's glass and runs into the readout. Nothing shrinks to nothing.
+(:test)
+function discsScaleWithTheScreen(logger) {
+    var moon = SkyCatalog.findById("moon");
+    var big = ObjectArt.radius(moon, 454);
+    var small = ObjectArt.radius(moon, 176);
+    Test.assertMessage(small < big, "a smaller screen should draw a smaller disc: " + small + " against " + big);
+    Test.assertMessage(small >= 2, "a body should stay visible: " + small);
+    Test.assertMessage(ObjectArt.radius({:type => :star, :mag => 5.0}, 176) >= 2, "a faint star should stay visible");
     return true;
 }

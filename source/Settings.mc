@@ -7,10 +7,6 @@ using Toybox.System as System;
 // Each value is read from storage once and then held in memory, written through as
 // it changes, so the draw loop can ask for one every frame at 10 Hz without going
 // near flash.
-//
-// Three of these decide what is allowed to move. A still screen is easier to read
-// against, so the grids and the fix are held by default and each can be released
-// on its own.
 module Settings {
     // The sky turns a full circle in 24 hours, so 15 degrees is one hour of it.
     const DEGREES_PER_HOUR = 15;
@@ -30,11 +26,6 @@ module Settings {
     // time (halving the step roughly doubles the points plotted), so the list stops
     // at 10 rather than running down to 5, and higher still on watches that cannot
     // carry the finest ones (see finestGrid).
-    //
-    // Both motions are held still by default. When allowed to, the equatorial grid
-    // turns with the sky, which is accurate but leaves a reference that keeps
-    // creeping. The azimuth one only has an effect while the position is being
-    // refreshed: there is no clock in the horizon frame.
     //
     // Location is minutes between refreshes, 0 for one fix and no more. A fix costs
     // battery, so the intervals are long. Anywhere you can walk to inside half an
@@ -59,8 +50,6 @@ module Settings {
                 "sunPath" => ["sunPath", toggle, false],
                 "moonPath" => ["moonPath", toggle, false],
                 "crosshair" => ["crosshair", toggle, false],
-                "dynEquatorial" => ["dynEquatorial", toggle, false],
-                "dynAzimuth" => ["dynAzimuth", toggle, false],
                 "location" => ["locationMinutes", [0, 5, 15, 30, 60], 0]
             };
         }
@@ -129,39 +118,26 @@ module Settings {
         Application.Storage.setValue(spec[0], next);
     }
 
-    // What the menu shows under each item.
+    // What the menu shows under each item. The two grids share one kind of label,
+    // so the horizon case falls through to the equatorial one; every other
+    // setting is an on/off toggle.
     function label(id) {
         var v = get(id);
-        if (id.equals("horizon") || id.equals("equatorial")) {
-            return gridLabel(v);
+        switch (id) {
+            case "horizon":
+            case "equatorial":
+                return gridLabel(v);
+            case "location":
+                if (v <= 0) {
+                    return "One fix only";
+                }
+                return "Every " + v.toString() + " min";
+            default:
+                if (v) {
+                    return "On";
+                }
+                return "Off";
         }
-        if (id.equals("location")) {
-            if (v <= 0) {
-                return "One fix only";
-            }
-            return "Every " + v.toString() + " min";
-        }
-        if (id.equals("dynEquatorial")) {
-            if (v) {
-                return "Turns with sky";
-            }
-            return "Held still";
-        }
-        if (id.equals("dynAzimuth")) {
-            // Says so when this is switched on with nothing to follow, instead of
-            // reading as on and doing nothing.
-            if (!v) {
-                return "Held still";
-            }
-            if (get("location") <= 0) {
-                return "On - no updates";
-            }
-            return "Follows position";
-        }
-        if (v) {
-            return "On";
-        }
-        return "Off";
     }
 
     // Spacings that come to a whole number of hours say so, since that is what a

@@ -1,3 +1,5 @@
+using Toybox.Graphics as Graphics;
+
 // Registry of everything the app can locate: Sun, Moon, planets and stars.
 module SkyCatalog {
     var _objects = null;
@@ -10,14 +12,17 @@ module SkyCatalog {
     }
 
     function buildObjects() {
+        // Each body carries the colour and disc radius ObjectArt draws it with; the
+        // planets differ a little in size, because belts and rings need a couple of
+        // pixels to land in. Stars take theirs from their magnitude instead.
         var list = [
-            {:id => "sun", :name => "Sun", :type => :sun},
-            {:id => "moon", :name => "Moon", :type => :moon},
-            {:id => "mercury", :name => "Mercury", :type => :planet},
-            {:id => "venus", :name => "Venus", :type => :planet},
-            {:id => "mars", :name => "Mars", :type => :planet},
-            {:id => "jupiter", :name => "Jupiter", :type => :planet},
-            {:id => "saturn", :name => "Saturn", :type => :planet}
+            {:id => "sun", :name => "Sun", :type => :sun, :color => Graphics.COLOR_YELLOW, :r => 20},
+            {:id => "moon", :name => "Moon", :type => :moon, :color => Graphics.COLOR_LT_GRAY, :r => 16},
+            {:id => "mercury", :name => "Mercury", :type => :planet, :color => Graphics.COLOR_LT_GRAY, :r => 5},
+            {:id => "venus", :name => "Venus", :type => :planet, :color => Graphics.COLOR_WHITE, :r => 7},
+            {:id => "mars", :name => "Mars", :type => :planet, :color => Graphics.COLOR_ORANGE, :r => 6},
+            {:id => "jupiter", :name => "Jupiter", :type => :planet, :color => Graphics.COLOR_YELLOW, :r => 8},
+            {:id => "saturn", :name => "Saturn", :type => :planet, :color => Graphics.COLOR_ORANGE, :r => 7}
         ];
         // Bright naked-eye stars: J2000 RA/Dec (degrees) and visual magnitude.
         // Proper motion and precession are ignored; the error is far below what a
@@ -101,15 +106,16 @@ module SkyCatalog {
     // planet's comes with its position (Planets.planetPosition, the third value
     // of raDec). The Moon's follows its phase angle, in degrees, 0 when full.
     function magnitude(obj, raDec, moonPhase) {
-        var type = obj[:type];
-        if (type == :sun) {
-            return -26.74;
-        } else if (type == :moon) {
-            return moonMagnitude(moonPhase);
-        } else if (type == :planet) {
-            return raDec[2];
+        switch (obj[:type]) {
+            case :sun:
+                return -26.74;
+            case :moon:
+                return moonMagnitude(moonPhase);
+            case :planet:
+                return raDec[2];
+            default:
+                return obj[:mag];
         }
-        return obj[:mag];
     }
 
     // The Moon by its phase angle: the approximation Meeus gives, good to a few
@@ -121,14 +127,15 @@ module SkyCatalog {
 
     // Returns [ra, dec] in degrees for the given object at Julian Day jd (UTC).
     function getRaDec(obj, jd) {
-        var type = obj[:type];
-        if (type == :sun) {
-            return SolarLunar.sunPosition(jd);
-        } else if (type == :moon) {
-            return SolarLunar.moonPosition(jd);
-        } else if (type == :planet) {
-            return Planets.planetPosition(obj[:id], jd);
+        switch (obj[:type]) {
+            case :sun:
+                return SolarLunar.sunPosition(jd);
+            case :moon:
+                return SolarLunar.moonPosition(jd);
+            case :planet:
+                return Planets.planetPosition(obj[:id], jd);
+            default:
+                return [obj[:ra], obj[:dec]];
         }
-        return [obj[:ra], obj[:dec]];
     }
 }

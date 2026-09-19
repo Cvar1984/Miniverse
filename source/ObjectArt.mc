@@ -18,72 +18,50 @@ module ObjectArt {
     // is a polygon the device fills in one go.
     const ARC_STEPS = 12;
 
-    // Approximate on-screen colour for an object.
+    // The screen width the catalogue's disc radii are written for.
+    const REFERENCE_WIDTH = 400;
+
+    // Approximate on-screen colour for an object. The Sun, the Moon and the
+    // planets carry theirs in the catalogue; stars are white. Shown through the
+    // Palette, so a black-and-white screen draws every body; the shading built
+    // off it stays dark, which keeps the Moon's phase.
     function color(obj as Lang.Dictionary) as Lang.Number {
-        var type = obj[:type];
-        if (type == :sun) {
-            return Graphics.COLOR_YELLOW;
+        var c = obj[:color];
+        if (c == null) {
+            return Graphics.COLOR_WHITE;
         }
-        if (type == :moon) {
-            return Graphics.COLOR_LT_GRAY;
-        }
-        if (type == :planet) {
-            var id = obj[:id];
-            if (id.equals("mars")) {
-                return Graphics.COLOR_ORANGE;
-            }
-            if (id.equals("venus")) {
-                return Graphics.COLOR_WHITE;
-            }
-            if (id.equals("mercury")) {
-                return Graphics.COLOR_LT_GRAY;
-            }
-            if (id.equals("jupiter")) {
-                return Graphics.COLOR_YELLOW;
-            }
-            return Graphics.COLOR_ORANGE;
-        }
-        return Graphics.COLOR_WHITE;
+        return Palette.shown(c);
     }
 
-    // Disc radius: fixed per body for the Sun, Moon and planets, magnitude-scaled
-    // for stars, where brighter stars draw larger the way they look. The planets
-    // differ a little in size, because belts and rings need a couple of pixels to
-    // land in.
-    function radius(obj as Lang.Dictionary) as Lang.Number {
-        var type = obj[:type];
-        if (type == :sun) {
-            return 20;
-        }
-        if (type == :moon) {
-            return 16;
-        }
-        if (type == :planet) {
-            var id = obj[:id];
-            if (id.equals("jupiter")) {
-                return 8;
+    // Disc radius in pixels of the screen it is drawn on: fixed per body for the
+    // Sun, the Moon and the planets, which carry theirs in the catalogue, and
+    // magnitude-scaled for stars, where brighter stars draw larger the way they
+    // look.
+    //
+    // Those radii suit a screen about REFERENCE_WIDTH across and are scaled from
+    // there. A size that suits a fenix is a fifth of an Instinct's 176-pixel glass,
+    // where it runs into the readout underneath.
+    function radius(obj as Lang.Dictionary, width as Lang.Number) as Lang.Number {
+        var r = obj[:r];
+        if (r == null) {
+            var mag = obj[:mag];
+            if (mag == null) {
+                r = 3;
+            } else {
+                r = (5.0 - mag).toNumber();
+                if (r < 2) {
+                    r = 2;
+                }
+                if (r > 7) {
+                    r = 7;
+                }
             }
-            if (id.equals("saturn")) {
-                return 7;
-            }
-            if (id.equals("venus")) {
-                return 7;
-            }
-            if (id.equals("mercury")) {
-                return 5;
-            }
-            return 6;
         }
-        var mag = obj[:mag];
-        if (mag == null) {
-            return 3;
-        }
-        var r = (5.0 - mag).toNumber();
+        r = r * width / REFERENCE_WIDTH;
         if (r < 2) {
+            // Smaller than this is a dot rather than a disc, and a body that is
+            // there at all should be visible.
             r = 2;
-        }
-        if (r > 7) {
-            r = 7;
         }
         return r;
     }
@@ -97,21 +75,26 @@ module ObjectArt {
     // and straight up. The last two are what orient the phase and the rings, and
     // either may be null, in which case a plain disc is drawn.
     function draw(dc as Graphics.Dc, x as Lang.Number, y as Lang.Number, obj as Lang.Dictionary, base as Lang.Number, offset as Lang.Array<Lang.Float>, sunOffset as Lang.Array?, zenith as Lang.Array?) as Void {
-        var type = obj[:type];
-        if (type == :sun) {
-            drawSun(dc, x, y, base, radius(obj));
-            return;
-        }
-        if (type == :moon && sunOffset != null) {
-            drawMoon(dc, x, y, base, radius(obj), offset, sunOffset);
-            return;
-        }
-        if (type == :planet) {
-            drawPlanet(dc, x, y, obj, base, offset, zenith);
-            return;
+        switch (obj[:type]) {
+            case :sun:
+                drawSun(dc, x, y, base, radius(obj, dc.getWidth()));
+                return;
+            case :moon:
+                // Without the Sun to light it there is no phase to draw, and the
+                // Moon falls back to the plain disc below.
+                if (sunOffset != null) {
+                    drawMoon(dc, x, y, base, radius(obj, dc.getWidth()), offset, sunOffset);
+                    return;
+                }
+                break;
+            case :planet:
+                drawPlanet(dc, x, y, obj, base, offset, zenith);
+                return;
+            default:
+                break;
         }
         dc.setColor(base, Graphics.COLOR_TRANSPARENT);
-        dc.fillCircle(x, y, radius(obj));
+        dc.fillCircle(x, y, radius(obj, dc.getWidth()));
     }
 
     // Corona outside the disc, and a disc that brightens towards the middle. Limb
@@ -119,14 +102,14 @@ module ObjectArt {
     // through cloud, and it keeps the disc from reading as a flat yellow dot.
     function drawSun(dc as Graphics.Dc, x as Lang.Number, y as Lang.Number, base as Lang.Number, r as Lang.Number) as Void {
         dc.setColor(shade(base, 1, 4), Graphics.COLOR_TRANSPARENT);
-        dc.drawCircle(x, y, r + 6);
+        dc.drawCircle(x, y, r + r / 3);
         dc.setColor(shade(base, 2, 5), Graphics.COLOR_TRANSPARENT);
-        dc.drawCircle(x, y, r + 3);
+        dc.drawCircle(x, y, r + r / 6);
 
         dc.setColor(shade(base, 4, 5), Graphics.COLOR_TRANSPARENT);
         dc.fillCircle(x, y, r);
         dc.setColor(base, Graphics.COLOR_TRANSPARENT);
-        dc.fillCircle(x, y, r - 7);
+        dc.fillCircle(x, y, r - r / 3);
     }
 
     // The Moon at its current phase.
@@ -190,7 +173,7 @@ module ObjectArt {
     // with the wrist. A ring pinned to the screen would be wrong as soon as you
     // turned your arm.
     function drawPlanet(dc as Graphics.Dc, x as Lang.Number, y as Lang.Number, obj as Lang.Dictionary, base as Lang.Number, offset as Lang.Array<Lang.Float>, zenith as Lang.Array?) as Void {
-        var r = radius(obj);
+        var r = radius(obj, dc.getWidth());
         var id = obj[:id];
 
         var along = equatorDirection(offset, zenith);

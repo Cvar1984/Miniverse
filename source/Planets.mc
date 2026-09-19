@@ -49,54 +49,33 @@ module Planets {
         return [r * SkyMath.dcos(lonSun), r * SkyMath.dsin(lonSun)];
     }
 
-    // Orbital elements [N, i, w, a, e, M] (degrees/AU) at day-number d (days since 2000-01-00 = JD 2451543.5).
+    // Orbital elements per planet, as [N, i, w, a, e, M] (degrees and AU), each
+    // given as its value at day-number 0 followed by its change per day.
+    const ELEMENTS = {
+        "mercury" => [48.3313, 0.0000324587, 7.0047, 0.00000005, 29.1241, 0.0000101444,
+                      0.387098, 0.0, 0.205635, 0.000000000559, 168.6562, 4.0923344368],
+        "venus" => [76.6799, 0.0000246590, 3.3946, 0.0000000275, 54.8910, 0.0000138374,
+                    0.723330, 0.0, 0.006773, -0.000000001302, 48.0052, 1.6021302244],
+        "mars" => [49.5574, 0.0000211081, 1.8497, -0.0000000178, 286.5016, 0.0000292961,
+                   1.523688, 0.0, 0.093405, 0.000000002516, 18.6021, 0.5240207766],
+        "jupiter" => [100.4542, 0.0000276854, 1.3030, -0.0000001557, 273.8777, 0.0000164505,
+                      5.20256, 0.0, 0.048498, 0.000000004469, 19.8950, 0.0830853001],
+        "saturn" => [113.6634, 0.0000238980, 2.4886, -0.0000001081, 339.3939, 0.0000297661,
+                     9.55475, 0.0, 0.055546, -0.000000009499, 316.9670, 0.0334442282]
+    };
+
+    // Orbital elements [N, i, w, a, e, M] (degrees/AU) at day-number d (days since
+    // 2000-01-00 = JD 2451543.5). All six stay positive and under 360, so wrapping
+    // every one of them changes only the angles that need it.
     function elementsFor(id, d) as Lang.Array<Lang.Float> {
-        if (id.equals("mercury")) {
-            return [
-                SkyMath.norm360(48.3313 + 0.0000324587 * d),
-                7.0047 + 0.00000005 * d,
-                SkyMath.norm360(29.1241 + 0.0000101444 * d),
-                0.387098,
-                0.205635 + 0.000000000559 * d,
-                SkyMath.norm360(168.6562 + 4.0923344368 * d)
-            ];
-        } else if (id.equals("venus")) {
-            return [
-                SkyMath.norm360(76.6799 + 0.0000246590 * d),
-                3.3946 + 0.0000000275 * d,
-                SkyMath.norm360(54.8910 + 0.0000138374 * d),
-                0.723330,
-                0.006773 - 0.000000001302 * d,
-                SkyMath.norm360(48.0052 + 1.6021302244 * d)
-            ];
-        } else if (id.equals("mars")) {
-            return [
-                SkyMath.norm360(49.5574 + 0.0000211081 * d),
-                1.8497 - 0.0000000178 * d,
-                SkyMath.norm360(286.5016 + 0.0000292961 * d),
-                1.523688,
-                0.093405 + 0.000000002516 * d,
-                SkyMath.norm360(18.6021 + 0.5240207766 * d)
-            ];
-        } else if (id.equals("jupiter")) {
-            return [
-                SkyMath.norm360(100.4542 + 0.0000276854 * d),
-                1.3030 - 0.0000001557 * d,
-                SkyMath.norm360(273.8777 + 0.0000164505 * d),
-                5.20256,
-                0.048498 + 0.000000004469 * d,
-                SkyMath.norm360(19.8950 + 0.0830853001 * d)
-            ];
+        var row = ELEMENTS[id];
+        var out = new [6];
+        var k = 0;
+        while (k < 6) {
+            out[k] = SkyMath.norm360(row[2 * k] + row[2 * k + 1] * d);
+            k += 1;
         }
-        // saturn
-        return [
-            SkyMath.norm360(113.6634 + 0.0000238980 * d),
-            2.4886 - 0.0000001081 * d,
-            SkyMath.norm360(339.3939 + 0.0000297661 * d),
-            9.55475,
-            0.055546 - 0.000000009499 * d,
-            SkyMath.norm360(316.9670 + 0.0334442282 * d)
-        ];
+        return out;
     }
 
     // Returns [ra, dec, magnitude] for the given Julian Day (UTC), the position in
@@ -134,18 +113,22 @@ module Planets {
     function magnitude(id, d, r, dist, sunDist, lon, lat) {
         var fv = SkyMath.dacos((r * r + dist * dist - sunDist * sunDist) / (2.0 * r * dist));
         var m = 5.0 * Math.log(r * dist, 10);
-        if (id.equals("mercury")) {
-            return -0.36 + m + 0.027 * fv + 0.00000000000022 * Math.pow(fv, 6);
-        } else if (id.equals("venus")) {
-            return -4.34 + m + 0.013 * fv + 0.00000042 * Math.pow(fv, 3);
-        } else if (id.equals("mars")) {
-            return -1.51 + m + 0.016 * fv;
-        } else if (id.equals("jupiter")) {
-            return -9.25 + m + 0.014 * fv;
+        switch (id) {
+            case "mercury":
+                return -0.36 + m + 0.027 * fv + 0.00000000000022 * Math.pow(fv, 6);
+            case "venus":
+                return -4.34 + m + 0.013 * fv + 0.00000042 * Math.pow(fv, 3);
+            case "mars":
+                return -1.51 + m + 0.016 * fv;
+            case "jupiter":
+                return -9.25 + m + 0.014 * fv;
+            default: {
+                // Saturn, the one planet left. The sine of the ring tilt is all
+                // the ring term needs.
+                var sinB = SkyMath.dsin(lat) * SkyMath.dcos(28.06)
+                    - SkyMath.dcos(lat) * SkyMath.dsin(28.06) * SkyMath.dsin(lon - (169.51 + 0.0000382 * d));
+                return -9.0 + m + 0.044 * fv - 2.6 * sinB.abs() + 1.2 * sinB * sinB;
+            }
         }
-        // saturn: the sine of the ring tilt is all the ring term needs
-        var sinB = SkyMath.dsin(lat) * SkyMath.dcos(28.06)
-            - SkyMath.dcos(lat) * SkyMath.dsin(28.06) * SkyMath.dsin(lon - (169.51 + 0.0000382 * d));
-        return -9.0 + m + 0.044 * fv - 2.6 * sinB.abs() + 1.2 * sinB * sinB;
     }
 }

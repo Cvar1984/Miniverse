@@ -10,18 +10,25 @@ class RootMenuDelegate extends WatchUi.Menu2InputDelegate {
         if (id == null) {
             return;
         }
-        if (id.equals("all")) {
-            // No object to aim at: a null one puts the pointer screen into its
-            // whole-catalogue mode.
-            WatchUi.pushView(new PointerView(null), new PointerDelegate(), WatchUi.SLIDE_LEFT);
-        } else if (id.equals("planets")) {
-            WatchUi.pushView(SkyMenus.buildObjectMenu("Planets", SkyCatalog.filterByType(:planet)), new RootMenuDelegate(), WatchUi.SLIDE_LEFT);
-        } else if (id.equals("stars")) {
-            WatchUi.pushView(SkyMenus.buildObjectMenu("Stars", SkyCatalog.filterByType(:star)), new RootMenuDelegate(), WatchUi.SLIDE_LEFT);
-        } else {
-            var obj = SkyCatalog.findById(id);
-            if (obj != null) {
-                WatchUi.pushView(new PointerView(obj), new PointerDelegate(), WatchUi.SLIDE_LEFT);
+        switch (id) {
+            case "all":
+                // No object to aim at: a null one puts the pointer screen into its
+                // whole-catalogue mode.
+                WatchUi.pushView(new PointerView(null), new PointerDelegate(), WatchUi.SLIDE_LEFT);
+                break;
+            case "planets":
+                WatchUi.pushView(SkyMenus.buildObjectMenu("Planets", SkyCatalog.filterByType(:planet)), new RootMenuDelegate(), WatchUi.SLIDE_LEFT);
+                break;
+            case "stars":
+                WatchUi.pushView(SkyMenus.buildObjectMenu("Stars", SkyCatalog.filterByType(:star)), new RootMenuDelegate(), WatchUi.SLIDE_LEFT);
+                break;
+            default: {
+                // Anything else is the id of one object in the catalogue.
+                var obj = SkyCatalog.findById(id);
+                if (obj != null) {
+                    WatchUi.pushView(new PointerView(obj), new PointerDelegate(), WatchUi.SLIDE_LEFT);
+                }
+                break;
             }
         }
     }

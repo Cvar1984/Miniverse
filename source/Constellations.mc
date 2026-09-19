@@ -180,8 +180,8 @@ module Constellations {
     const REFRACTION_UNDER = -0.0349;
 
     // view is [cx, cy, focal], the same screen mapping everything else uses. lat
-    // and lstDeg must be the live ones, not the reading the equatorial grid may be
-    // pinned to: the figures have to stay under the stars they join, and the stars
+    // and lstDeg must be the live ones: the figures have to stay under the stars
+    // they join, and the stars
     // are drawn from the current time.
     //
     // The vertices are fixed on the sky, so each frame only turns them with one
@@ -193,7 +193,7 @@ module Constellations {
         if (runs == null || !ready()) {
             return;
         }
-        dc.setColor(LINE_COLOR, Graphics.COLOR_TRANSPARENT);
+        dc.setColor(Palette.shown(LINE_COLOR), Graphics.COLOR_TRANSPARENT);
         var rows = SkyMath.equatorialToEnu(lat, lstDeg);
         // A dot on every star, sized to the screen: a radius of 1 on the smallest
         // glass, 3 on the largest.
