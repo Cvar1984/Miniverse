@@ -38,7 +38,7 @@ module SkyMenus {
             var o = objList[i];
 
             var at = 0;
-            while (at < out.size() && out[at][:name].compareTo(o[:name]) < 0) {
+            while (at < out.size() && before(out[at][:name], o[:name])) {
                 at += 1;
             }
 
@@ -49,6 +49,23 @@ module SkyMenus {
             i += 1;
         }
         return out;
+    }
+
+    // Whether a sorts before b, character by character. String.compareTo does this
+    // but only from API 5, and on a watch below that, such as the Instinct 2X
+    // Solar at 3.4.3, calling it crashed the app as either list opened.
+    function before(a, b) {
+        var x = a.toCharArray();
+        var y = b.toCharArray();
+        var i = 0;
+        while (i < x.size() && i < y.size()) {
+            var d = x[i].toNumber() - y[i].toNumber();
+            if (d != 0) {
+                return d < 0;
+            }
+            i += 1;
+        }
+        return x.size() < y.size();
     }
 
     // Each item carries its current value as the sub-label, and selecting it steps

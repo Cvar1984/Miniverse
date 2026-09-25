@@ -353,3 +353,32 @@ function discsScaleWithTheScreen(logger) {
     Test.assertMessage(ObjectArt.radius({:type => :star, :mag => 5.0}, 176) >= 2, "a faint star should stay visible");
     return true;
 }
+
+// The Planets and Stars lists are sorted by name as they open. The sort once
+// used String.compareTo, which is API 5: on older firmware, the Instinct 2X
+// Solar's 3.4.3 among it, the app crashed the moment either list opened.
+(:test)
+function objectListsSortByName(logger) {
+    var planets = SkyMenus.sortedByName(SkyCatalog.filterByType(:planet));
+    var names = ["Jupiter", "Mars", "Mercury", "Saturn", "Venus"];
+    Test.assertMessage(planets.size() == names.size(), "every planet should be listed");
+    var i = 0;
+    while (i < names.size()) {
+        Test.assertMessage(planets[i][:name].equals(names[i]), "planet " + i + " should be " + names[i] + ", not " + planets[i][:name]);
+        i += 1;
+    }
+
+    // Checked by first letter only, so the check does not lean on the sort's own
+    // comparison.
+    var catalogue = SkyCatalog.filterByType(:star);
+    var stars = SkyMenus.sortedByName(catalogue);
+    Test.assertMessage(stars.size() == catalogue.size(), "every star should be listed");
+    i = 1;
+    while (i < stars.size()) {
+        var prev = stars[i - 1][:name].toCharArray()[0].toNumber();
+        var next = stars[i][:name].toCharArray()[0].toNumber();
+        Test.assertMessage(prev <= next, stars[i - 1][:name] + " should not come before " + stars[i][:name]);
+        i += 1;
+    }
+    return true;
+}
