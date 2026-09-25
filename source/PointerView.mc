@@ -850,11 +850,11 @@ class PointerView extends WatchUi.View {
         dc.setColor(Palette.shown(Graphics.COLOR_DK_GRAY), Graphics.COLOR_TRANSPARENT);
         var lineH = dc.getFontHeight(LABEL_FONT);
         if (horizonStep > 0 && equatorialStep > 0 && y + 2 * lineH > limit) {
-            drawScaleLine(dc, view, y, horizonStep.toString() + " alt/az  " + equatorialStep.toString() + " ra/dec");
+            drawScaleLine(dc, view, y, horizonStep.toString() + " az/alt  " + equatorialStep.toString() + " ra/dec");
             return;
         }
         if (horizonStep > 0) {
-            drawScaleLine(dc, view, y, horizonStep.toString() + " alt/az");
+            drawScaleLine(dc, view, y, horizonStep.toString() + " az/alt");
             y += lineH;
         }
         if (equatorialStep > 0) {
